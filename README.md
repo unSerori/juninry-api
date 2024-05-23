@@ -42,6 +42,121 @@ SSH URL:
 
 ## API仕様書
 
+エンドポイント、リクエストレスポンスの形式、その他情報のAPIの仕様書。
+
+### エンドポインツ
+
+#### ユーザを作成するエンドポイント
+
+- **URL:** `/api/v1/users/register`
+- **メソッド:** POST
+- **説明:** 新規ユーザを登録。
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+        "name": "hogeta piyonaka",
+        "type": "teacher", // pupil, parents  // 数値のフラグでもよいかも。
+        "mailAddress": "hogeta@gmail.com",
+        "password": "C@h",
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResCode": 1001,
+        "srvResMsg":  "Successful user registration.",
+        "srvResData": {
+          "authenticationToken": "token@h",
+        },
+      }
+      ```
+
+#### ユーザ情報の取得エンドポイント
+
+- **URL:** `/api/v1/auth/users/user`
+- **メソッド:** GET
+~ - **説明:** トークンからidを取得、そのユーザの詳細情報を返す。
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResCode": 1002,
+        "srvResMsg":  "Successful acquisition of user information.",
+        "srvResData": {
+          "userInfo": {
+            "name": "hogeta piyonaka",
+            "type": "teacher", // pupil, parents  // 数値のフラグでもよいかも。
+            "mailAddress": "hogeta@gmail.com",
+            "classes": [
+              "d025523f-bb80-44a5-4bdb-5c8628b4d080",
+              "a5801d4d-e00f-37f2-fa67-1ab58534696b",
+            ],
+            "home": "bf0bcb96-4527-6b4f-9077-a32d69af316f",
+          }
+        },
+      }
+      ```
+
+#### クラスを作成するコード
+
+- **URL:** `/api/v1/auth/class`
+- **メソッド:** POST
+- **説明:** 新規クラスを登録。
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+    {
+      "name": "IE2A",
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResCode": 1003,
+        "srvResMsg":  "Successful class registration.",
+        "srvResData": {
+          "classUUID": "bf7a1768-8458-4469-5047-48b072c27aa4",
+          "entryCode": "7777",
+        },
+      }
+      ```
+
+
+
+・参加ID更新
+・くらす参加
+・くらすじょうほう（課題一覧）取得
+・くらすじょうほう（おてがみ一覧）取得
+・特定の課題情報を取得
+・特定のおてがみ情報を取得
+・課題を付与
+・おてがみを付与
+・課題完了。(せんせいに通知と課題の画像)
+・提出された課題を取得
+
+・おうち情報取得
+
 ## エラー処理
 
 APIがエラーを返す場合、詳細なエラーメッセージが含まれます。エラーに関する情報は[サーバーエラーコード](#server-error-code)を参照してください。　　
@@ -52,7 +167,10 @@ APIがエラーを返す場合、詳細なエラーメッセージが含まれ�
 以下に意味を羅列。  
 
 - 成功関連
-  - 1000: Successful authentication.  
+  - 1000: Successful authentication.
+  - 1001: Successful user registration.
+  - 1002: Successful acquisition of user information.
+  - 1003: Successful class registration.
 
 - エラー関連
   - 7000: Authentication unsuccessful.  
