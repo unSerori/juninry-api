@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="styles/common.css">
+	<title>Document</title>
+</head>
+
+<body>
+	<div id="wrapper-body">
+		<header>
+			<h1 id="logo">{{.topTitle}}/</h1>
+		</header>
+		<main>
+			<h2 style="font-weight: bold;">{{.mainTitle}}</h2>
+			<label>time: </label>
+			<span>{{.time}}</span>
+			<div>{{.message}}</div>
+		</main>
+		<footer>
+			<div id="topArea"><a href="#wrapper-body"><i class="material-icons">keyboard_arrow_up</i></a></div>
+			<p id="copyright" class="font-weight-b">
+				<small> &copy; <span id="year">2024</span> unSerori </small>
+			</p>
+		</footer>
+		<script src="scripts/common.js"></script>
+	</div>
+</body>
+
+</html>
