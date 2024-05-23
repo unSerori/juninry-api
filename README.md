@@ -24,7 +24,7 @@ SSH URL:
 3. リポジトリをクローン
 
     ```bash
-    # clone
+    # カレントディレクトリにリポジトリの中身を展開
     git clone git@github.com:unSerori/juninry-api.git .
     
     # developブランチに移動
