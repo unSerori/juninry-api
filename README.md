@@ -21,14 +21,24 @@ SSH URL:
     ```
 
 2. ここまでが1の内容（フォルダーをVScodeで開きgo_serverをVScodeアタッチ。）
-3. shareディレクトリ内で以下のコマンド。
+3. リポジトリをクローン
+
+    ```bash
+    # clone
+    git clone git@github.com:unSerori/juninry-api.git .
+    
+    # developブランチに移動
+    git switch develop
+    ```
+
+4. shareディレクトリ内で以下のコマンド。
 
     ```bash:Build an environment
     # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。  
     cat vscode-ext.txt | while read line; do code --install-extension $line; done
     ```
 
-4. .envファイルをもらうか作成。[.envファイルの説明](#env)
+5. .envファイルをもらうか作成。[.envファイルの説明](#env)
 
 ## API仕様書
 
