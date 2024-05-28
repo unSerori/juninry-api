@@ -52,10 +52,17 @@ APIがエラーを返す場合、詳細なエラーメッセージが含まれ�
 以下に意味を羅列。  
 
 - 成功関連
-  - 1000: Successful authentication.  
+  - 1000: Successful authentication.
+  - 1001: Successful user registration.
 
 - エラー関連
-  - 7000: Authentication unsuccessful.  
+  - 7000: Authentication unsuccessful.
+  - 7001: Failure to bind request.
+  - 7002: There is already a user with the same primary key. Uniqueness constraint violation.
+  - 7003: New user registration was not possible due to other DB problems.
+  - 7004: Failure to hash passwords.
+  - 7005: Failed to generate token.
+  - 7006: New user registration was not possible due to other problems.
 
 ## .ENV
 
@@ -68,7 +75,7 @@ MYSQL_HOST=ログイン先のDBホスト名。dockerだとサービス名。
 MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
-TOKEN_LIFETIME=JWTトークンの有効期限
+JWT_TOKEN_LIFETIME=JWTトークンの有効期限
 ```
 
 ## 開発者
