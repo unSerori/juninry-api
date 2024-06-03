@@ -42,6 +42,7 @@ func DBConnect() error {
 			new(Ouchi),
 			new(UserType),
 			new(Class),
+			new(ClassMembership),
 		)
 		if err != nil {
 			log.Fatalf("Failed to sync database: %v", err)
@@ -58,10 +59,13 @@ func DBConnect() error {
 		return err
 	}
 
-	// テスト用データ作成
+	// サンプル用データ作成  外部キーの参照先テーブルを先に登録する必要がある。
 	CreateUserTypeTestData()
 	CreateOuchiTestData()
 	CreateClassTestData()
+	// テスト用データ作成
+	CreateUserTestData()
+	CreateClassMembershipsTestData()
 
 	return nil
 }
@@ -75,6 +79,11 @@ func DBInstance() *xorm.Engine {
 func initFK() error {
 	// User
 	err := InitUserFK()
+	if err != nil {
+		return err
+	}
+	// ClassMembership
+	err = InitClassMembership()
 	if err != nil {
 		return err
 	}
