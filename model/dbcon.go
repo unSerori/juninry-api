@@ -44,6 +44,7 @@ func DBConnect() error {
 			new(Class),
 			new(ClassMembership),
 			new(Notice),
+			new(NoticeReadStatus),
 		)
 		if err != nil {
 			log.Fatalf("Failed to sync database: %v", err)
@@ -68,6 +69,7 @@ func DBConnect() error {
 	CreateUserTestData()
 	CreateClassMembershipsTestData()
 	CreateNoticeTestData()
+	CreateNoticeReadStatusTestData()
 
 	return nil
 }
@@ -91,6 +93,11 @@ func initFK() error {
 	}
 	// Notice
 	err = InitNoticeFK()
+	if err != nil {
+		return err
+	}
+	// NoticeReadStatus
+	err = InitNoticeReadStatus()
 	if err != nil {
 		return err
 	}
