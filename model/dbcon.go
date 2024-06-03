@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"juninry-api/logging"
 	"log"
 	"os"
 
@@ -34,10 +35,20 @@ func DBConnect() error {
 		log.Println("Could connect to the db server.")
 	}
 
-	// テーブルがないなら自動で作成。 // xormがテーブル作成時にモデル名を複数形に、列名をスネークケースにしてくれる。  // 列情報の追加変更は反映するが列の削除は反映しない。
+	return nil
+}
+
+// 接続を取得
+func DBInstance() *xorm.Engine {
+	return db // 接続を返す
+}
+
+// マイグレーション関連
+func MigrationTable() error {
+	// テーブルがないなら自動で作成。 // xormがテーブル作成時に列名をスネークケースにしてくれる。  // 列情報の追加変更は反映するが列の削除は反映しない。
 	exists, _ := db.IsTableExist(&User{}) // この判定で、外部キー設定済みのテーブルの再Sync2時に外部キーのインデックスを消せないエラーを防いでいる。
 	if !exists {
-		err = db.Sync2(
+		err := db.Sync2(
 			new(User),
 			new(Ouchi),
 			new(UserType),
@@ -51,40 +62,23 @@ func DBConnect() error {
 			new(HomeworkSubmission),
 		)
 		if err != nil {
-			log.Fatalf("Failed to sync database: %v", err)
+			logging.ErrorLog("Failed to sync database.", err)
 			return err
 		}
 
 	}
 
 	// FK
-	err = initFK()
+	err := initFK()
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("NNNNNNNNNNNNNNNNNNNNNN")
+		logging.ErrorLog("Failed to set foreign key.", err)
 		return err
 	}
 
-	// サンプル用データ作成  外部キーの参照先テーブルを先に登録する必要がある。
-	CreateUserTypeTestData()
-	CreateOuchiTestData()
-	CreateClassTestData()
-	CreateSubjectTestData()
-	CreateTeachingMaterialTestData()
-	// テスト用データ作成
-	CreateUserTestData()
-	CreateClassMembershipsTestData()
-	CreateNoticeTestData()
-	CreateNoticeReadStatusTestData()
-	CreateHomeworkTestData()
-	CreateHomeworkSubmissionTestData()
+	// サンプルデータ作成
+	RegisterSample()
 
 	return nil
-}
-
-// 接続を取得
-func DBInstance() *xorm.Engine {
-	return db // 接続を返す
 }
 
 // 外部キーを設定
@@ -126,4 +120,22 @@ func initFK() error {
 	}
 
 	return err
+}
+
+// サンプルデータ作成
+// 外部キーの参照先テーブルを先に登録する必要がある。
+func RegisterSample() {
+	// サンプル用データ作成
+	CreateUserTypeTestData()
+	CreateOuchiTestData()
+	CreateClassTestData()
+	CreateSubjectTestData()
+	CreateTeachingMaterialTestData()
+	// テスト用データ作成
+	CreateUserTestData()
+	CreateClassMembershipsTestData()
+	CreateNoticeTestData()
+	CreateNoticeReadStatusTestData()
+	CreateHomeworkTestData()
+	CreateHomeworkSubmissionTestData()
 }
