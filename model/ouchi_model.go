@@ -1,5 +1,6 @@
 package model
 
+// おうちテーブル
 type Ouchi struct {
 	OuchiUuid string `xorm:"varchar(36) pk" json:"ouchiUUID"`       // ユーザータイプID
 	OuchiName string `xorm:"varchar(15) not null" json:"ouchiName"` // ユーザータイプ  // teacher, pupil, parents

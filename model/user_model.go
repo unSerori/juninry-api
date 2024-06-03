@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 // ユーザテーブル  // モデルを構造体で定義
 type User struct { // typeで型の定義, structは構造体
 	UserUuid    string  `xorm:"varchar(36) pk" json:"userUUID"`                  // ユーザのUUID
@@ -36,7 +34,7 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
-	User4 := &User{
+	user4 := &User{
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
 		UserTypeId:  2,
@@ -44,8 +42,8 @@ func CreateUserTestData() {
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "14dea318-8581-4cab-b233-995ce8e1a948",
 	}
-	db.Insert(User4)
-	User5 := &User{
+	db.Insert(user4)
+	user5 := &User{
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
 		UserTypeId:  1,
@@ -53,11 +51,7 @@ func CreateUserTestData() {
 		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
 		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
 	}
-	_, err := db.Insert(User5)
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	db.Insert(user5)
 }
 
 // 新規ユーザ登録

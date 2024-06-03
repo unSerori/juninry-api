@@ -1,5 +1,6 @@
 package model
 
+// ユーザのクラス所属中間テーブル
 type ClassMembership struct {
 	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
 	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
@@ -29,9 +30,14 @@ func InitClassMembership() error {
 
 // テストデータ
 func CreateClassMembershipsTestData() {
-	ClassMemberships1 := &ClassMembership{
+	classMemberships1 := &ClassMembership{
 		UserUuid:  "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
 	}
-	db.Insert(ClassMemberships1)
+	db.Insert(classMemberships1)
+	classMemberships2 := &ClassMembership{
+		UserUuid:  "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
+	}
+	db.Insert(classMemberships2)
 }
