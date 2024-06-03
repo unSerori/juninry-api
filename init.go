@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Init() {
+func Init() error {
 	// .envから定数をプロセスの環境変数にロード
 	err := godotenv.Load(".env") // エラーを格納
 	if err != nil {              // エラーがあったら
@@ -25,5 +25,14 @@ func Init() {
 	log.Println("Start server!")
 
 	// DB初期化
-	model.DBConnect()
+	err = model.DBConnect() // 接続
+	if err != nil {
+		fmt.Println("")
+	}
+	// 接続を取得
+	db := model.DBInstance()
+	db.ShowSQL(true)       // SQL文の表示
+	db.SetMaxOpenConns(10) // 接続数
+
+	return nil
 }

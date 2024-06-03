@@ -37,5 +37,6 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	if err != nil {
 		return "", NewErr(ErrTypeGenTokenFailed, err.Error())
 	}
+
 	return token, nil
 }

@@ -12,7 +12,7 @@ import (
 var db *xorm.Engine // インスタンス
 
 // SQL接続とテーブル作成
-func DBConnect() {
+func DBConnect() error {
 	// 環境変数から取得
 	dbUser := os.Getenv("MYSQL_USER")
 	dbPass := os.Getenv("MYSQL_PASSWORD")
@@ -35,18 +35,47 @@ func DBConnect() {
 	}
 
 	// テーブルがないなら自動で作成。 // xormがテーブル作成時にモデル名を複数形に、列名をスネークケースにしてくれる。  // 列情報の追加変更は反映するが列の削除は反映しない。
-	err = db.Sync2(
-		new(User),
-	)
+	exists, _ := db.IsTableExist(&User{}) // この判定で、外部キー設定済みのテーブルの再Sync2時に外部キーのインデックスを消せないエラーを防いでいる。
+	if !exists {
+		err = db.Sync2(
+			new(User),
+			new(Ouchi),
+			new(UserType),
+		)
+		if err != nil {
+			log.Fatalf("Failed to sync database: %v", err)
+			return err
+		}
+
+	}
+
+	// FK
+	err = initFK()
 	if err != nil {
-		log.Fatalf("Failed to sync database: %v", err)
+		fmt.Println(err)
+		fmt.Println("NNNNNNNNNNNNNNNNNNNNNN")
+		return err
 	}
 
 	// テスト用データ作成
-	// CreateKHogeTestData()
+	CreateUserTypeTestData()
+	CreateOuchiTestData()
+
+	return nil
 }
 
 // 接続を取得
 func DBInstance() *xorm.Engine {
 	return db // 接続を返す
+}
+
+// 外部キーを設定
+func initFK() error {
+	// User
+	err := InitUserFK()
+	if err != nil {
+		return err
+	}
+
+	return err
 }
