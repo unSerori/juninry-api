@@ -45,6 +45,10 @@ func DBConnect() error {
 			new(ClassMembership),
 			new(Notice),
 			new(NoticeReadStatus),
+			new(Subject),
+			new(TeachingMaterial),
+			new(Homework),
+			new(HomeworkSubmission),
 		)
 		if err != nil {
 			log.Fatalf("Failed to sync database: %v", err)
@@ -65,11 +69,15 @@ func DBConnect() error {
 	CreateUserTypeTestData()
 	CreateOuchiTestData()
 	CreateClassTestData()
+	CreateSubjectTestData()
+	CreateTeachingMaterialTestData()
 	// テスト用データ作成
 	CreateUserTestData()
 	CreateClassMembershipsTestData()
 	CreateNoticeTestData()
 	CreateNoticeReadStatusTestData()
+	CreateHomeworkTestData()
+	CreateHomeworkSubmissionTestData()
 
 	return nil
 }
@@ -87,7 +95,7 @@ func initFK() error {
 		return err
 	}
 	// ClassMembership
-	err = InitClassMembership()
+	err = InitClassMembershipFK()
 	if err != nil {
 		return err
 	}
@@ -98,6 +106,21 @@ func initFK() error {
 	}
 	// NoticeReadStatus
 	err = InitNoticeReadStatus()
+	if err != nil {
+		return err
+	}
+	// TeachingMaterial
+	err = InitTeachingMaterialFK()
+	if err != nil {
+		return err
+	}
+	// Homework
+	err = InitHomeworkFK()
+	if err != nil {
+		return err
+	}
+	// HomeworkSubmission
+	err = InitHomeworkSubmissionFK()
 	if err != nil {
 		return err
 	}

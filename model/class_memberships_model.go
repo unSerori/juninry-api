@@ -2,8 +2,8 @@ package model
 
 // ユーザのクラス所属中間テーブル
 type ClassMembership struct {
-	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
 	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
+	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
 }
 
 // テーブル名
@@ -12,7 +12,7 @@ func (ClassMembership) TableName() string {
 }
 
 // FK制約の追加
-func InitClassMembership() error {
+func InitClassMembershipFK() error {
 	// UserUuid
 	_, err := db.Exec("ALTER TABLE class_memberships ADD FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
 	if err != nil {

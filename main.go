@@ -5,10 +5,12 @@ import (
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/route"
+	"time"
 )
 
 // main method
 func main() {
+	fmt.Println(time.Now())
 	err := Init() // 初期化処理
 	if err != nil {
 		fmt.Println("")
