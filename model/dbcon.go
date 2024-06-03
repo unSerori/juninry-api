@@ -41,6 +41,7 @@ func DBConnect() error {
 			new(User),
 			new(Ouchi),
 			new(UserType),
+			new(Class),
 		)
 		if err != nil {
 			log.Fatalf("Failed to sync database: %v", err)
@@ -60,6 +61,7 @@ func DBConnect() error {
 	// テスト用データ作成
 	CreateUserTypeTestData()
 	CreateOuchiTestData()
+	CreateClassTestData()
 
 	return nil
 }
