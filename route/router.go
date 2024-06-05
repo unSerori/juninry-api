@@ -2,7 +2,6 @@ package route
 
 import (
 	"juninry-api/controller"
-	"juninry-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,14 +9,10 @@ import (
 func GetRouter() (*gin.Engine, error) {
 	engine := gin.Default() // エンジンを作成
 
-	// MidLog all
-	engine.Use(middleware.MidLog())
-
 	// endpoints
 	// root page
 	engine.GET("/", controller.ShowRootPage)
 	// json test
-	engine.GET("/test/json", controller.TestJson)
 
 	// endpoints group
 	// ver1グループ
@@ -26,7 +21,34 @@ func GetRouter() (*gin.Engine, error) {
 		// usersグループ
 		users := v1.Group("/users")
 		{
-			users.POST("/user", controller.RegisterUserHandler)
+			// /v1/users/register
+			users.POST("/register", controller.RegisterUserHandler)
+		}
+
+		// authグループ
+		auth := v1.Group("/auth")
+		{
+			// classグループ
+			class := auth.Group("/class")
+			{
+				// /v1/auth/class/notice
+				class.GET("/test", controller.TestJson)
+
+				// homeworkグループ
+				homework := class.Group("/homework")
+				{
+					// /v1/auth/class/homework/upcoming
+					homework.GET("/test", controller.TestJson)
+				}
+
+				// noticeグループ
+				notice := class.Group("/notice")
+				{
+					// /v1/auth/class/notice/{notice_uuid}
+					notice.GET("/:notice_uuid", controller.TestJson)
+					// コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
+				}
+			}
 		}
 	}
 
