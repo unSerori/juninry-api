@@ -17,6 +17,7 @@ func GetRouter() (*gin.Engine, error) {
 	// root page
 	engine.GET("/", controller.ShowRootPage)
 	// json test
+	engine.GET("/test/json", controller.TestJson)
 
 	// endpoints group
 	// ver1グループ
