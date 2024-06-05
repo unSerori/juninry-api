@@ -23,6 +23,12 @@ func GetRouter() (*gin.Engine, error) {
 		{
 			users.POST("/user", controller.RegisterUserHandler)
 		}
+
+		// noticesグループ
+		notices := v1.Group("/notices")
+		{
+			notices.POST("/notices",)
+		}
 	}
 
 	return engine, nil // router設定されたengineを返す。
