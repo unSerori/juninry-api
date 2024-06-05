@@ -19,6 +19,10 @@ func main() {
 	defer model.DBInstance().Close() // defer文でこの関数が終了した際に破棄する
 	logging.SuccessLog("Successful server init process.")
 
+    //TODO テスト用実運用の際は消す
+    //テストデータ挿入
+    model.CreateNoticeTestData()
+
 	// router設定されたengineを受け取る。
 	router, err := route.GetRouter()
 	if err != nil {

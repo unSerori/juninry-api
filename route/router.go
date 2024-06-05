@@ -2,7 +2,6 @@ package route
 
 import (
 	"juninry-api/controller"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +26,8 @@ func GetRouter() (*gin.Engine, error) {
 		// noticesグループ
 		notices := v1.Group("/notices")
 		{
-			notices.POST("/notices",)
+			//確認できるようにGETにしてる
+			notices.GET("/notices",controller.Get_Notices_Handler)
 		}
 	}
 
