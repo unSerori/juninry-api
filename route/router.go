@@ -2,6 +2,7 @@ package route
 
 import (
 	"juninry-api/controller"
+	"juninry-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
