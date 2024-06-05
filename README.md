@@ -80,21 +80,12 @@ SSH URL:
 
 ## エラー処理
 
-APIがエラーを返す場合、詳細なエラーメッセージが含まれます。エラーに関する情報は[サーバーエラーコード](#server-error-code)を参照してください。　　
+APIがエラーを返す場合、詳細なエラーメッセージが含まれます。~~エラーに関する情報は[サーバーエラー]を参照してください。~~
 
-## SERVER ERROR CODE
+## SERVER ERROR MESSAGE
 
-サーバーレスポンスコードとして"srvResCode"キーで数値を返す。  
-以下に意味を羅列。  
-
-- 成功関連
-  - 1000: Successful authentication.
-  - 1001: Successful user registration.
-  - 1002: Successful acquisition of user information.
-  - 1003: Successful class registration.
-
-- エラー関連
-  - 7000: Authentication unsuccessful.  
+サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。  
+サーバーレスポンスステータスコードと合わせてデバックする。
 
 ## .ENV
 
