@@ -1,0 +1,62 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "juninry-api",
+    "collectionId": "93cd3c9f-2f83-49af-9fb1-90f253357339",
+    "dateExported": "2024-06-03T00:28:17.997Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "bbfc883f-0ae8-4f8b-a583-c5811374b4be",
+            "colId": "93cd3c9f-2f83-49af-9fb1-90f253357339",
+            "containerId": "",
+            "name": "v1/users/user 1",
+            "url": "http://localhost:4561/v1/users/user",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2024-05-27T17:52:54.879Z",
+            "modified": "2024-06-02T14:40:18.016Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "    {\n      \"userName\": \"hogeta hogenaka\",\n      \"userTypeId\": 1,\n      \"mailAddress\": \"hogeta@gmail.com\",\n      \"password\": \"C@h\"\n    }",
+                "form": []
+            }
+        },
+        {
+            "_id": "83ee7968-b621-4440-85fa-b3755000c010",
+            "colId": "93cd3c9f-2f83-49af-9fb1-90f253357339",
+            "containerId": "",
+            "name": "v1/users/user 2",
+            "url": "http://localhost:4561/v1/users/user",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2024-06-02T14:39:55.268Z",
+            "modified": "2024-06-02T14:41:09.182Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "    {\n      \"userName\": \"piyota hogenaka\",\n      \"userTypeId\": 1,\n      \"mailAddress\": \"piyota@gmail.com\",\n      \"password\": \"C@p\"\n    }",
+                "form": []
+            }
+        },
+        {
+            "_id": "d77ab60d-df99-472a-ade3-f1704fc0c71f",
+            "colId": "93cd3c9f-2f83-49af-9fb1-90f253357339",
+            "containerId": "",
+            "name": "v1/users/user 3",
+            "url": "http://localhost:4561/v1/users/user",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2024-06-02T14:40:31.623Z",
+            "modified": "2024-06-02T14:45:09.105Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "    {\n      \"userName\": \"hogeta piyonaka\",\n      \"userTypeId\": 1,\n      \"mailAddress\": \"hogeta-piyo@gmail.com\",\n      \"password\": \"C@hp\"\n    }",
+                "form": []
+            }
+        }
+    ],
+    "ref": "kHn4WetgieVAldn3Cmb5GUUs28mnXS46wsEwnUSqCIOCnL4LkEeTHYKp7u-8Nd_IUCmrqtKo7_VygTOTGAZRYA"
+}
