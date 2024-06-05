@@ -9,6 +9,9 @@ import (
 func GetRouter() (*gin.Engine, error) {
 	engine := gin.Default() // エンジンを作成
 
+	// MidLog all
+	engine.Use(middleware.MidLog())
+
 	// endpoints
 	// root page
 	engine.GET("/", controller.ShowRootPage)
