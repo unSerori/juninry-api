@@ -23,6 +23,7 @@ func GetRouter() (*gin.Engine, error) {
 		{
 			// /v1/users/register
 			users.POST("/register", controller.RegisterUserHandler)
+			users.GET("/user", controller.GetUserHandler)
 		}
 
 		// authグループ
