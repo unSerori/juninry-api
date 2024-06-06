@@ -146,7 +146,6 @@ func GetUserHandler(c *gin.Context) {
 			"srvResData": gin.H{},
 		})
 		return
-	
 	}
 
 	// 成功ログ

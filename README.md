@@ -153,6 +153,39 @@ SSH URL:
       }
       ```
 
+#### ユーザー情報を取得するエンドポイント
+
+- **URL:** `/v1/users/user`
+- **メソッド:** GET
+- **説明:** idからユーザーを検索して情報を返す
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+    ＊さまざまな形式のボディ値＊
+
+- **レスポンス:**
+  - ステータスコード: ＊ステータスコード ステータス＊
+    - ボディ:
+      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
+
+      ```json
+      {
+        "srvResMsg":  "Successful user get.",
+        "srvResData": {
+          "userData": {
+            "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+            "userName": "test pupil",
+            "userTypeId": 2,
+            "mailAddress": "test-pupil@gmail.com",
+            "password": "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW",
+            "jwtUUID": "14dea318-8581-4cab-b233-995ce8e1a948",
+            "ouchiUUID": null
+          }
+        }
+      }
+      ```
+
 ### API仕様書てんぷれ
 
 #### ＊○○＊するエンドポイント
