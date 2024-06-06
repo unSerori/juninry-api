@@ -38,7 +38,7 @@ func GetRouter() (*gin.Engine, error) {
 				homework := class.Group("/homework")
 				{
 					// /v1/auth/class/homework/upcoming
-					homework.GET("/test", controller.TestJson)
+					homework.GET("/upcoming", controller.FindHomeworkHandler)
 				}
 
 				// noticeグループ

@@ -38,18 +38,17 @@ func FindHomeworkHandler(c *gin.Context) {
 		return
 	}
 
-
 	//構造体の配列をレスポンスの形に整形
 	var homeworkList []gin.H
 	for _, homework := range homeworks {
 		homeworkJSON := gin.H{
-			"taskLimit":          homework.HomeworkLimit,      	//タスクの期限
-			"startPage":          homework.StartPage,          	// 開始ページ
-			"PageCount":          homework.PageCount,          	// ページ数
-			"homeworkPosterUUID": homework.HomeworkPosterUuid, 	// 投稿者ID
-			"homeworkNote":       homework.HomeworkNote,       	// 宿題説明
+			"taskLimit":          homework.HomeworkLimit,      //タスクの期限
+			"startPage":          homework.StartPage,          // 開始ページ
+			"PageCount":          homework.PageCount,          // ページ数
+			"homeworkPosterUUID": homework.HomeworkPosterUuid, // 投稿者ID
+			"homeworkNote":       homework.HomeworkNote,       // 宿題説明
 		}
-		homeworkList = append(homeworkList, homeworkJSON)		//リストにぶちこむ
+		homeworkList = append(homeworkList, homeworkJSON) //リストにぶちこむ
 	}
 
 	fmt.Println(homeworkList)
@@ -58,8 +57,6 @@ func FindHomeworkHandler(c *gin.Context) {
 	logging.SuccessLog("Successful get homework.")
 	// レスポンス
 	c.JSON(http.StatusCreated, gin.H{
-		"srvResCode": 1001,
-		"srvResMsg":  "Successful get homework.",
 		"srvResData": homeworkList,
 	})
 
