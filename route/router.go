@@ -23,6 +23,12 @@ func GetRouter() (*gin.Engine, error) {
 		{
 			users.POST("/user", controller.RegisterUserHandler)
 		}
+
+		//homeworkグループ
+		homeworks := v1.Group("/homeworks")
+		{
+			homeworks.GET("/homework", controller.FindHomeworkHandler)
+		}
 	}
 
 	return engine, nil // router設定されたengineを返す。

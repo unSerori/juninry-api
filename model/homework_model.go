@@ -47,3 +47,17 @@ func CreateHomeworkTestData() {
 	}
 	db.Insert(homework1)
 }
+
+// teaching_material_uuidで絞り込み、課題の構造体の配列とerrorを返す
+func FindHomework(teachingMaterialUuids []string) ([]Homework, error) {
+	//Homework構造体の配列返すので定義
+	var homeworks []Homework
+
+	//uuidの配列をIN句で複数条件指定
+	err := db.In("teaching_material_uuid", teachingMaterialUuids).Find(&homeworks)
+	if err != nil {
+		return nil, err
+	}
+
+	return homeworks, nil
+}

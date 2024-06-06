@@ -41,3 +41,17 @@ func CreateClassMembershipsTestData() {
 	}
 	db.Insert(classMemberships2)
 }
+
+// user_uuidで絞り込み、所属クラスの構造体の配列とerrorを返す
+func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
+	//ClassMemberships構造体の配列を返すので定義
+	var classMemberships []ClassMembership
+
+	//uuidをWhere句で条件指定
+	err := db.Where("user_uuid = ?", userUuid).Find(&classMemberships)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+
+	return classMemberships, nil
+}
