@@ -42,9 +42,9 @@ func CreateClassMembershipsTestData() {
 	db.Insert(classMemberships2)
 }
 
-// user_uuidで絞り込み、所属クラスの構造体の配列とerrorを返す
+// user_uuidで絞り込み、所属構造体のスライスとerrorを返す
 func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
-	//ClassMemberships構造体の配列を返すので定義
+	//ClassMemberships構造体のスライスを返すので定義
 	var classMemberships []ClassMembership
 
 	//uuidをWhere句で条件指定
@@ -53,5 +53,6 @@ func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
 		return nil, err
 	}
 
+	//できたら返す
 	return classMemberships, nil
 }

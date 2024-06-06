@@ -7,8 +7,8 @@ import (
 
 // 課題テーブル
 type Homework struct { // typeで型の定義, structは構造体
-	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"taskUUID"`                   // タスクのID
-	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"taskLimit"`               // タスクの期限
+	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"homeworkUUID"`                   // タスクのID
+	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"homeworkLimit"`               // タスクの期限
 	TeachingMaterialUuid string    `xorm:"varchar(36) not null" json:"teachingMaterialUUID"` // 教材ID
 	StartPage            int       `json:"startPage"`                                        // 開始ページ
 	PageCount            int       `xorm:"not null" json:"pageCount"`                        // ページ数
@@ -18,7 +18,7 @@ type Homework struct { // typeで型の定義, structは構造体
 
 // テーブル名
 func (Homework) TableName() string {
-	return "homework"
+	return "homeworks"
 }
 
 // FK制約の追加
@@ -48,9 +48,9 @@ func CreateHomeworkTestData() {
 	db.Insert(homework1)
 }
 
-// teaching_material_uuidで絞り込み、課題の構造体の配列とerrorを返す
+// teaching_material_uuidで絞り込み、課題構造体のスライスとerrorを返す
 func FindHomework(teachingMaterialUuids []string) ([]Homework, error) {
-	//Homework構造体の配列返すので定義
+	//Homework構造体のスライス返すので定義
 	var homeworks []Homework
 
 	//uuidの配列をIN句で複数条件指定
@@ -59,5 +59,6 @@ func FindHomework(teachingMaterialUuids []string) ([]Homework, error) {
 		return nil, err
 	}
 
+	//できたら返す
 	return homeworks, nil
 }

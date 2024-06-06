@@ -49,9 +49,9 @@ func CreateTeachingMaterialTestData() {
 	db.Insert(tm2)
 }
 
-// class_uuidで絞り込み、教材の構造体の配列とerrorを返す
+// class_uuidで絞り込み、教材構造体の配列とerrorを返す
 func FindTeachingMaterial(ClassUuids []string) ([]TeachingMaterial, error) {
-	//TeachingMaterial構造体の配列を返すので定義
+	//TeachingMaterial構造体のスライスを返すので定義
 	var teachingMaterials []TeachingMaterial
 
 	//uuidの配列をIN句で複数条件指定
@@ -60,5 +60,6 @@ func FindTeachingMaterial(ClassUuids []string) ([]TeachingMaterial, error) {
 		return nil, err
 	}
 
+	//できたら返す
 	return teachingMaterials, nil
 }
