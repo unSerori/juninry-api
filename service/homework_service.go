@@ -36,7 +36,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 		return nil, err
 	}
 
-	//一旦期限をキー、バリューを課題データのマップにする
+	//期限をキー、バリューを課題データのマップにする
 	transformedDataMap := make(map[time.Time][]HomeworkData)
 	for _, userHomework := range userHomeworkList {
 		homeworkData := HomeworkData{

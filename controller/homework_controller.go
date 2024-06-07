@@ -34,7 +34,10 @@ func FindHomeworkHandler(c *gin.Context) {
 	homeworkList, err := homeworkService.FindHomework(id)
 	if err != nil { //エラーハンドル
 		//TODO: エラーのハンドリングがカス
-		//DB関連のエラー
+		// エラーログ
+		logging.ErrorLog("SQL query failed.", err)
+		//レスポンス
+		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
 

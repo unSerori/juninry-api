@@ -26,12 +26,12 @@ func FindUserHomework(userUuid string) ([]UserHomework, error) {
 	//クソデカ構造体をとるすごいやつだよ
 	err := db.Table("homeworks").
 		Join("LEFT", "teaching_materials", "homeworks.teaching_material_uuid = teaching_materials.teaching_material_uuid").
-		// Join("LEFT", "users", "homeworks.homework_poster_uuid = users.user_uuid").	ユーザー名いらない子
+		Where("homework_limit > ?", "now()").
 		Join("LEFT", "subjects", "teaching_materials.subject_id = subjects.subject_id").
 		Join("LEFT", "class_memberships", "teaching_materials.class_uuid = class_memberships.class_uuid").
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
 		Join("LEFT", "homework_submissions", "homeworks.homework_uuid = homework_submissions.homework_uuid AND homework_submissions.user_uuid = ?", userUuid).
-		Where("class_memberships.user_uuid = ?", userUuid). //TODO: 絞り込み条件にNOWを追加すると提出期限がまだのもので絞り込める
+		Where("class_memberships.user_uuid = ?", userUuid).
 		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_flag").
 		OrderBy("homework_limit, teaching_materials.class_uuid, submit_flag").
 		Find(&userHomeworkList)
