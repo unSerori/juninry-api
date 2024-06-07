@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"fmt"
+	
 	"juninry-api/logging"
 	"juninry-api/service"
 	"net/http"
@@ -32,26 +32,27 @@ func FindHomeworkHandler(c *gin.Context) {
 
 	//TODO: エラーのハンドリングがカス
 	//問い合わせ処理と失敗レスポンス
-	homeworks, err := homeworkService.FindHomework(id)
+	// homeworks, err := homeworkService.FindHomework(id)
+	homeworkList, err := homeworkService.FindHomework(id)
 	if err != nil { //エラーハンドル
 		//DB関連のエラー
 		return
 	}
 
 	//構造体の配列をレスポンスの形に整形
-	var homeworkList []gin.H
-	for _, homework := range homeworks {
-		homeworkJSON := gin.H{
-			"taskLimit":          homework.HomeworkLimit,      //タスクの期限
-			"startPage":          homework.StartPage,          // 開始ページ
-			"PageCount":          homework.PageCount,          // ページ数
-			"homeworkPosterUUID": homework.HomeworkPosterUuid, // 投稿者ID
-			"homeworkNote":       homework.HomeworkNote,       // 宿題説明
-		}
-		homeworkList = append(homeworkList, homeworkJSON) //リストにぶちこむ
-	}
+	// var homeworkList []gin.H
+	// for _, homework := range homeworks {
+	// 	homeworkJSON := gin.H{
+	// 		"taskLimit":          homework.HomeworkLimit,      //タスクの期限
+	// 		"startPage":          homework.StartPage,          // 開始ページ
+	// 		"PageCount":          homework.PageCount,          // ページ数
+	// 		"homeworkPosterUUID": homework.HomeworkPosterUuid, // 投稿者ID
+	// 		"homeworkNote":       homework.HomeworkNote,       // 宿題説明
+	// 	}
+	// 	homeworkList = append(homeworkList, homeworkJSON) //リストにぶちこむ
+	// }
 
-	fmt.Println(homeworkList)
+
 	// 処理後の成功
 	// 成功ログ
 	logging.SuccessLog("Successful get homework.")

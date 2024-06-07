@@ -7,8 +7,8 @@ import (
 
 // 課題テーブル
 type Homework struct { // typeで型の定義, structは構造体
-	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"homeworkUUID"`                   // タスクのID
-	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"homeworkLimit"`               // タスクの期限
+	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"homeworkUUID"`               // タスクのID
+	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"homeworkLimit"`           // タスクの期限
 	TeachingMaterialUuid string    `xorm:"varchar(36) not null" json:"teachingMaterialUUID"` // 教材ID
 	StartPage            int       `json:"startPage"`                                        // 開始ページ
 	PageCount            int       `xorm:"not null" json:"pageCount"`                        // ページ数
@@ -24,7 +24,7 @@ func (Homework) TableName() string {
 // FK制約の追加
 func InitHomeworkFK() error {
 	// HomeworkPosterUuid
-	_, err := db.Exec("ALTER TABLE homework ADD FOREIGN KEY (homework_poster_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
+	_, err := db.Exec("ALTER TABLE homeworks ADD FOREIGN KEY (homework_poster_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
 	if err != nil {
 		return err
 	}
@@ -48,17 +48,18 @@ func CreateHomeworkTestData() {
 	db.Insert(homework1)
 }
 
-// teaching_material_uuidで絞り込み、課題構造体のスライスとerrorを返す
-func FindHomework(teachingMaterialUuids []string) ([]Homework, error) {
-	//Homework構造体のスライス返すので定義
-	var homeworks []Homework
+//　用済みメソッド
+// // teaching_material_uuidで絞り込み、課題構造体のスライスとerrorを返す
+// func FindHomework(teachingMaterialUuids []string) ([]Homework, error) {
+// 	//Homework構造体のスライス返すので定義
+// 	var homeworks []Homework
 
-	//uuidの配列をIN句で複数条件指定
-	err := db.In("teaching_material_uuid", teachingMaterialUuids).Find(&homeworks)
-	if err != nil {
-		return nil, err
-	}
+// 	//uuidの配列をIN句で複数条件指定
+// 	err := db.In("teaching_material_uuid", teachingMaterialUuids).Find(&homeworks)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	//できたら返す
-	return homeworks, nil
-}
+// 	//できたら返す
+// 	return homeworks, nil
+// }
