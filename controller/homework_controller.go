@@ -1,7 +1,6 @@
 package controller
 
 import (
-	
 	"juninry-api/logging"
 	"juninry-api/service"
 	"net/http"
@@ -13,6 +12,7 @@ var homeworkService = service.HomeworkService{}
 
 // 課題全件取得
 func FindHomeworkHandler(c *gin.Context) {
+	// TODO: authの処理適用
 	// ユーザーを特定する
 	// id, exists := c.Get("id")
 	// if !exists { // idがcに保存されていない。
@@ -30,35 +30,19 @@ func FindHomeworkHandler(c *gin.Context) {
 	//テスト用userUuid割り当て
 	id := "3cac1684-c1e0-47ae-92fd-6d7959759224"
 
-	//TODO: エラーのハンドリングがカス
 	//問い合わせ処理と失敗レスポンス
-	// homeworks, err := homeworkService.FindHomework(id)
 	homeworkList, err := homeworkService.FindHomework(id)
 	if err != nil { //エラーハンドル
+		//TODO: エラーのハンドリングがカス
 		//DB関連のエラー
 		return
 	}
-
-	//構造体の配列をレスポンスの形に整形
-	// var homeworkList []gin.H
-	// for _, homework := range homeworks {
-	// 	homeworkJSON := gin.H{
-	// 		"taskLimit":          homework.HomeworkLimit,      //タスクの期限
-	// 		"startPage":          homework.StartPage,          // 開始ページ
-	// 		"PageCount":          homework.PageCount,          // ページ数
-	// 		"homeworkPosterUUID": homework.HomeworkPosterUuid, // 投稿者ID
-	// 		"homeworkNote":       homework.HomeworkNote,       // 宿題説明
-	// 	}
-	// 	homeworkList = append(homeworkList, homeworkJSON) //リストにぶちこむ
-	// }
-
 
 	// 処理後の成功
 	// 成功ログ
 	logging.SuccessLog("Successful get homework.")
 	// レスポンス
-	c.JSON(http.StatusCreated, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"srvResData": homeworkList,
 	})
-
 }
