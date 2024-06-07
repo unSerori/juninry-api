@@ -95,19 +95,19 @@ SSH URL:
         {
           "srvResData": [
             {
-              "homework_limit": "0001-01-01T00:00:00Z",
-              "homework_data": [
+              "homeworkLimit": "0001-01-01T00:00:00Z",
+              "homeworkData": [
                 {
-                  "homework_uuid": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
-                  "start_page": 24,
-                  "page_count": 2,
-                  "homework_note": "がんばってくださ～い＾＾",
-                  "teaching_material_name": "漢字ドリル3",
-                  "subject_id": 1,
-                  "subject_name": "国語",
-                  "teaching_material_image_uuid": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
-                  "class_name": "3-2 ふたば学級",
-                  "submit_flag": 1
+                  "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
+                  "startPage": 24,
+                  "pageCount": 2,
+                  "homeworkNote": "がんばってくださ～い＾＾",
+                  "teachingMaterialName": "漢字ドリル3",
+                  "subjectId": 1,
+                  "subjectName": "国語",
+                  "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
+                  "className": "3-2 ふたば学級",
+                  "submitFlag": 1
                 },,,
               ]
             },,,

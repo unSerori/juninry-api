@@ -6,19 +6,20 @@ import (
 
 // 実質Viewみたいな構造体
 type UserHomework struct {
-	HomeworkLimit             time.Time `xorm:"homework_limit"`               // 提出期限
-	HomeworkUuid              string    `xorm:"homework_uuid"`                // 課題ID
-	StartPage                 int       `xorm:"start_page"`                   // 開始ページ
-	PageCount                 int       `xorm:"page_count"`                   // ページ数
-	HomeworkNote              string    `xorm:"homework_note"`                // 課題の説明
-	TeachingMaterialName      string    `xorm:"teaching_material_name"`       // 教材名
-	SubjectId                 int       `json:"subjectID"`                    // 教科ID
-	SubjectName               string    `json:"subjectName"`                  // 教科名
-	TeachingMaterialImageUuid string    `xorm:"teaching_material_image_uuid"` // 画像ID どういう扱いになるのかな
-	ClassName                 string    `xorm:"class_name"`                   // クラス名
-	SubmitFlag                int       `xorm:"submit_flag"`
+	HomeworkLimit             time.Time // 提出期限
+	HomeworkUuid              string    // 課題ID
+	StartPage                 int       // 開始ページ
+	PageCount                 int       // ページ数
+	HomeworkNote              string    // 課題の説明
+	TeachingMaterialName      string    // 教材名
+	SubjectId                 int       // 教科ID
+	SubjectName               string    // 教科名
+	TeachingMaterialImageUuid string    // 画像ID どういう扱いになるのかな
+	ClassName                 string    // クラス名
+	SubmitFlag                int
 }
 
+//userUuidから課題データを取得、取得できなければエラーを返す
 func FindUserHomework(userUuid string) ([]UserHomework, error) {
 	//クソデカ構造体のスライスを定義
 	var userHomeworkList []UserHomework

@@ -9,22 +9,22 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homework_uuid"`                // 課題ID
-	StartPage                 int    `json:"start_page"`                   // 開始ページ
-	PageCount                 int    `json:"page_count"`                   // ページ数
-	HomeworkNote              string `json:"homework_note"`                // 課題の説明
-	TeachingMaterialName      string `json:"teaching_material_name"`       // 教材名
-	SubjectId                 int    `json:"subject_id"`                   // 教科ID
-	SubjectName               string `json:"subject_name"`                 // 教科名
-	TeachingMaterialImageUuid string `json:"teaching_material_image_uuid"` // 画像ID どういう扱いになるのかな
-	ClassName                 string `json:"class_name"`                   // クラス名
-	SubmitFlag                int    `json:"submit_flag"`                  // 提出フラグ 1 提出 0 未提出
+	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID UUIDを大文字というきもち
+	StartPage                 int    // 開始ページ
+	PageCount                 int    // ページ数
+	HomeworkNote              string // 課題の説明
+	TeachingMaterialName      string // 教材名
+	SubjectId                 int    // 教科ID
+	SubjectName               string // 教科名
+	TeachingMaterialImageUuid string `json:"TeachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな UUIDを大文字というきもち
+	ClassName                 string // クラス名
+	SubmitFlag                int    // 提出フラグ 1 提出 0 未提出
 }
 
 // 締め切りごとに課題データをまとめた構造体
 type TransformedData struct {
-	HomeworkLimit time.Time      `json:"homework_limit"` //提出期限
-	HomeworkData  []HomeworkData `json:"homework_data"`  //課題データのスライス
+	HomeworkLimit time.Time      `json:"homeworkLimit"` //提出期限
+	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
 }
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
