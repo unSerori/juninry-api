@@ -2,6 +2,7 @@ package route
 
 import (
 	"juninry-api/controller"
+	"juninry-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,8 +27,12 @@ func GetRouter() (*gin.Engine, error) {
 		}
 
 		// authグループ
-		auth := v1.Group("/auth")
+		auth := v1.Group("/auth", middleware.MidLog())
+		auth.Use(middleware.MidAuthToken()) // 認証ミドルウェア適用
 		{
+			// /v1/auth/test/cfmreq
+			auth.GET("/test/cfmreq", controller.CfmReq)
+
 			// classグループ
 			class := auth.Group("/class")
 			{
@@ -39,6 +44,7 @@ func GetRouter() (*gin.Engine, error) {
 				{
 					// /v1/auth/class/homework/upcoming
 					homework.GET("/upcoming", controller.FindHomeworkHandler)
+					homework.GET("/test", controller.CfmReq)
 				}
 
 				// noticeグループ
