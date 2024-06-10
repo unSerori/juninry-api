@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func routing(engine *gin.Engine) *gin.Engine {
+func routing(engine *gin.Engine) {
 	// endpoints
 	// root page
 	engine.GET("/", controller.ShowRootPage)
@@ -61,17 +61,27 @@ func routing(engine *gin.Engine) *gin.Engine {
 
 }
 
-// エンジンを作成して返す
-func SetupRouter() (*gin.Engine, error) {
-	engine := gin.Default() // エンジンを作成
-
-	routing()
-
+// ファイルを設定
+func loadingStaticFile(engine *gin.Engine) {
 	// テンプレートと静的ファイルを読み込む
 	engine.LoadHTMLGlob("view/views/*.html")
 	engine.Static("/styles", "./view/views/styles") // クライアントがアクセスするURL, サーバ上のパス
 	engine.Static("/scripts", "./view/views/scripts")
 	logging.SuccessLog("Routing completed, start the server.")
 
-	return engine, nil // router設定されたengineを返す。
+}
+
+// エンジンを作成して返す
+func SetupRouter() (*gin.Engine, error) {
+	// エンジンを作成
+	engine := gin.Default()
+
+	// ルーティング
+	routing(engine)
+
+	// 静的ファイル設定
+	loadingStaticFile(engine)
+
+	// router設定されたengineを返す。
+	return engine, nil
 }
