@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"juninry-api/auth"
 	"juninry-api/logging"
 	"juninry-api/model"
 
@@ -35,11 +36,13 @@ func Init() error {
 		logging.ErrorLog("Failed migration.", err)
 		return err
 	}
-
 	// 接続を取得
 	db := model.DBInstance()
 	db.ShowSQL(true)       // SQL文の表示
 	db.SetMaxOpenConns(10) // 接続数
+
+	// 認証関連の初期化
+	auth.InitAuth()
 
 	return nil
 }

@@ -14,15 +14,47 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// ユーザーidで認証トークンを生成
-func GenerateToken(userUuid string) (string, error) {
-	// JWTのさまざまな情報を設定
-	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")                         // 環境変数からシークレットキー(署名鍵)を取得
-	tokenLifeTime, err := strconv.Atoi(os.Getenv("JWT_TOKEN_LIFETIME")) // トークンの有効期限
+var (
+	jwtSecretKey     string // シークレットキー
+	jwtTokenLifeTime int    // 有効期限
+)
+
+// 認証関連の初期化
+func InitAuth() error {
+	// .envから取得されたenvJWTのさまざまな情報を読み込む
+	secretKey, tokenLifeTime, err := loadJwtEnvFile()
 	if err != nil {
-		return "", err
+		return err
 	}
 
+	// 変数に設定
+	setJwtConf(secretKey, tokenLifeTime)
+
+	return nil
+}
+
+// .envから取得されたenvJWTのさまざまな情報を読み込む
+func loadJwtEnvFile() (string, int, error) {
+	secretKey := os.Getenv("JWT_SECRET_KEY") // 環境変数からシークレットキー(署名鍵)を取得
+	if jwtSecretKey == "" {
+		return "", 0, errors.New("JWT_SECRET_KEY is not set")
+	}
+	tokenLifeTime, err := strconv.Atoi(os.Getenv("JWT_TOKEN_LIFETIME")) // トークンの有効期限
+	if err != nil {
+		return "", 0, err
+	}
+
+	return secretKey, tokenLifeTime, nil
+}
+
+// envから取得したデータを変数に設定
+func setJwtConf(secretKey string, tokenLifeTime int) {
+	jwtSecretKey = secretKey
+	jwtTokenLifeTime = tokenLifeTime
+}
+
+// ユーザーidで認証トークンを生成
+func GenerateToken(userUuid string) (string, error) {
 	// uuidを作成し、
 	newJti, err := uuid.NewRandom() // 新しいuuidの生成
 	if err != nil {
@@ -37,7 +69,7 @@ func GenerateToken(userUuid string) (string, error) {
 	claims := jwt.MapClaims{
 		"id":  userUuid,        // user_uuid  // クレーム内は1単語のみとしている
 		"jti": newJti.String(), // new jti_uuid
-		"exp": time.Now().Add(time.Second * time.Duration(tokenLifeTime)).Unix(),
+		"exp": time.Now().Add(time.Second * time.Duration(jwtTokenLifeTime)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)   // トークン(JWTを表す構造体)作成
@@ -64,7 +96,7 @@ func ParseToken(tokenString string) (*jwt.Token, string, error) {
 			logging.ErrorLog(fmt.Sprintf("Unexpected signature method: %v.", token.Header["alg"]), nil)
 			return nil, fmt.Errorf("unexpected signature method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil // 署名が正しければJWT_SECRET_KEYをバイト配列にして返す
+		return []byte(jwtSecretKey), nil // 署名が正しければJWT_SECRET_KEYをバイト配列にして返す
 	})
 	if err != nil {
 		return nil, "", err
