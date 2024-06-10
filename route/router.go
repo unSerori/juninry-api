@@ -19,10 +19,13 @@ func GetRouter() (*gin.Engine, error) {
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
+		// /v1/test
+		v1.GET("test", controller.TestJson)
+
 		// usersグループ
 		users := v1.Group("/users")
 		{
-			// /v1/users/register
+			// ユーザー新規登録 /v1/users/register
 			users.POST("/register", controller.RegisterUserHandler)
 		}
 
@@ -33,26 +36,26 @@ func GetRouter() (*gin.Engine, error) {
 			// /v1/auth/test/cfmreq
 			auth.GET("/test/cfmreq", controller.CfmReq)
 
-			// classグループ
-			class := auth.Group("/class")
+			// usersグループ
+			users := auth.Group("/users")
 			{
-				// /v1/auth/class/notice
-				class.GET("/test", controller.TestJson)
-
 				// homeworkグループ
-				homework := class.Group("/homework")
+				homework := users.Group("/homework")
 				{
-					// /v1/auth/class/homework/upcoming
+					// /v1/auth/users/homework/upcoming
 					homework.GET("/test", controller.CfmReq)
 				}
 
 				// noticeグループ
-				notice := class.Group("/notice")
+				notice := users.Group("/notice")
 				{
-					// /v1/auth/class/notice/{notice_uuid}
-					notice.GET("/:notice_uuid", controller.TestJson)
-					// コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
+					// /v1/auth/users/notice/notices
+					notice.GET("/notices", controller.CfmReq)
+
+					// /v1/auth/users/notice/{notice_uuid}
+					notice.GET("/:notice_uuid", controller.TestJson) // おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 				}
+
 			}
 		}
 	}
