@@ -21,7 +21,7 @@ func Init() error {
 	// .envから定数をプロセスの環境変数にロード
 	err = godotenv.Load(".env") // エラーを格納
 	if err != nil {             // エラーがあったら
-		logging.ErrorLog("Error loading .env file", err)
+		logging.ErrorLog("Error loading .env file.", err)
 		return err
 	}
 
