@@ -11,8 +11,8 @@ import (
 
 func Init() error {
 	// ログ設定を初期化
-	err := logging.SetupLogging() // セットアップ
-	if err != nil {               // エラーチェック
+	err := logging.InitLogging() // セットアップ
+	if err != nil {              // エラーチェック
 		fmt.Printf("error set up logging: %v\n", err) // ログ関連のエラーなのでログは出力しない
 		panic("error set up logging.")
 	}

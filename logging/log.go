@@ -2,8 +2,14 @@ package logging
 
 import (
 	"log"
+	"os"
 	"time"
 )
+
+// ログ初期設定側後にリソースを開放するために実態を返す
+func LogFile() *os.File {
+	return logFile // ログファイルを返す
+}
 
 // 成功時のログをログファイルに残す
 func SuccessLog(successName string) {

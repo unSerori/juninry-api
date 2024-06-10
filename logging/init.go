@@ -9,23 +9,32 @@ import (
 
 var logFile *os.File // ログファイル
 
-// ログ初期設定側後にリソースを開放するために実態を返す
-func LogFile() *os.File {
-	return logFile // ログファイルを返す
-}
-
-// ログファイル出力のセットアップ
-func SetupLogging() error {
-	// ログファイルを作成
+// ログファイルを作成
+func openLogFile() error {
 	var err error
 	logFile, err = os.OpenFile("./logging/server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil { // エラーチェック
 		return fmt.Errorf("error opening file: %v", err) // エラーの場合
 	}
+	return nil
+}
 
-	// ログの出力先をファイルにも。
+// 出力先変更
+func SetupLogOutput() {
 	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	log.Printf("Set up logging.\n\n")
+}
+
+// ログファイル出力のセットアップ
+func InitLogging() error {
+	// ログファイルを作成
+	err := openLogFile()
+	if err != nil {
+		return err
+	}
+
+	// ログの出力先をファイルにも。
+	SetupLogOutput()
 
 	return nil // ファイルを返す
 }
