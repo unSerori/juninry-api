@@ -12,7 +12,7 @@ var (
 )
 
 // .envから取得されたenvJWTのさまざまな情報を読み込む
-func loadJwtEnvFile() (string, int, error) {
+func loadEnvJwt() (string, int, error) {
 	secretKey := os.Getenv("JWT_SECRET_KEY") // 環境変数からシークレットキー(署名鍵)を取得
 	if jwtSecretKey == "" {
 		return "", 0, errors.New("JWT_SECRET_KEY is not set")
@@ -34,7 +34,7 @@ func setJwtConf(secretKey string, tokenLifeTime int) {
 // 認証関連の初期化
 func InitAuth() error {
 	// .envから取得されたenvJWTのさまざまな情報を読み込む
-	secretKey, tokenLifeTime, err := loadJwtEnvFile()
+	secretKey, tokenLifeTime, err := loadEnvJwt()
 	if err != nil {
 		return err
 	}
