@@ -42,7 +42,11 @@ func Init() error {
 	db.SetMaxOpenConns(10) // 接続数
 
 	// 認証関連の初期化
-	auth.InitAuth()
+	err = auth.InitAuth()
+	if err != nil {
+		logging.ErrorLog("Failed auth init.", err)
+		return err
+	}
 
 	return nil
 }
