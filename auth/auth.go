@@ -5,53 +5,12 @@ import (
 	"fmt"
 	"juninry-api/logging"
 	"juninry-api/model"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
-
-var (
-	jwtSecretKey     string // シークレットキー
-	jwtTokenLifeTime int    // 有効期限
-)
-
-// 認証関連の初期化
-func InitAuth() error {
-	// .envから取得されたenvJWTのさまざまな情報を読み込む
-	secretKey, tokenLifeTime, err := loadJwtEnvFile()
-	if err != nil {
-		return err
-	}
-
-	// 変数に設定
-	setJwtConf(secretKey, tokenLifeTime)
-
-	return nil
-}
-
-// .envから取得されたenvJWTのさまざまな情報を読み込む
-func loadJwtEnvFile() (string, int, error) {
-	secretKey := os.Getenv("JWT_SECRET_KEY") // 環境変数からシークレットキー(署名鍵)を取得
-	if jwtSecretKey == "" {
-		return "", 0, errors.New("JWT_SECRET_KEY is not set")
-	}
-	tokenLifeTime, err := strconv.Atoi(os.Getenv("JWT_TOKEN_LIFETIME")) // トークンの有効期限
-	if err != nil {
-		return "", 0, err
-	}
-
-	return secretKey, tokenLifeTime, nil
-}
-
-// envから取得したデータを変数に設定
-func setJwtConf(secretKey string, tokenLifeTime int) {
-	jwtSecretKey = secretKey
-	jwtTokenLifeTime = tokenLifeTime
-}
 
 // ユーザーidで認証トークンを生成
 func GenerateToken(userUuid string) (string, error) {
