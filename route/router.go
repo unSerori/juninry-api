@@ -9,6 +9,9 @@ import (
 )
 
 func routing(engine *gin.Engine) {
+	// MidLog all
+	engine.Use(middleware.LoggingMid())
+
 	// endpoints
 	// root page
 	engine.GET("/", controller.ShowRootPage)
@@ -30,8 +33,7 @@ func routing(engine *gin.Engine) {
 		}
 
 		// authグループ
-		auth := v1.Group("/auth", middleware.MidLog())
-		auth.Use(middleware.MidAuthToken()) // 認証ミドルウェア適用
+		auth := v1.Group("/auth", middleware.MidAuthToken()) // 認証ミドルウェア適用
 		{
 			// /v1/auth/test/cfmreq
 			auth.GET("/test/cfmreq", controller.CfmReq)

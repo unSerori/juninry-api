@@ -11,7 +11,7 @@ import (
 )
 
 // ロギング
-func MidLog() gin.HandlerFunc {
+func LoggingMid() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// リクエストを受け取った時のログ
 		log.Printf("Received request.\n")                        // リクエストの受理ログ
