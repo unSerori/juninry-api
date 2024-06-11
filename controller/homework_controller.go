@@ -18,10 +18,10 @@ func FindHomeworkHandler(c *gin.Context) {
 		// エラーログ
 		logging.ErrorLog("The id is not stored.", nil)
 		// レスポンス
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"srvResCode": 7013,                    // コード
-			"srvResMsg":  "The id is not stored.", // メッセージ
-			"srvResData": gin.H{},                 // データ
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
 		})
 		return
 	}
@@ -32,7 +32,11 @@ func FindHomeworkHandler(c *gin.Context) {
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)
 		//レスポンス
-		c.JSON(http.StatusBadRequest, gin.H{})
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
 		return
 	}
 
@@ -40,7 +44,9 @@ func FindHomeworkHandler(c *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful get homework list.")
 	// レスポンス
-	c.JSON(http.StatusOK, gin.H{
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": homeworkList,
 	})
 }
