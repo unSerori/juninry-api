@@ -200,7 +200,7 @@ MYSQL_HOST=ログイン先のDBホスト名。dockerだとサービス名。
 MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
-TOKEN_LIFETIME=JWTトークンの有効期限
+JWT_TOKEN_LIFETIME=JWTトークンの有効期限
 ```
 
 ## 開発者
