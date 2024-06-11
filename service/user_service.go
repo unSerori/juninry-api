@@ -40,3 +40,15 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 
 	return token, nil
 }
+
+// ユーザ情報取得
+func (s *UserService) GetUser(useruuid string) (model.User, error) {
+
+	// useridでユーザ情報を取得
+	user, err := model.GetUser(useruuid)
+	if err != nil {
+		return user, err
+	}
+
+	return user,err
+}

@@ -28,6 +28,8 @@ func routing(engine *gin.Engine) {
 		// usersグループ
 		users := v1.Group("/users")
 		{
+			users.GET("/user", controller.GetUserHandler)
+      
 			// ユーザー新規登録
 			users.POST("/register", controller.RegisterUserHandler) // /v1/users/register
 		}
