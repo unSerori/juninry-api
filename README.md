@@ -71,7 +71,7 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "Successful user registration.",
+        "srvResMsg":  "Created",
         "srvResData": {
           "authenticationToken": "token@h",
         },
@@ -80,7 +80,7 @@ SSH URL:
 
 #### クラスの課題情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/homework/upcoming`
+- **URL:** `/v1/auth/users/homework/upcoming`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスの期限が先のものを取得
 - **リクエスト:**
@@ -96,7 +96,7 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
         
         },
@@ -105,7 +105,7 @@ SSH URL:
 
 #### クラスのおてがみ情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/notice`
+- **URL:** `/v1/auth/users/notice/notices`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスのおてがみ情報一覧取得
 - **リクエスト:**
@@ -121,7 +121,7 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
         
         },
@@ -130,7 +130,7 @@ SSH URL:
 
 #### おてがみの詳細情報を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/notice/{notice_uuid}`
+- **URL:** `/v1/auth/users/notice/{notice_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
@@ -146,7 +146,7 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
         
         },
@@ -200,13 +200,13 @@ SSH URL:
     ＊さまざまな形式のボディ値＊
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
     - ボディ:
       ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
         
         },

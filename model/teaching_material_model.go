@@ -47,4 +47,12 @@ func CreateTeachingMaterialTestData() {
 		ClassUuid:                 "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
 	}
 	db.Insert(tm2)
+	tm3 := &TeachingMaterial{
+		TeachingMaterialUuid:      "22b78a9d-cfc2-4f0e-bb2f-19002dd259f3",
+		TeachingMaterialName:      "リピート2",
+		SubjectId:                 4,
+		TeachingMaterialImageUuid: "4391c3e9-0151-45e8-ae70-d20879dacc95",
+		ClassUuid:                 "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+	}
+	db.Insert(tm3)
 }
