@@ -72,3 +72,34 @@ func SaveJti(userUuid string, jti string) error {
 
 	return nil
 }
+
+// ユーザー情報の取得
+// user_uuidを受け取り、usersテーブルから該当するレコードを取得し、構造体にマッピングして返す
+func GetUser(userUuid string) (User, error) {
+	var user User
+	_, err := db.Where("user_uuid = ?", userUuid).Get(&user)
+	return user, err
+}
+
+// idが存在するか確かめる
+func CfmId(userUuid string) error {
+	var user User // 取得したデータをマッピングする構造体
+	_, err := db.Where("user_uuid = ?", userUuid).Get(&user)
+	if err != nil {
+		return err
+	}
+	return nil // エラーなければnilが返る
+}
+
+// ユーザのuuidからjtiを取得
+func GetJtiById(userUuid string) (string, error) {
+	var user User // 取得したデータをマッピングする構造体
+
+	// 該当ユーザの行を取得
+	_, err := db.Where("user_uuid = ?", userUuid).Get(&user)
+	if err != nil {
+		return "", err
+	}
+
+	return user.JtiUuid, nil
+}

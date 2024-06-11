@@ -20,16 +20,11 @@ func main() {
 	logging.SuccessLog("Successful server init process.")
 
 	// router設定されたengineを受け取る。
-	router, err := route.GetRouter()
+	router, err := route.SetupRouter()
 	if err != nil {
 		logging.ErrorLog("Couldnt receive router engine.", err) // エラー内容を出力し早期リターン
 		return
 	}
-	// テンプレートと静的ファイルを読み込む
-	router.LoadHTMLGlob("view/views/*.html")
-	router.Static("/styles", "./view/views/styles") // クライアントがアクセスするURL, サーバ上のパス
-	router.Static("/scripts", "./view/views/scripts")
-	logging.SuccessLog("Routing completed, start the server.")
 
 	// 鯖起動
 	router.Run(":4561")
