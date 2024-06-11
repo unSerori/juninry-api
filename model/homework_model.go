@@ -7,8 +7,8 @@ import (
 
 // 課題テーブル
 type Homework struct { // typeで型の定義, structは構造体
-	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"taskUUID"`                   // タスクのID
-	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"taskLimit"`               // タスクの期限
+	HomeworkUuid         string    `xorm:"varchar(36) pk" json:"homeworkUUID"`               // タスクのID
+	HomeworkLimit        time.Time `xorm:"DATETIME not null" json:"homeworkLimit"`           // タスクの期限
 	TeachingMaterialUuid string    `xorm:"varchar(36) not null" json:"teachingMaterialUUID"` // 教材ID
 	StartPage            int       `json:"startPage"`                                        // 開始ページ
 	PageCount            int       `xorm:"not null" json:"pageCount"`                        // ページ数
@@ -18,13 +18,13 @@ type Homework struct { // typeで型の定義, structは構造体
 
 // テーブル名
 func (Homework) TableName() string {
-	return "homework"
+	return "homeworks"
 }
 
 // FK制約の追加
 func InitHomeworkFK() error {
 	// HomeworkPosterUuid
-	_, err := db.Exec("ALTER TABLE homework ADD FOREIGN KEY (homework_poster_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
+	_, err := db.Exec("ALTER TABLE homeworks ADD FOREIGN KEY (homework_poster_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
 	if err != nil {
 		return err
 	}
@@ -46,4 +46,25 @@ func CreateHomeworkTestData() {
 		HomeworkNote:         "がんばってくださ～い＾＾",
 	}
 	db.Insert(homework1)
+	homework2 := &Homework{
+		HomeworkUuid:         "K2079e71-3be5-4b4d-a0df-1f05859a7104",
+		HomeworkLimit:        parsedTime,
+		TeachingMaterialUuid: "978f9835-5a16-4ac0-8581-7af8fac06b4e",
+		StartPage:            30,
+		PageCount:            5,
+		HomeworkPosterUuid:   "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		HomeworkNote:         "2こめ",
+	}
+	db.Insert(homework2)
+	homework3 := &Homework{
+		HomeworkUuid:         "K3079e71-3be5-4b4d-a0df-1f05859a7104",
+		HomeworkLimit:        parsedTime,
+		TeachingMaterialUuid: "978f9835-5a16-4ac0-8581-7af8fac06b4e",
+		StartPage:            25,
+		PageCount:            1,
+		HomeworkPosterUuid:   "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		HomeworkNote:         "3こめ",
+	}
+	db.Insert(homework3)
 }
+

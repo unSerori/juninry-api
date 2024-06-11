@@ -44,6 +44,8 @@ func routing(engine *gin.Engine) {
 				// homeworkグループ
 				homework := users.Group("/homework")
 				{
+					// /v1/auth/class/homework/upcoming
+					homework.GET("/upcoming", controller.FindHomeworkHandler)
 					// /v1/auth/users/homework/upcoming
 					homework.GET("/test", controller.CfmReq)
 				}
