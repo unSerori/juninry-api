@@ -72,3 +72,20 @@ func SaveJti(userUuid string, jti string) error {
 
 	return nil
 }
+
+//ユーザ取得
+func GetUser(userUuid string) (User, error) {
+		//結果格納用変数
+		var user User
+
+		//userUuidで絞り込んで1件取得
+	_, err := db.Where("user_uuid =?", userUuid).Get(
+		&user,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}

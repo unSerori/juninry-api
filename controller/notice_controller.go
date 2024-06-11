@@ -65,9 +65,7 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 
 	// レスポンス(StatusOK　成功200番)
 	ctx.JSON(http.StatusOK, gin.H{
-		"srvResData": gin.H{
-			"notices": noticeDetail,
-		},
+		"srvResData":  noticeDetail,
 	})
 
 }

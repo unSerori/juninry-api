@@ -26,10 +26,18 @@ func CreateClassTestData() {
 }
 
 //クラス取得
-func GetClass(classUuid string) (Class, error){
+func GetClass(classUuid string) (Class, error) {
 	//結果格納用変数
-	var className Class
+	var class Class
 
 	//classUuidで絞り込んで1件取得
-	_, err := db.Where("")
+	_, err := db.Where("class_uuid =?", classUuid).Get(
+		&class,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Class{}, err
+	}
+
+	return class, nil
 }
