@@ -6,15 +6,15 @@ juninryのGo APIサーバ。
 
 ### 環境
 
-Visual Studio Code: 1.88.1
-golang.Go: v0.41.4
-image Golang: go version go1.22.2 linux/amd64
+Visual Studio Code: 1.88.1  
+golang.Go: v0.41.4  
+image Golang: go version go1.22.2 linux/amd64  
 
 ## 環境構築
 
-1. 以下のDocker環境を作成
-[リポジトリURL](https://github.com/unSerori/docker-juninry)
-SSH URL:
+1. 以下のDocker環境を作成  
+[リポジトリURL](https://github.com/unSerori/docker-juninry)  
+SSH URL:  
 
     ```SSH:SSH URL
     git@github.com:unSerori/juninry-api.git
@@ -26,7 +26,7 @@ SSH URL:
     ```bash
     # カレントディレクトリにリポジトリの中身を展開
     git clone git@github.com:unSerori/juninry-api.git .
-
+    
     # developブランチに移動
     git switch develop
     ```
@@ -34,7 +34,7 @@ SSH URL:
 4. shareディレクトリ内で以下のコマンド。
 
     ```bash:Build an environment
-    # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。
+    # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。  
     cat vscode-ext.txt | while read line; do code --install-extension $line; done
     ```
 
@@ -71,7 +71,7 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "Successful user registration.",
+        "srvResMsg":  "Created",
         "srvResData": {
           "authenticationToken": "token@h",
         },
@@ -80,44 +80,32 @@ SSH URL:
 
 #### クラスの課題情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/homework/upcoming`
+- **URL:** `/v1/auth/users/homework/upcoming`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスの期限が先のものを取得
 - **リクエスト:**
   - ヘッダー:
-    - Authorization: (string) 認証トークン
+    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+  - ボディ:
+    ＊さまざまな形式のボディ値＊
 
 - **レスポンス:**
-  - ステータスコード: 200 OK
+  - ステータスコード: ＊ステータスコード ステータス＊
     - ボディ:
+      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
-        {
-          "srvResData": [
-            {
-              "homeworkLimit": "0001-01-01T00:00:00Z",
-              "homeworkData": [
-                {
-                  "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
-                  "startPage": 24,
-                  "pageCount": 2,
-                  "homeworkNote": "がんばってくださ～い＾＾",
-                  "teachingMaterialName": "漢字ドリル3",
-                  "subjectId": 1,
-                  "subjectName": "国語",
-                  "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
-                  "className": "3-2 ふたば学級",
-                  "submitFlag": 1
-                },,,
-              ]
-            },,,
-          ]
-        }
+      {
+        "srvResMsg":  "レスポンスステータスメッセージ",
+        "srvResData": {
+        
+        },
+      }
       ```
 
 #### クラスのおてがみ情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/notice`
+- **URL:** `/v1/auth/users/notice/notices`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスのおてがみ情報一覧取得
 - **リクエスト:**
@@ -133,16 +121,16 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
 
 #### おてがみの詳細情報を取得するエンドポイント
 
-- **URL:** `/v1/auth/class/notice/{notice_uuid}`
+- **URL:** `/v1/auth/users/notice/{notice_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
@@ -158,9 +146,9 @@ SSH URL:
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
@@ -179,15 +167,15 @@ SSH URL:
     ＊さまざまな形式のボディ値＊
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
     - ボディ:
       ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "",
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
@@ -198,7 +186,7 @@ APIがエラーを返す場合、詳細なエラーメッセージが含まれ�
 
 ## SERVER ERROR MESSAGE
 
-サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。
+サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。  
 サーバーレスポンスステータスコードと合わせてデバックする。
 
 ## .ENV
