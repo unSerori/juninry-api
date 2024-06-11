@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"juninry-api/logging"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,9 +10,12 @@ import (
 
 // json
 func TestJson(c *gin.Context) {
+	// 成功ログ
+	logging.SuccessLog("JSON for testing.")
+	// レスポンス
+	resStatusCode := http.StatusBadRequest
 	c.JSON(http.StatusOK, gin.H{ // bodyがJSON形式のレスポンスを返す
-		"srvResCode": 1001,                                 // コード
-		"srvResMsg":  "JSON for testing.",                  // メッセージ
+		"srvResCode": http.StatusText(resStatusCode),       // メッセージ
 		"srvResData": gin.H{"message": "hello go server!"}, // データ
 	})
 }

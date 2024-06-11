@@ -21,9 +21,9 @@ func RegisterUserHandler(c *gin.Context) {
 		// エラーログ
 		logging.ErrorLog("Failure to bind request.", err)
 		// レスポンス
-		c.JSON(http.StatusBadRequest, gin.H{
-			"srvResCode": 7001,
-			"srvResMsg":  "Failure to bind request.",
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
 		return
@@ -41,18 +41,18 @@ func RegisterUserHandler(c *gin.Context) {
 				// エラーログ
 				logging.ErrorLog("There is already a user with the same primary key. Uniqueness constraint violation.", err)
 				// レスポンス
-				c.JSON(http.StatusBadRequest, gin.H{
-					"srvResCode": 7002,
-					"srvResMsg":  "There is already a user with the same primary key. Uniqueness constraint violation.",
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			default:
 				// エラーログ
 				logging.ErrorLog("New user registration was not possible due to other DB problems.", err)
 				// レスポンス
-				c.JSON(http.StatusBadRequest, gin.H{
-					"srvResCode": 7003,
-					"srvResMsg":  "New user registration was not possible due to other DB problems.",
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			}
@@ -66,27 +66,27 @@ func RegisterUserHandler(c *gin.Context) {
 				// エラーログ
 				logging.ErrorLog("Failure to hash passwords.", err)
 				// レスポンス
-				c.JSON(http.StatusBadRequest, gin.H{
-					"srvResCode": 7004,
-					"srvResMsg":  "Failure to hash passwords.",
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			case service.ErrTypeGenTokenFailed: // トークンの作成に失敗
 				// エラーログ
 				logging.ErrorLog("Failed to generate token.", err)
 				// レスポンス
-				c.JSON(http.StatusBadRequest, gin.H{
-					"srvResCode": 7005,
-					"srvResMsg":  "Failed to generate token.",
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			default:
 				// エラーログ
 				logging.ErrorLog("New user registration was not possible due to other problems.", err)
 				// レスポンス
-				c.JSON(http.StatusBadRequest, gin.H{
-					"srvResCode": 7006,
-					"srvResMsg":  "New user registration was not possible due to other problems.",
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			}
@@ -98,11 +98,66 @@ func RegisterUserHandler(c *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful user registration.")
 	// レスポンス
-	c.JSON(http.StatusCreated, gin.H{
-		"srvResCode": 1001,
-		"srvResMsg":  "Successful user registration.",
+	resStatusCode := http.StatusBadRequest
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			"authenticationToken": token,
 		},
 	})
 }
+
+
+// ユーザ情報取得
+func GetUserHandler(c *gin.Context) {
+	// 構造体にマッピング
+	var bUser model.User // 構造体のインスタンス
+
+	// idがとれた体ですすめる
+	var sumpleid = "3cac1684-c1e0-47ae-92fd-6d7959759224";
+
+	// リクエストからIDを取得
+	// type user struct {
+	// 	UserUuid string `json:"userUuid"`
+	// }
+	// var userData user
+	// if err := c.ShouldBindJSON(&userData); err != nil {
+	// 	// エラーログ
+	// 	logging.ErrorLog("Failure to bind request.", err)
+	// 	// レスポンス
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		// "srvResCode": 7001,
+	// 		// "srvResMsg":  "Failure to bind request.",
+	// 		"srvResData": gin.H{},
+	// 	})
+	// 	return
+	// }
+
+	// ユーザー情報の取得
+	// bUser, err := userService.GetUser(userData.UserUuid);
+	bUser, err := userService.GetUser(sumpleid);
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to get user.", err)
+		// レスポンス
+		c.JSON(http.StatusBadRequest, gin.H{
+			// "srvResCode": 7001,
+			// "srvResMsg":  "Failure to getuser.",
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful user get.")
+	// レスポンス
+	c.JSON(http.StatusCreated, gin.H{
+		// "srvResCode": 1001,
+		// "srvResMsg":  "Successful user get.",
+		"srvResData": gin.H{
+			"userData":bUser,
+		},		
+	})
+}
+
+
