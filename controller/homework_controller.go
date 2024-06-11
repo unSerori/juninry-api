@@ -12,26 +12,22 @@ var homeworkService = service.HomeworkService{}
 
 // 課題全件取得
 func FindHomeworkHandler(c *gin.Context) {
-	// TODO: authの処理適用
 	// ユーザーを特定する
-	// id, exists := c.Get("id")
-	// if !exists { // idがcに保存されていない。
-	// 	// エラーログ
-	// 	logging.ErrorLog("The id is not stored.", nil)
-	// 	// レスポンス
-	// 	c.JSON(http.StatusInternalServerError, gin.H{
-	// 		"srvResCode": 7013,                    // コード
-	// 		"srvResMsg":  "The id is not stored.", // メッセージ
-	// 		"srvResData": gin.H{},                 // データ
-	// 	})
-	// 	return
-	// }
-
-	//テスト用userUuid割り当て
-	id := "3cac1684-c1e0-47ae-92fd-6d7959759224"
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"srvResCode": 7013,                    // コード
+			"srvResMsg":  "The id is not stored.", // メッセージ
+			"srvResData": gin.H{},                 // データ
+		})
+		return
+	}
 
 	//問い合わせ処理と失敗レスポンス
-	homeworkList, err := homeworkService.FindHomework(id)
+	homeworkList, err := homeworkService.FindHomework(id.(string))
 	if err != nil { //エラーハンドル
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)

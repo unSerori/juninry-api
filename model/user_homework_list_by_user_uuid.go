@@ -19,7 +19,7 @@ type UserHomework struct {
 	SubmitFlag                int
 }
 
-//userUuidから課題データを取得、取得できなければエラーを返す
+// userUuidから課題データを取得、取得できなければエラーを返す
 func FindUserHomework(userUuid string) ([]UserHomework, error) {
 	//クソデカ構造体のスライスを定義
 	var userHomeworkList []UserHomework
