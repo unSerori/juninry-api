@@ -14,7 +14,7 @@ func routing(engine *gin.Engine) {
 
 	// endpoints
 	// root page
-	engine.GET("/", controller.ShowRootPage)
+	engine.GET("/", controller.ShowRootPage) // /
 	// json test
 	engine.GET("/test/json", controller.TestJson) // /test
 
@@ -22,21 +22,21 @@ func routing(engine *gin.Engine) {
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
-		// /v1/test
-		v1.GET("/test/cfmreq", controller.CfmReq)
+		// リクエストを鯖側で確かめるテスト用エンドポイント
+		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test
 
 		// usersグループ
 		users := v1.Group("/users")
 		{
-			// ユーザー新規登録 /v1/users/register
-			users.POST("/register", controller.RegisterUserHandler)
+			// ユーザー新規登録
+			users.POST("/register", controller.RegisterUserHandler) // /v1/users/register
 		}
 
-		// authグループ
-		auth := v1.Group("/auth", middleware.MidAuthToken()) // 認証ミドルウェア適用
+		// authグループ 認証ミドルウェア適用
+		auth := v1.Group("/auth", middleware.MidAuthToken())
 		{
-			// /v1/auth/test/cfmreq
-			auth.GET("/test/cfmreq", controller.CfmReq)
+			// 認証グループで、認証ができるかを確認するテスト用エンドポイント
+			auth.GET("/test/cfmreq", controller.CfmReq) // /v1/auth/test/cfmreq
 
 			// usersグループ
 			users := auth.Group("/users")
@@ -44,20 +44,18 @@ func routing(engine *gin.Engine) {
 				// homeworkグループ
 				homework := users.Group("/homework")
 				{
-					// /v1/auth/class/homework/upcoming
-					homework.GET("/upcoming", controller.FindHomeworkHandler)
-					// /v1/auth/users/homework/upcoming
-					homework.GET("/test", controller.CfmReq)
+					// 期限がある課題一覧を取得
+					homework.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
 				}
 
 				// noticeグループ
 				notice := users.Group("/notice")
 				{
-					// /v1/auth/users/notice/notices
-					notice.GET("/notices", controller.CfmReq)
+					// 自分の所属するクラスのおしらせ一覧をとる
+					notice.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
 
-					// /v1/auth/users/notice/{notice_uuid}
-					notice.GET("/:notice_uuid", controller.TestJson) // おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
+					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
+					notice.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
 				}
 			}
 		}
