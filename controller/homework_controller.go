@@ -25,9 +25,10 @@ func FindHomeworkHandler(c *gin.Context) {
 		})
 		return
 	}
+	idAdjusted := id.(string) // アサーション
 
 	//問い合わせ処理と失敗レスポンス
-	homeworkList, err := homeworkService.FindHomework(id.(string))
+	homeworkList, err := homeworkService.FindHomework(idAdjusted)
 	if err != nil { //エラーハンドル
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)

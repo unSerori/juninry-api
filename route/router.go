@@ -28,8 +28,6 @@ func routing(engine *gin.Engine) {
 		// usersグループ
 		users := v1.Group("/users")
 		{
-			users.GET("/user", controller.GetUserHandler)
-      
 			// ユーザー新規登録
 			users.POST("/register", controller.RegisterUserHandler) // /v1/users/register
 		}
@@ -43,6 +41,9 @@ func routing(engine *gin.Engine) {
 			// usersグループ
 			users := auth.Group("/users")
 			{
+				// ユーザー自身のプロフィールを取得
+				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
+
 				// homeworkグループ
 				homework := users.Group("/homework")
 				{

@@ -107,35 +107,29 @@ func RegisterUserHandler(c *gin.Context) {
 	})
 }
 
-
 // ユーザ情報取得
 func GetUserHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
 	// 構造体にマッピング
 	var bUser model.User // 構造体のインスタンス
 
-	// idがとれた体ですすめる
-	var sumpleid = "3cac1684-c1e0-47ae-92fd-6d7959759224";
-
-	// リクエストからIDを取得
-	// type user struct {
-	// 	UserUuid string `json:"userUuid"`
-	// }
-	// var userData user
-	// if err := c.ShouldBindJSON(&userData); err != nil {
-	// 	// エラーログ
-	// 	logging.ErrorLog("Failure to bind request.", err)
-	// 	// レスポンス
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		// "srvResCode": 7001,
-	// 		// "srvResMsg":  "Failure to bind request.",
-	// 		"srvResData": gin.H{},
-	// 	})
-	// 	return
-	// }
-
 	// ユーザー情報の取得
 	// bUser, err := userService.GetUser(userData.UserUuid);
-	bUser, err := userService.GetUser(sumpleid);
+	bUser, err := userService.GetUser(idAdjusted)
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failure to get user.", err)
@@ -155,9 +149,7 @@ func GetUserHandler(c *gin.Context) {
 		// "srvResCode": 1001,
 		// "srvResMsg":  "Successful user get.",
 		"srvResData": gin.H{
-			"userData":bUser,
-		},		
+			"userData": bUser,
+		},
 	})
 }
-
-
