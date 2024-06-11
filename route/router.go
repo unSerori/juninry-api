@@ -45,10 +45,11 @@ func GetRouter() (*gin.Engine, error) {
 				notice := class.Group("/notice")
 				{
 					// /v1/auth/class/notice/{notice_uuid}
-					notice.GET("/:notice_uuid", controller.GetNoticesHandler) // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
+					notice.GET("/:notice_uuid", controller.GetNoticeDetailHandler) //　一件取得
+					 // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 
 					// /v1/auth/class/notice/notices
-					notice.GET("/notices", controller.GetNoticesHandler)  //確認できるようにGET
+					notice.GET("/notices", controller.GetAllNoticesHandler) //　全件取得
 
 				}
 			}

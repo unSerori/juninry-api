@@ -1,6 +1,6 @@
 package model
 
-import(
+import (
 	"time"
 )
 
@@ -45,7 +45,7 @@ func CreateNoticeTestData() {
 		UserUuid:          "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		ClassUuid:         "09eba495-fe09-4f54-a856-9bea9536b661",
 	}
-	
+
 	db.Insert(notice1)
 
 	notice2 := &Notice{
@@ -62,20 +62,38 @@ func CreateNoticeTestData() {
 }
 
 // classUuidで絞り込んだ結果を返す
-func FindNotices(classUuids []string)([]Notice, error) {
+func FindNotices(classUuids []string) ([]Notice, error) {
 
-		// 結果を格納する変数宣言(findの結果)
-		var notices []Notice
-	
-		//classUuidで絞り込んだデータを全件取得
-		err := db.In("class_Uuid", classUuids).Find(
-			&notices,
-		)
-		// データが取得できなかったらerrを返す
-		if err != nil {
-			return nil, err
-		}
+	// 結果を格納する変数宣言(findの結果)
+	var notices []Notice
 
-		// エラーが出なければ取得結果を返す
-		return notices, nil
+	//classUuidで絞り込んだデータを全件取得
+	err := db.In("class_Uuid", classUuids).Find(
+		&notices,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return nil, err
+	}
+
+	// エラーが出なければ取得結果を返す
+	return notices, nil
+}
+
+func GetNoticeDetail(noticeUuid string) (Notice, error) {
+
+	//結果格納用変数
+	var noticeDetail Notice
+
+	//noticeuuidで絞り込んで1件取得
+	//.Getの返り値は存在の真偽値とエラー
+	_, err := db.Where("notice_uuid =? ", noticeUuid).Get(
+		&noticeDetail,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Notice{}, err
+	}
+
+	return noticeDetail, nil
 }
