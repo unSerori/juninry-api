@@ -14,7 +14,7 @@ var (
 // .envから取得されたenvJWTのさまざまな情報を読み込む
 func loadEnvJwt() (string, int, error) {
 	secretKey := os.Getenv("JWT_SECRET_KEY") // 環境変数からシークレットキー(署名鍵)を取得
-	if jwtSecretKey == "" {
+	if secretKey == "" {
 		return "", 0, errors.New("JWT_SECRET_KEY is not set")
 	}
 	tokenLifeTime, err := strconv.Atoi(os.Getenv("JWT_TOKEN_LIFETIME")) // トークンの有効期限
