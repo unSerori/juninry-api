@@ -173,6 +173,7 @@ func LoginHandler(c *gin.Context) {
 	// ログイン処理と失敗レスポンス
 	token, err := userService.LoginUser(bUser)
 	if err != nil {
+		// TODO: エラーハンドル
 		return
 	}
 

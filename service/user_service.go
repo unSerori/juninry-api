@@ -55,5 +55,13 @@ func (s *UserService) GetUser(useruuid string) (model.User, error) {
 
 // ログイン
 func (s *UserService) LoginUser(bUser model.User) (string, error) {
+	// ユーザーの存在確認
+
+	// 登録済みのパスワードを取得し、
+
+	// 比較する
+
+	// トークンを生成しなおす
+
 	return "", nil
 }
