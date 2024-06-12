@@ -103,3 +103,15 @@ func GetJtiById(userUuid string) (string, error) {
 
 	return user.JtiUuid, nil
 }
+
+// メアドからユーザーが存在するか確認
+func CheckUserExists(mail string) error {
+	var user User // 取得したデータをマッピングする構造体
+
+	_, err := db.Where("mail_address = ?", mail).Get(&user)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
