@@ -143,6 +143,7 @@ SSH URL:
 
       ```json
       {
+        "srvResMsg":  "OK",
         "srvResData": {
           "NoticeTitle": "【持ち物】おべんとうとぞうきん",
           "NoticeExplanatory": "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますのでよろしくお願いします。,1",
