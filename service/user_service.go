@@ -56,6 +56,10 @@ func (s *UserService) GetUser(useruuid string) (model.User, error) {
 // ログイン
 func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	// ユーザーの存在確認
+	err := model.CheckUserExists(bUser.MailAddress)
+	if err != nil {
+		return "", err
+	}
 
 	// 登録済みのパスワードを取得し、
 
