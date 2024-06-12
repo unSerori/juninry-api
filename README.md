@@ -155,9 +155,9 @@ SSH URL:
 
 #### ユーザー情報を取得するエンドポイント
 
-- **URL:** `/v1/users/user`
+- **URL:** `/v1/auth/auth/users/user`
 - **メソッド:** GET
-- **説明:** idからユーザーを検索して情報を返す
+- **説明:** jwtから取得したidからユーザーを検索して情報を返す
 - **リクエスト:**
   - ヘッダー:
     - `Content-Type`: application/json
