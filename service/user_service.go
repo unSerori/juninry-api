@@ -50,5 +50,10 @@ func (s *UserService) GetUser(useruuid string) (model.User, error) {
 		return user, err
 	}
 
-	return user,err
+	return user, err
+}
+
+// ログイン
+func (s *UserService) LoginUser(bUser model.User) (string, error) {
+	return "", nil
 }

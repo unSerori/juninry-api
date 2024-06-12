@@ -98,7 +98,7 @@ func RegisterUserHandler(c *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful user registration.")
 	// レスポンス
-	resStatusCode := http.StatusBadRequest
+	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
@@ -157,8 +157,34 @@ func GetUserHandler(c *gin.Context) {
 // login
 func LoginHandler(c *gin.Context) {
 	// 構造体にマッピング
+	var bUser model.User // 構造体のインスタンス
+	if err := c.ShouldBindJSON(&bUser); err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to bind request.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
 
 	// ログイン処理と失敗レスポンス
+	token, err := userService.LoginUser(bUser)
+	if err != nil {
+		return
+	}
 
 	// 成功レスポンス
+	// 成功ログ
+	logging.SuccessLog("Successful user login.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"authenticationToken": token,
+		},
+	})
 }
