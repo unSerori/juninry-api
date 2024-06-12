@@ -40,10 +40,60 @@ func CreateNoticeTestData() {
 	notice1 := &Notice{
 		NoticeUuid:        "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
 		NoticeTitle:       "【持ち物】おべんとうとぞうきん",
-		NoticeExplanatory: "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますのでよろしくお願いします。",
+		NoticeExplanatory: "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますのでよろしくお願いします。,1",
 		NoticeDate:        time.Now(),
 		UserUuid:          "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		ClassUuid:         "09eba495-fe09-4f54-a856-9bea9536b661",
 	}
+
 	db.Insert(notice1)
+
+	notice2 := &Notice{
+		NoticeUuid:        "2097a7bb-5140-460d-807e-7173a51672bd",
+		NoticeTitle:       "【持ち物】おべんと",
+		NoticeExplanatory: "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますので",
+		NoticeDate:        time.Now(),
+		UserUuid:          "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		ClassUuid:         "09eba495-fe09-4f54-a856-9bea9536b661",
+	}
+
+	db.Insert(notice2)
+
+}
+
+// classUuidで絞り込んだ結果を返す
+func FindNotices(classUuids []string) ([]Notice, error) {
+
+	// 結果を格納する変数宣言(findの結果)
+	var notices []Notice
+
+	//classUuidで絞り込んだデータを全件取得
+	err := db.In("class_Uuid", classUuids).Find(
+		&notices,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return nil, err
+	}
+
+	// エラーが出なければ取得結果を返す
+	return notices, nil
+}
+
+func GetNoticeDetail(noticeUuid string) (Notice, error) {
+
+	//結果格納用変数
+	var noticeDetail Notice
+
+	//noticeuuidで絞り込んで1件取得
+	//.Getの返り値は存在の真偽値とエラー
+	_, err := db.Where("notice_uuid =? ", noticeUuid).Get(
+		&noticeDetail,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Notice{}, err
+	}
+
+	return noticeDetail, nil
 }

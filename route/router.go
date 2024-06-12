@@ -58,7 +58,7 @@ func routing(engine *gin.Engine) {
 					notice.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notice.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
+					notice.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 				}
 			}
 		}
