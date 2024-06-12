@@ -207,6 +207,36 @@ SSH URL:
       }
       ```
 
+#### ログインするエンドポイント
+
+- **URL:** `/v1/users/login`
+- **メソッド:** POST
+- **説明:** メアドとパスワードでログインし、トークンを取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "mailAddress": "test-pupil@gmail.com",
+      "password": "C@tp"
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "authenticationToken": "token@hogeta"
+        },
+      }
+      ```
+
 ### API仕様書てんぷれ
 
 #### ＊○○＊するエンドポイント
