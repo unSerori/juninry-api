@@ -30,6 +30,9 @@ func routing(engine *gin.Engine) {
 		{
 			// ユーザー新規登録
 			users.POST("/register", controller.RegisterUserHandler) // /v1/users/register
+
+			// ユーザーログイン
+			users.POST("/login", controller.LoginHandler) // /v1/users/login
 		}
 
 		// authグループ 認証ミドルウェア適用

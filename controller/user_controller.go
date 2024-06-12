@@ -153,3 +153,12 @@ func GetUserHandler(c *gin.Context) {
 		},
 	})
 }
+
+// login
+func LoginHandler(c *gin.Context) {
+	// 構造体にマッピング
+
+	// ログイン処理と失敗レスポンス
+
+	// 成功レスポンス
+}
