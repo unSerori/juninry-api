@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"juninry-api/logging"
 	"juninry-api/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var noticeService = service.NoticeService{} // サービスの実体を作る。
@@ -35,3 +36,30 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	})
 
 }
+
+//ユーザの所属するクラスのお知らせ全件取得
+func GetAllNoticesHandler(ctx *gin.Context) {
+	// 絞り込み条件
+	userUuid := "3cac1684-c1e0-47ae-92fd-6d7959759224"
+
+	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
+	notices, err := noticeService.FindAllNotices(userUuid)
+	// 取得できなかった時のエラーを判断
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("notice find error", err)
+		// レスポンス(StatusInternalServerError サーバーエラー500番)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"srvResData": gin.H{},
+		})
+		return //　<-返すよって型指定してないから切り上げるだけ
+	}
+
+	// レスポンス(StatusOK　成功200番)
+	ctx.JSON(http.StatusOK, gin.H{
+		"srvResData": gin.H{
+			"notices": notices,
+		},
+	})
+}
+
