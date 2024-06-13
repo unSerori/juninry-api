@@ -1,5 +1,11 @@
 package model
 
+import (
+	"errors"
+	commons "juninry-api/common"
+	"juninry-api/logging"
+)
+
 // ユーザテーブル  // モデルを構造体で定義
 type User struct { // typeで型の定義, structは構造体
 	UserUuid    string  `xorm:"varchar(36) pk" json:"userUUID"`                  // ユーザのUUID
@@ -108,10 +114,46 @@ func GetJtiById(userUuid string) (string, error) {
 func CheckUserExists(mail string) error {
 	var user User // 取得したデータをマッピングする構造体
 
-	_, err := db.Where("mail_address = ?", mail).Get(&user)
+	isFound, err := db.Where("mail_address = ?", mail).Get(&user)
 	if err != nil {
 		return err
 	}
+	if !isFound {
+		logging.ErrorLog("みつからない", err)
+		return commons.NewErr(commons.ErrTypeMITUKARANI, "みつからない")
+	}
 
 	return nil
+}
+
+// メアドからパスワードを取得
+func GetPassByMail(mail string) (string, error) {
+	var user User // 取得したデータをマッピングする構造体
+
+	isFound, err := db.Select(
+		"password", // パスワードをとる
+	).Where("mail_address = ?", mail).Get(&user) // Select(必要な列).Where(会社番号が引数の値).Find(User構造体の形で取得)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { // 見つからなかった
+		return "", errors.New("")
+	}
+
+	return user.Password, nil // ユーザースライスを返す。
+}
+
+// メアドからuuidを取得
+func GetIdByMail(mail string) (string, error) {
+	var user User // 取得したデータをマッピングする構造体
+
+	isFound, err := db.Select("user_uuid").Where("mail_address = ?", mail).Get(&user)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { // 見つからなかった
+		return "", errors.New("")
+	}
+	return user.UserUuid, nil // エラーなしの場合はidを返す。
+
 }

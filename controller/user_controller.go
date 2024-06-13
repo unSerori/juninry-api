@@ -2,6 +2,8 @@ package controller
 
 import (
 	"errors"
+	"fmt"
+	commons "juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -58,11 +60,11 @@ func RegisterUserHandler(c *gin.Context) {
 			}
 		}
 		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *service.CustomErr
+		var serviceErr *commons.CustomErr
 		if errors.As(err, &serviceErr) {
 			// 本処理時のエラーごとに処理(:DBエラー以外)
 			switch serviceErr.Type {
-			case service.ErrTypeHashingPassFailed: // ハッシュ化に失敗
+			case commons.ErrTypeHashingPassFailed: // ハッシュ化に失敗
 				// エラーログ
 				logging.ErrorLog("Failure to hash passwords.", err)
 				// レスポンス
@@ -71,7 +73,7 @@ func RegisterUserHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case service.ErrTypeGenTokenFailed: // トークンの作成に失敗
+			case commons.ErrTypeGenTokenFailed: // トークンの作成に失敗
 				// エラーログ
 				logging.ErrorLog("Failed to generate token.", err)
 				// レスポンス
@@ -174,6 +176,7 @@ func LoginHandler(c *gin.Context) {
 	token, err := userService.LoginUser(bUser)
 	if err != nil {
 		// TODO: エラーハンドル
+		fmt.Println("さーびすしっぱい")
 		return
 	}
 

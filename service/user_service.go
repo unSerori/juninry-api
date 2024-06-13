@@ -2,6 +2,8 @@ package service
 
 import (
 	"juninry-api/auth"
+	commons "juninry-api/common"
+	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/security"
 
@@ -21,7 +23,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// パスワードをハッシュ化
 	hashed, err := security.HashingByEncrypt(bUser.Password)
 	if err != nil {
-		return "", NewErr(ErrTypeHashingPassFailed, err.Error()) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
+		return "", commons.NewErr(commons.ErrTypeHashingPassFailed, err.Error()) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
 	}
 	// ハッシュ(:バイト配列)化されたパスワードを文字列にsh知恵構造体に戻す
 	bUser.Password = string(hashed)
@@ -35,7 +37,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// 登録が成功したらトークンを生成する
 	token, err := auth.GenerateToken(bUser.UserUuid) // トークンを取得
 	if err != nil {
-		return "", NewErr(ErrTypeGenTokenFailed, err.Error())
+		return "", commons.NewErr(commons.ErrTypeGenTokenFailed, err.Error())
 	}
 
 	return token, nil
@@ -58,14 +60,32 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	// ユーザーの存在確認
 	err := model.CheckUserExists(bUser.MailAddress)
 	if err != nil {
+		logging.ErrorLog("No corresponding user exists.", nil)
 		return "", err
 	}
 
 	// 登録済みのパスワードを取得し、
-
+	pass, err := model.GetPassByMail(bUser.MailAddress)
+	if err != nil {
+		logging.ErrorLog("Failed to retrieve password.", nil)
+		return "", err
+	}
 	// 比較する
+	err = security.CompareHashAndStr([]byte(pass), bUser.Password)
+	if err != nil {
+		logging.ErrorLog("Password does not match.", nil)
+		return "", err
+	}
 
 	// トークンを生成しなおす
+	id, err := model.GetIdByMail(bUser.MailAddress) // user_uuidを取得し、
+	if err != nil {
+		return "", err
+	}
+	token, err := auth.GenerateToken(id) // user_uuidをもとにトークンを生成
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	return token, nil
 }
