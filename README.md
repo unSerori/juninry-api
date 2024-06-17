@@ -123,7 +123,8 @@ SSH URL:
             "NoticeTitle": "【持ち物】おべんと",
             "NoticeDate": "2024-06-11T03:23:39Z",
             "UserName": "test teacher",
-            "ClassName": "3-2 ふたば学級"
+            "ClassName": "3-2 ふたば学級",
+            "ReadStatus": 0
         }},
       }
       ```
