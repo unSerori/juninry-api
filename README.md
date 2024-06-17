@@ -109,19 +109,22 @@ SSH URL:
 - **説明:** 自分が所属するクラスのおてがみ情報一覧取得
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-        
-        },
+          "notices": {
+            "NoticeTitle": "【持ち物】おべんと",
+            "NoticeDate": "2024-06-11T03:23:39Z",
+            "UserName": "test teacher",
+            "ClassName": "3-2 ふたば学級"
+        }},
       }
       ```
 
