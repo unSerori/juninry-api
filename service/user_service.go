@@ -2,7 +2,7 @@ package service
 
 import (
 	"juninry-api/auth"
-	commons "juninry-api/common"
+	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/security"
@@ -23,7 +23,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// パスワードをハッシュ化
 	hashed, err := security.HashingByEncrypt(bUser.Password)
 	if err != nil {
-		return "", commons.NewErr(commons.ErrTypeHashingPassFailed, err.Error()) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
+		return "", common.NewErr(common.ErrTypeHashingPassFailed, common.WithMsg(err.Error())) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
 	}
 	// ハッシュ(:バイト配列)化されたパスワードを文字列にsh知恵構造体に戻す
 	bUser.Password = string(hashed)
@@ -37,7 +37,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// 登録が成功したらトークンを生成する
 	token, err := auth.GenerateToken(bUser.UserUuid) // トークンを取得
 	if err != nil {
-		return "", commons.NewErr(commons.ErrTypeGenTokenFailed, err.Error())
+		return "", common.NewErr(common.ErrTypeGenTokenFailed, common.WithMsg(err.Error()))
 	}
 
 	return token, nil
@@ -58,32 +58,46 @@ func (s *UserService) GetUser(useruuid string) (model.User, error) {
 // ログイン
 func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	// ユーザーの存在確認
-	err := model.CheckUserExists(bUser.MailAddress)
+	err, isFound := model.CheckUserExists(bUser.MailAddress)
 	if err != nil {
-		logging.ErrorLog("No corresponding user exists.", nil)
+		logging.ErrorLog("No corresponding user exists.", err)
 		return "", err
+	}
+	if !isFound {
+		logging.ErrorLog("Could not find the relevant ID.", nil)
+		return "", common.NewErr(common.ErrTypeNoResourceExist)
 	}
 
 	// 登録済みのパスワードを取得し、
-	pass, err := model.GetPassByMail(bUser.MailAddress)
+	pass, err, isFound := model.GetPassByMail(bUser.MailAddress)
 	if err != nil {
-		logging.ErrorLog("Failed to retrieve password.", nil)
+		logging.ErrorLog("Failed to retrieve password.", err)
 		return "", err
+	}
+	if !isFound {
+		logging.ErrorLog("Could not find the relevant ID.", nil)
+		return "", common.NewErr(common.ErrTypeNoResourceExist)
 	}
 	// 比較する
 	err = security.CompareHashAndStr([]byte(pass), bUser.Password)
 	if err != nil {
-		logging.ErrorLog("Password does not match.", nil)
-		return "", err
+		logging.ErrorLog("Password does not match.", err)
+		return "", common.NewErr(common.ErrTypePassMismatch)
 	}
 
 	// トークンを生成しなおす
-	id, err := model.GetIdByMail(bUser.MailAddress) // user_uuidを取得し、
+	id, err, isFound := model.GetIdByMail(bUser.MailAddress) // user_uuidを取得し、
 	if err != nil {
+		logging.ErrorLog("Failure to obtain id.", err)
 		return "", err
+	}
+	if !isFound { // idが見つからなかった
+		logging.ErrorLog("Could not find the relevant ID.", err)
+		return "", common.NewErr(common.ErrTypeNoResourceExist)
 	}
 	token, err := auth.GenerateToken(id) // user_uuidをもとにトークンを生成
 	if err != nil {
+		logging.ErrorLog("Failed to generate token.", err)
 		return "", err
 	}
 

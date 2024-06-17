@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-	commons "juninry-api/common"
 	"juninry-api/logging"
 )
 
@@ -111,49 +109,50 @@ func GetJtiById(userUuid string) (string, error) {
 }
 
 // メアドからユーザーが存在するか確認
-func CheckUserExists(mail string) error {
+func CheckUserExists(mail string) (error, bool) {
 	var user User // 取得したデータをマッピングする構造体
 
 	isFound, err := db.Where("mail_address = ?", mail).Get(&user)
 	if err != nil {
-		return err
+		logging.ErrorLog("Error when searching for a user from a mail address.", err)
+		return err, isFound
 	}
 	if !isFound {
-		logging.ErrorLog("みつからない", err)
-		return commons.NewErr(commons.ErrTypeMITUKARANI, "みつからない")
+		logging.ErrorLog("Could not find any users from the e-mail address.", err)
+		return nil, isFound
 	}
 
-	return nil
+	return nil, true
 }
 
 // メアドからパスワードを取得
-func GetPassByMail(mail string) (string, error) {
+func GetPassByMail(mail string) (string, error, bool) {
 	var user User // 取得したデータをマッピングする構造体
 
 	isFound, err := db.Select(
 		"password", // パスワードをとる
 	).Where("mail_address = ?", mail).Get(&user) // Select(必要な列).Where(会社番号が引数の値).Find(User構造体の形で取得)
 	if err != nil {
-		return "", err
+		return "", err, isFound
 	}
 	if !isFound { // 見つからなかった
-		return "", errors.New("")
+		return "", nil, false
 	}
 
-	return user.Password, nil // ユーザースライスを返す。
+	return user.Password, nil, true // ユーザースライスを返す。
 }
 
 // メアドからuuidを取得
-func GetIdByMail(mail string) (string, error) {
+func GetIdByMail(mail string) (string, error, bool) {
 	var user User // 取得したデータをマッピングする構造体
 
 	isFound, err := db.Select("user_uuid").Where("mail_address = ?", mail).Get(&user)
 	if err != nil {
-		return "", err
+		return "", err, isFound
 	}
 	if !isFound { // 見つからなかった
-		return "", errors.New("")
+		return "", nil, false
 	}
-	return user.UserUuid, nil // エラーなしの場合はidを返す。
 
+	return user.UserUuid, nil, true
 }

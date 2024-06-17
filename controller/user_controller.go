@@ -2,8 +2,7 @@ package controller
 
 import (
 	"errors"
-	"fmt"
-	commons "juninry-api/common"
+	common "juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -60,11 +59,11 @@ func RegisterUserHandler(c *gin.Context) {
 			}
 		}
 		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *commons.CustomErr
+		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) {
 			// 本処理時のエラーごとに処理(:DBエラー以外)
 			switch serviceErr.Type {
-			case commons.ErrTypeHashingPassFailed: // ハッシュ化に失敗
+			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
 				// エラーログ
 				logging.ErrorLog("Failure to hash passwords.", err)
 				// レスポンス
@@ -73,7 +72,7 @@ func RegisterUserHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case commons.ErrTypeGenTokenFailed: // トークンの作成に失敗
+			case common.ErrTypeGenTokenFailed: // トークンの作成に失敗
 				// エラーログ
 				logging.ErrorLog("Failed to generate token.", err)
 				// レスポンス
@@ -174,13 +173,35 @@ func LoginHandler(c *gin.Context) {
 
 	// ログイン処理と失敗レスポンス
 	token, err := userService.LoginUser(bUser)
-	if err != nil {
-		// TODO: エラーハンドル
-		fmt.Println("さーびすしっぱい")
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeNoResourceExist: // ユーザーが見つからなかった,
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // 500番
+				// エラーログ
+				logging.ErrorLog("Internal Server Error.", err)
+				// レスポンス
+				resStatusCode := http.StatusInternalServerError
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
 		return
 	}
 
-	// 成功レスポンス
+	// 成功レスポンス 200番
 	// 成功ログ
 	logging.SuccessLog("Successful user login.")
 	// レスポンス
