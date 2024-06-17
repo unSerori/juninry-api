@@ -21,5 +21,9 @@ func SuccessLog(successName string) {
 func ErrorLog(errName string, err error) {
 	log.Printf("ERROR LOG: %s\n", errName)
 	log.Printf("Time: %v\n", time.Now()) // 時刻
-	log.Printf("Error: %s\n\n", err)
+	if err != nil {
+		log.Printf("Error: %s\n\n", err)
+	} else {
+		log.Printf("Error: NIL")
+	}
 }
