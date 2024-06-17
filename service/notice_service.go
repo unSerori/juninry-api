@@ -63,6 +63,7 @@ type Notice struct { // typeで型の定義, structは構造体
 	NoticeDate  time.Time //お知らせの作成日時
 	UserName    string    // おしらせ発行ユーザ
 	ClassName   string    // どのクラスのお知らせか
+	ReadStatus  int       //お知らせを確認しているか
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
@@ -88,35 +89,55 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		return nil, err
 	}
 
+	fmt.Println(userUuid)
+
 	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
 	var formattedAllNotices []Notice
 
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
 
+		//TODO:キモイコードどうにかする(まじで解決しろ)
+		save := userUuid
+
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
-			NoticeTitle: notice.NoticeTitle,	//お知らせのタイトル
-			NoticeDate:  notice.NoticeDate,	 //お知らせの作成日時
+			NoticeTitle: notice.NoticeTitle, //お知らせのタイトル
+			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
 		}
 
 		//userUuidをuserNameに整形
 		userUuid := notice.UserUuid
-		user, nil := model.GetUser(userUuid)	//ユーザ取得
+		user, nil := model.GetUser(userUuid) //ユーザ取得
 		if err != nil {
 			return []Notice{}, err
 		}
+
 		//整形後formatに追加
-		notices.UserName = user.UserName  // おしらせ発行ユーザ
+		notices.UserName = user.UserName // おしらせ発行ユーザ
 
 		//classUuidをclassNameに整形
 		classUuid := notice.ClassUuid
-		class, nil := model.GetClass(classUuid)	//クラス取得
+		class, nil := model.GetClass(classUuid) //クラス取得
 		if err != nil {
 			return []Notice{}, err
 		}
 		//整形後formatに追加
-		notices.ClassName = class.ClassName  // おしらせ発行ユーザ
+		notices.ClassName = class.ClassName // おしらせ発行ユーザ
+
+		//確認しているか取得
+		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, save)
+		if err != nil {
+			return []Notice{}, err
+		}
+
+		fmt.Println(status)
+		//確認していた場合、ReadStatusに1を保存する
+		if status {
+			notices.ReadStatus = 1
+		} else {
+			notices.ReadStatus = 0
+		}
 
 		//宣言したスライスに追加していく
 		formattedAllNotices = append(formattedAllNotices, notices)

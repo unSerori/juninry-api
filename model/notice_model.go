@@ -97,3 +97,4 @@ func GetNoticeDetail(noticeUuid string) (Notice, error) {
 
 	return noticeDetail, nil
 }
+
