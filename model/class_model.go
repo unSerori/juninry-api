@@ -24,3 +24,20 @@ func CreateClassTestData() {
 	}
 	db.Insert(class2)
 }
+
+//クラス取得
+func GetClass(classUuid string) (Class, error) {
+	//結果格納用変数
+	var class Class
+
+	//classUuidで絞り込んで1件取得
+	_, err := db.Where("class_uuid =?", classUuid).Get(
+		&class,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Class{}, err
+	}
+
+	return class, nil
+}
