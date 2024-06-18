@@ -48,14 +48,14 @@ func routing(engine *gin.Engine) {
 				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
 
 				// homeworksグループ
-				homeworks := users.Group("/homeworks")
+				homeworks := users.Group("/homework")
 				{
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
 				}
 
 				// noticeグループ
-				notices := users.Group("/notices")
+				notices := users.Group("/notice")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
 					notices.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices

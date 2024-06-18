@@ -35,3 +35,15 @@ func CreateNoticeReadStatusTestData() {
 	}
 	db.Insert(nrs1)
 }
+
+// notice_read_statusにデータがあるか調べる(確認済みの場合、データが存在する)
+func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
+
+	//noticeUuidとuserUuidから一致するデータがあるか取得
+	has, err := db.Where("notice_uuid = ? AND user_uuid = ?", noticeUuid, userUuid).Get(&NoticeReadStatus{})
+	if err != nil {
+		return false, err
+	}
+
+	return has, nil
+}
