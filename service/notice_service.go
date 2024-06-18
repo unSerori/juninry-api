@@ -89,10 +89,8 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		return nil, err
 	}
 
-	fmt.Println(userUuid)
-
-	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
-	var formattedAllNotices []Notice
+	// TODO:データを逆順に追加するために一時的なスライス
+	var temp []Notice
 
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
@@ -140,7 +138,16 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		}
 
 		//宣言したスライスに追加していく
-		formattedAllNotices = append(formattedAllNotices, notices)
+		// formattedAllNotices = append(formattedAllNotices, notices)
+		temp = append(temp, notices)		//並べ替えるために一時的にtempに保存する
+	}
+
+	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
+	var formattedAllNotices []Notice
+
+	// tempを逆順にしてformattedAllNoticesに追加する
+	for i := len(temp) - 1; i >= 0; i-- {
+		formattedAllNotices = append(formattedAllNotices, temp[i])
 	}
 
 	//確認用

@@ -13,7 +13,7 @@ var noticeService = service.NoticeService{} // サービスの実体を作る。
 // お知らせ1件取得
 func GetNoticeDetailHandler(ctx *gin.Context) {
 
-	//TODO: 取得する名前わかりません
+	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
 	//お知らせのレコードを取ってくる
@@ -37,13 +37,26 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 
 }
 
-//ユーザの所属するクラスのお知らせ全件取得
+// ユーザの所属するクラスのお知らせ全件取得
 func GetAllNoticesHandler(ctx *gin.Context) {
 	// 絞り込み条件
-	userUuid := "3cac1684-c1e0-47ae-92fd-6d7959759224"
+	// ユーザーを特定する
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(userUuid)
+	notices, err := noticeService.FindAllNotices(idAdjusted)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// エラーログ
@@ -62,4 +75,3 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		},
 	})
 }
-
