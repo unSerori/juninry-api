@@ -58,7 +58,7 @@ func routing(engine *gin.Engine) {
 				notice := users.Group("/notice")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notice.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
+					notice.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notice/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 					notice.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
