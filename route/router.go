@@ -47,21 +47,21 @@ func routing(engine *gin.Engine) {
 				// ユーザー自身のプロフィールを取得
 				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
 
-				// homeworkグループ
-				homework := users.Group("/homework")
+				// homeworksグループ
+				homeworks := users.Group("/homeworks")
 				{
 					// 期限がある課題一覧を取得
-					homework.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
+					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
 				}
 
 				// noticeグループ
-				notice := users.Group("/notice")
+				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notice.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
+					notices.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notice.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
 				}
 			}
 		}
