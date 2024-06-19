@@ -82,7 +82,7 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	err = security.CompareHashAndStr([]byte(pass), bUser.Password)
 	if err != nil {
 		logging.ErrorLog("Password does not match.", err)
-		return "", common.NewErr(common.ErrTypePassMismatch)
+		return "", common.NewErr(common.ErrTypePassMismatch, common.WithMsg(err.Error()))
 	}
 
 	// トークンを生成しなおす
