@@ -243,25 +243,30 @@ SSH URL:
 
 #### 終了した宿題を提出するエンドポイント
 
-- **URL:** `/v1/auth`
-- **メソッド:** ＊HTTPメソッド名＊
-- **説明:** ＊○○＊
+- **URL:** `/v1/auth/users/homeworks/submit`
+- **メソッド:** POST
+- **説明:** 宿題を提出する
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
   - ボディ:
-    ＊さまざまな形式のボディ値＊
+
+    ```json
+    {
+      "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
+      "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+    }
+    ```
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
+  - ステータスコード: 201 Created
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
+        "srvResMsg":  "Created",
         "srvResData": {
-        
         },
       }
       ```
