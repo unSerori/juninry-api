@@ -5,6 +5,7 @@ import (
 	"juninry-api/logging"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -66,5 +67,16 @@ func MidAuthToken() gin.HandlerFunc {
 		ctx.Set("id", id)       // 送信元クライアントのtokenのidを保持
 
 		ctx.Next() // エンドポイントの処理に移行
+	}
+}
+
+// 同時に一人しか実行させないよ〜
+func SingleExecutionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var lock sync.Mutex
+		lock.Lock()
+		defer lock.Unlock()
+
+		c.Next()	// エンドポイントの処理に移行
 	}
 }

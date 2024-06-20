@@ -63,6 +63,14 @@ func routing(engine *gin.Engine) {
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 					notices.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
 				}
+
+				// classesグループ
+				classes := users.Group("/class")
+				{
+					// クラスを作成する
+					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
+
+				}
 			}
 		}
 	}

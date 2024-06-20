@@ -4,10 +4,10 @@ import "time"
 
 // クラステーブル
 type Class struct {
-	ClassUuid  string    `xorm:"varchar(36) pk" json:"classUUID"`           // ユーザータイプID
-	ClassName  string    `xorm:"varchar(15) not null" json:"className"`     // ユーザータイプ  // teacher, pupil, parents
+	ClassUuid  string    `xorm:"varchar(36) pk" json:"classUUID"`           // クラスID
+	ClassName  string    `xorm:"varchar(15) not null" json:"className"`     // クラス名  // teacher, pupil, parents
 	InviteCode string    `xorm:"char(4) not null unique" json:"inviteCode"` // 招待ID
-	ValidUntil time.Time `xorm:"datetime not null" json:"validUntil" `
+	ValidUntil time.Time `xorm:"datetime not null" json:"validUntil" `      // 有効期限
 }
 
 // テーブル名
@@ -50,3 +50,5 @@ func GetClass(classUuid string) (Class, error) {
 
 	return class, nil
 }
+
+
