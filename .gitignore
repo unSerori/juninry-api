@@ -45,5 +45,8 @@ __debug_bin*
 # logging
 server.log
 
+# asset direcotry
+/asset/*/*
+
 # empty directory
 !.gitignore
