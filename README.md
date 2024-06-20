@@ -266,6 +266,42 @@ SSH URL:
       }
       ```
 
+#### お知らせの新規登録するエンドポイント
+
+- **URL:** `/v1/auth/users/notice/register`
+- **メソッド:** POST
+- **説明:** お知らせの新規登録をする
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+      {
+        "srvResData": {
+          "notices": {
+            "NoticeTitle": "【持ち物】おべんと",
+            "NoticeDate": "2024-06-11T03:23:39Z",
+            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "ClassUui": "09eba495-fe09-4f54-a856-9bea9536b661",
+        }},
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "authenticationToken": "トークン",
+          "srvResMsg": "OK"
+        },
+      }
+      ```
+
 ### API仕様書てんぷれ
 
 #### ＊○○＊するエンドポイント
