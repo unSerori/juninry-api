@@ -27,9 +27,6 @@ go.work
 # End of https://www.toptal.com/developers/gitignore/api/go
 SmaSurf Quick Search
 
-# empty directory
-!.gitignore
-
 # todo
 TODO*
 
@@ -47,3 +44,6 @@ __debug_bin*
 
 # logging
 server.log
+
+# empty directory
+!.gitignore
