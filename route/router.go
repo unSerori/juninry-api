@@ -58,10 +58,13 @@ func routing(engine *gin.Engine) {
 				notices := users.Group("/notice")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notices.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
+					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notice/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+
+					// お知らせの新規登録
+					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notice/register
 				}
 			}
 		}
