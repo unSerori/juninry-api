@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"juninry-api/logging"
 	"juninry-api/service"
 	"net/http"
@@ -54,5 +55,8 @@ func FindHomeworkHandler(c *gin.Context) {
 
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
+	// form fields
+	hwId := c.PostForm("homeworkUUID")
+	fmt.Printf("hwId: %v\n", hwId)
 	logging.SimpleLog("log test\n")
 }

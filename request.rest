@@ -1,0 +1,23 @@
+@base_url = http://localhost:4561
+@api_v = /v1
+@boundary = ----MyBoundary
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzQzMTM0NDcsImlkIjoiMTQyMmNhNjYtMzYxNi00ZDNlLWE4ZDMtMjg3NzE3YjQ1MzZlIiwianRpIjoiNmE4YmE2OWYtZGIyZC00OTY0LWI5YjMtNmE1NDkxOTM5MDM1In0.Wu9ddCiWPB4cysXo2QNULpi663ErY-hSxRK7hf0CPaw
+
+### テスト
+GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
+
+### 宿題提出
+POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="homeworkUUID";
+
+a3579e71-3be5-4b4d-a0df-1f05859a7104
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="pa.PNG"
+Content-Type: image/png
+
+<./asset/images/pa.PNG
+--{{boundary}}--
