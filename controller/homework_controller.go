@@ -54,5 +54,5 @@ func FindHomeworkHandler(c *gin.Context) {
 
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
-
+	logging.SimpleLog("log test\n")
 }
