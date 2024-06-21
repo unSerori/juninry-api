@@ -248,16 +248,14 @@ SSH URL:
 - **説明:** 宿題を提出する
 - **リクエスト:**
   - ヘッダー:
-    - `Content-Type`: application/json
+    - `Content-Type`: multipart/form-data
     - `Authorization`: (string) 認証トークン
-  - ボディ:
-
-    ```json
-    {
-      "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
-      "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
-    }
-    ```
+  - ボディ: Form - 宿題のID
+    - Form Fields
+      - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
+    - Files - 提出する宿題の画像
+      - images: page_67.jpg
+      - images: page_68.png
 
 - **レスポンス:**
   - ステータスコード: 201 Created
