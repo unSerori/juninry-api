@@ -32,7 +32,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 
-	// // ユーザーを特定する
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
 	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。
 		// エラーログ
