@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzQzMTM0NDcsImlkIjoiMTQyMmNhNjYtMzYxNi00ZDNlLWE4ZDMtMjg3NzE3YjQ1MzZlIiwianRpIjoiNmE4YmE2OWYtZGIyZC00OTY0LWI5YjMtNmE1NDkxOTM5MDM1In0.Wu9ddCiWPB4cysXo2QNULpi663ErY-hSxRK7hf0CPaw
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzQ0Njc0MzYsImlkIjoiZmUyNzExMGYtOTBjMS00MDAxLWI1NmYtNDNmNWUzNjk3YjFiIiwianRpIjoiMzU3OTBjNWEtNzEwOC00YjE1LWE5YmYtZTc2MGI4YWIwMWVlIn0.jS9tO9hqqBnO93cEHrN_TqxQjNNu7a6OFl0z1Qr360M
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -19,5 +19,10 @@ a3579e71-3be5-4b4d-a0df-1f05859a7104
 Content-Disposition: form-data; name="images"; filename="pa.PNG"
 Content-Type: image/png
 
-<./asset/images/pa.PNG
+< ./asset/images/pa.PNG
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="colombia.PNG"
+Content-Type: image/png
+
+< ./asset/images/colombia.jpg
 --{{boundary}}--

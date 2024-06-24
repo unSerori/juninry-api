@@ -3,10 +3,12 @@ package controller
 import (
 	"fmt"
 	"juninry-api/logging"
+	"juninry-api/model"
 	"juninry-api/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 var homeworkService = service.HomeworkService{}
@@ -55,8 +57,42 @@ func FindHomeworkHandler(c *gin.Context) {
 
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
-	// form fields
-	hwId := c.PostForm("homeworkUUID")
-	fmt.Printf("hwId: %v\n", hwId)
-	logging.SimpleLog("log test\n")
+	// form fields 構造体にマッピング
+	var bHW model.HomeworkSubmission     // 構造体のインスタンス
+	if err := c.Bind(&bHW); err != nil { // フォームフィールドの直接取得  hwId := c.PostForm("homeworkUUID")
+		// エラーログ
+		logging.ErrorLog("Failure to bind request.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// form files取得
+	form, err := c.MultipartForm() // フォームを取得
+	if err != nil {
+		return
+	}
+	images := form.File["images"] // スライス
+	// 保存先ディレクトリ
+	dst := "./upload/homework"
+	// それぞれのファイルを保存
+	for _, image := range images {
+		fmt.Printf("image.Filename: %v\n", image.Filename)
+		// ファイル名をuuidで作成
+		fileName, err := uuid.NewRandom() // 新しいuuidの生成
+		if err != nil {
+			return
+		}
+		// バリデーション
+		// TODO: 形式(png, jpg, jpeg, gif, HEIF)
+		// TODO: ファイルの種類->拡張子
+		// TODO: パーミッション
+		// 保存
+		c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+	}
+	c.JSON(200, gin.H{})
 }

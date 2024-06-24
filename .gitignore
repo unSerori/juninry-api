@@ -48,5 +48,8 @@ server.log
 # asset direcotry
 /asset/*/*
 
+# upload directory
+/upload/homework/*
+
 # empty directory
 !.gitignore
