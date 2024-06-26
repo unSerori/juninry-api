@@ -20,12 +20,13 @@ type ErrType int
 
 // エラーの種類を定義
 const ( // ========================ここに新しい独自のエラーを追加していく
-	ErrTypeCustom            ErrType = iota
-	ErrTypeHashingPassFailed         // ハッシュ化失敗
-	ErrTypeGenTokenFailed            // トークン作成失敗
-	ErrTypeNoResourceExist           // リソースが存在しない
-	ErrTypePassMismatch              // パスワードが一致しない
-	ErrTypePermissionDenied          // 権限がない
+	ErrTypeCustom             ErrType = iota
+	ErrTypeHashingPassFailed          // ハッシュ化失敗
+	ErrTypeGenTokenFailed             // トークン作成失敗
+	ErrTypeNoResourceExist            // リソースが存在しない
+	ErrTypePassMismatch               // パスワードが一致しない
+	ErrTypePermissionDenied           // 権限がない
+	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
 )
 
 // エラーに対するデフォルトmsgを設定
@@ -35,6 +36,7 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypeNoResourceExist:   "could not find the relevant ID",
 	ErrTypePassMismatch:      "password does not match",
 	ErrTypePermissionDenied:  "do not have the necessary permissions",
+	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる

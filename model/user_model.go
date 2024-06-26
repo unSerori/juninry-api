@@ -111,9 +111,9 @@ func GetJtiById(userUuid string) (string, error) {
 // アカウントタイプが教師かどうか判定して真偽値を返す
 func CheckIsTeacher(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
-
+	// TODO: 教員のみに制限する
 	// 該当ユーザの行を取得
-	isTeacher, err := db.Where("user_uuid = ?", userUuid).Exist(&user)
+	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 2", userUuid).Exist(&user)
 	if err != nil {
 		return false, err // エラーが出てるのにfalse返すのきしょいかも
 	}

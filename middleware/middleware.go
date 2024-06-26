@@ -77,6 +77,6 @@ func SingleExecutionMiddleware() gin.HandlerFunc {
 		lock.Lock()
 		defer lock.Unlock()
 
-		c.Next()	// エンドポイントの処理に移行
+		c.Next() // エンドポイントの処理に移行
 	}
 }

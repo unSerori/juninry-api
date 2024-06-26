@@ -1,13 +1,15 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 // クラステーブル
 type Class struct {
-	ClassUuid  string    `xorm:"varchar(36) pk" json:"classUUID"`           // クラスID
-	ClassName  string    `xorm:"varchar(15) not null" json:"className"`     // クラス名  // teacher, pupil, parents
-	InviteCode string    `xorm:"char(4) not null unique" json:"inviteCode"` // 招待ID
-	ValidUntil time.Time `xorm:"datetime not null" json:"validUntil" `      // 有効期限
+	ClassUuid  string    `xorm:"varchar(36) pk" json:"classUUID"`       // クラスID
+	ClassName  string    `xorm:"varchar(15) not null" json:"className"` // クラス名  // teacher, pupil, parents
+	InviteCode string    `xorm:"char(4) unique" json:"inviteCode"`      // 招待ID
+	ValidUntil time.Time `xorm:"datetime" json:"validUntil" `           // 有効期限
 }
 
 // テーブル名
@@ -51,4 +53,15 @@ func GetClass(classUuid string) (Class, error) {
 	return class, nil
 }
 
+// 新規ユーザ登録
+// 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、成功した列数とerrorを返す
+func CreateClass(record Class) (int64, error) {
+	affected, err := db.Insert(record)
+	return affected, err
+}
 
+// 招待コード更新
+func UpdateInviteCode(record Class) (int64, error) {
+	affected, err := db.Where("class_uuid = ?", record.ClassUuid).Cols("invite_code", "valid_until").Update(&record)
+	return affected, err
+}
