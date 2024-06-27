@@ -6,17 +6,15 @@ juninryのGo APIサーバ。
 
 ### 環境
 
-Visual Studio Code: 1.88.1
-golang.Go: v0.41.4
-image Golang: go version go1.22.2 linux/amd64
+Visual Studio Code: 1.88.1  
+golang.Go: v0.41.4  
+image Golang: go version go1.22.2 linux/amd64  
 
 ## 環境構築
 
-test
-
-1. 以下のDocker環境を作成
-[リポジトリURL](https://github.com/unSerori/docker-juninry)
-SSH URL:
+1. 以下のDocker環境を作成  
+[リポジトリURL](https://github.com/unSerori/docker-juninry)  
+SSH URL:  
 
     ```SSH:SSH URL
     git@github.com:unSerori/juninry-api.git
@@ -28,7 +26,7 @@ SSH URL:
     ```bash
     # カレントディレクトリにリポジトリの中身を展開
     git clone git@github.com:unSerori/juninry-api.git .
-
+    
     # developブランチに移動
     git switch develop
     ```
@@ -36,7 +34,7 @@ SSH URL:
 4. shareディレクトリ内で以下のコマンド。
 
     ```bash:Build an environment
-    # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。
+    # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。  
     cat vscode-ext.txt | while read line; do code --install-extension $line; done
     ```
 
@@ -164,7 +162,7 @@ SSH URL:
       {
         "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
@@ -221,7 +219,7 @@ SSH URL:
       {
         "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
@@ -308,7 +306,7 @@ SSH URL:
       {
         "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-
+        
         },
       }
       ```
@@ -319,7 +317,7 @@ APIがエラーを返す場合、詳細なエラーメッセージが含まれ�
 
 ## SERVER ERROR MESSAGE
 
-サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。
+サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。  
 サーバーレスポンスステータスコードと合わせてデバックする。
 
 ## .ENV
