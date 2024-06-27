@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -64,13 +63,5 @@ func CreateClass(record Class) (int64, error) {
 // 招待コード更新
 func UpdateInviteCode(record Class) (int64, error) {
 	affected, err := db.Where("class_uuid = ?", record.ClassUuid).Cols("invite_code", "valid_until").Update(&record)
-	fmt.Println(affected)
-	fmt.Println(affected)
-	fmt.Println(affected)
-	fmt.Println(affected)
-	fmt.Println(affected)
-	fmt.Println(affected)
-	fmt.Println(affected)
-
 	return affected, err
 }
