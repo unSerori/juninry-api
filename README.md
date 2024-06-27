@@ -12,6 +12,8 @@ image Golang: go version go1.22.2 linux/amd64
 
 ## 環境構築
 
+test
+
 1. 以下のDocker環境を作成
 [リポジトリURL](https://github.com/unSerori/docker-juninry)
 SSH URL:
