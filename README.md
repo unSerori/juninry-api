@@ -202,28 +202,90 @@ SSH URL:
 
 #### クラスを新規登録するエンドポイント
 
-- **URL:** `/v1/auth/class/register`
+- **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
-- **説明:** ＊○○＊
+- **説明:** ＊クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。＊
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
   - ボディ:
-    ＊さまざまな形式のボディ値＊
+
+    ```json
+    {
+      "className": "クラスを立てる"
+    }
+    ```
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
+  - ステータスコード: 201 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
-        "srvResData": {
-        
-        },
+          "srvResMsg": "Created",
+          "srvResData": {
+            "classUUID": "19ea35a6-1e43-4cdd-bc2e-f6c790f0858e",
+            "className": "クラスを立てる",
+            "inviteCode": "1385",
+            "validUntil": "2024-07-04T00:49:41.462371507Z"
+          }
       }
       ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+#### クラスの招待IDを更新するエンドポイント
+
+- **URL:** `v1/auth/users/classes/refresh/{class_uuid}`
+- **メソッド:** PUT
+- **説明:** ＊クラスの招待IDを更新する＊
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "classUUID": "53faea61-ae69-45e9-8b66-73481f9ca879",
+          "className": "最新のクラス",
+          "inviteCode": "7895",
+          "validUntil": "2024-07-04T03:15:25Z"
+        },
+        "srvResMsg": "Created"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+  - ステータスコード: 404 Not Found
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {},
+          "srvResMsg": "Not Found"
+        }
+        ```
 
 #### ログインするエンドポイント
 
