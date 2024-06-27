@@ -43,8 +43,8 @@ func RegisterClassHandler(c *gin.Context) {
 	if err != nil {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
-			// 権限を持っていない場合
-			if serviceErr.Type == common.ErrTypePermissionDenied {
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
@@ -52,8 +52,7 @@ func RegisterClassHandler(c *gin.Context) {
 					"srvResData": gin.H{},
 				})
 				return
-				// 招待番号の生成に失敗した場合
-			} else if serviceErr.Type == common.ErrTypeMaxAttemptsReached {
+			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
 				logging.ErrorLog("Max attempts reached", err)
 			}
 		} else {
@@ -96,17 +95,13 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	// クラスUUIDを取得
 	classUuid := c.Param("class_uuid")
 
-	//構造体に値をバインド
-	var bClass model.Class
-	bClass.ClassUuid = classUuid
-
 	// 招待コード登録します
-	class, err:= ClassService.GenerateInviteCode(idAdjusted,bClass)
+	class, err := ClassService.PermissionCheckedRefreshInviteCode(idAdjusted, classUuid)
 	if err != nil {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
-			// 権限を持っていない場合
-			if serviceErr.Type == common.ErrTypePermissionDenied {
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
@@ -114,8 +109,15 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 					"srvResData": gin.H{},
 				})
 				return
-				// 招待番号の生成に失敗した場合
-			} else if serviceErr.Type == common.ErrTypeMaxAttemptsReached {
+			case common.ErrTypeNoResourceExist: // リソースがない
+				logging.ErrorLog("The resource does not exist", err)
+				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
 				logging.ErrorLog("Max attempts reached", err)
 			}
 		} else {
@@ -131,7 +133,7 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	}
 
 	// レスポンス
-	resStatusCode := http.StatusOK
+	resStatusCode := http.StatusCreated
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": class,
