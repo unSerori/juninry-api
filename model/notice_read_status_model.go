@@ -47,3 +47,9 @@ func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
 
 	return has, nil
 }
+
+// お知らせ確認登録
+func ReadNotice(record NoticeReadStatus) (int64, error){
+	affected, err := db.Insert(record)
+	return affected, err
+}

@@ -1,11 +1,16 @@
 package controller
 
 import (
+	"errors"
+	"fmt"
+	common "juninry-api/common"
 	"juninry-api/logging"
+	"juninry-api/model"
 	"juninry-api/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 )
 
 var noticeService = service.NoticeService{} // サービスの実体を作る。
@@ -74,4 +79,107 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 			"notices": notices,
 		},
 	})
+}
+
+// お知らせ既読処理
+func NoticeReadHandler(ctx *gin.Context) {
+
+	fmt.Println("ああああああああ")
+
+	// ユーザーを特定する
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	//notice_uuidの取得
+	noticeUuid := ctx.Param("notice_uuid")
+
+	fmt.Println(idAdjusted + "ああああああああ" + noticeUuid)
+
+	// 構造体にマッピング
+	var bRead model.NoticeReadStatus // 構造体のインスタンス
+	if err := ctx.ShouldBindJSON(&bRead); err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to bind request.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// 登録処理と失敗レスポンス
+	// TODO:めそっどめいいれろくそが
+	token, err := noticeService.sssss(bRead)
+	if err != nil { // エラーハンドル
+		// 処理で発生したエラーのうちDB関連のエラーのみ
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
+			// 本処理時のエラーごとに処理(:DBエラー)
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				// エラーログ
+				logging.ErrorLog("It has already been processed as read.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default:
+				// エラーログ
+				logging.ErrorLog("New user registration was not possible due to other DB problems.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
+
+		// 処理で発生したエラーのうちDB関連でないもの
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) {
+			//　TODO:エラーハンドリング書けよ
+			// 本処理時のエラーごとに処理(:DBエラー以外)
+			switch serviceErr.Type {
+			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
+				// エラーログ
+				logging.ErrorLog("New user registration was not possible due to other problems.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
+		return // エラーレスポンス後に終了
+	}
+
+	// 処理後の成功
+	// 成功ログ
+	logging.SuccessLog("The read process was completed.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"authenticationToken": token,
+		},
+	})
+
 }
