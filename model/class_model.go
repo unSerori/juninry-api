@@ -65,3 +65,4 @@ func UpdateInviteCode(record Class) (int64, error) {
 	affected, err := db.Where("class_uuid = ?", record.ClassUuid).Cols("invite_code", "valid_until").Update(&record)
 	return affected, err
 }
+

@@ -18,7 +18,7 @@ type ClassService struct{}
 func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass model.Class) (model.Class, error) {
 
 	// クラス作成権限を持っているか確認
-	isTeacher, err := model.CheckIsTeacher(userUuid)
+	isTeacher, err := model.IsTeacher(userUuid)
 	if err != nil { // エラーハンドル
 		return model.Class{}, err
 	}
@@ -42,12 +42,6 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 		return model.Class{}, err
 	}
 
-	// 招待コード生成
-	bClass, err = s.generateInviteCode(bClass)
-	if err != nil { // エラーハンドル
-		return model.Class{}, err
-	}
-
 	// 所属構造体にユーザーIDとクラスIDをバインド
 	classMemberships := model.ClassMembership{
 		ClassUuid: bClass.ClassUuid,
@@ -60,12 +54,26 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 		return model.Class{}, err
 	}
 
-	//エラーが出なかった場合、コミットして作成したクラスを返す
-	return bClass, nil
+	// 招待コード入ったクラスもらえます！
+	class, err := s.GenerateInviteCode(userUuid, bClass)
+	if err != nil { // エラーハンドル
+		return model.Class{}, err
+	}
 
+	//エラーが出なかった場合、コミットして作成したクラスを返す
+	return class, nil
 }
 
-func (s *ClassService) generateInviteCode(bClass model.Class) (model.Class, error) {
+func (s *ClassService) GenerateInviteCode(userUuid string, bClass model.Class) (model.Class, error) {
+	// クラス作成権限を持っているか確認
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return model.Class{}, err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return model.Class{}, common.NewErr(common.ErrTypePermissionDenied)
+	}
 
 	// 有効な招待コードが無ければ新しい招待コードを作る
 	// 有効期限を1週間後に設定
@@ -94,8 +102,13 @@ func (s *ClassService) generateInviteCode(bClass model.Class) (model.Class, erro
 				return model.Class{}, err
 			}
 		}
-		// クラス返して
-		return bClass, nil
+
+		// 出来上がったものをもらう
+		class, err := model.GetClass(bClass.ClassUuid)
+		if err != nil { // エラーハンドル
+			return model.Class{}, err // 出来上がったものが取得できないことありますか？
+		}
+		return class, nil
 	}
 
 	// 試行回数10回以上で失敗したらエラーを返す

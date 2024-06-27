@@ -65,10 +65,14 @@ func routing(engine *gin.Engine) {
 				}
 
 				// classesグループ
-				classes := users.Group("/class")
+				classes := users.Group("/classes")
 				{
 					// クラスを作成する
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
+
+
+					// 招待コードを更新する
+					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
 
 				}
 			}
