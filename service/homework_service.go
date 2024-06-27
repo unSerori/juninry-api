@@ -1,7 +1,9 @@
 package service
 
 import (
+	"errors"
 	"juninry-api/model"
+	"mime/multipart"
 	"time"
 )
 
@@ -66,4 +68,8 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 
 	//できたら返す
 	return transformedDataList, nil
+}
+
+func (s *HomeworkService) SubmitHomework(bHW model.HomeworkSubmission, form *multipart.Form) error {
+	return errors.New("hoge")
 }

@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 var homeworkService = service.HomeworkService{}
@@ -70,29 +68,40 @@ func SubmitHomeworkHandler(c *gin.Context) {
 		})
 		return
 	}
-
 	// form files取得
 	form, err := c.MultipartForm() // フォームを取得
 	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failed to retrieve image request.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
 		return
 	}
-	images := form.File["images"] // スライス
-	// 保存先ディレクトリ
-	dst := "./upload/homework"
-	// それぞれのファイルを保存
-	for _, image := range images {
-		fmt.Printf("image.Filename: %v\n", image.Filename)
-		// ファイル名をuuidで作成
-		fileName, err := uuid.NewRandom() // 新しいuuidの生成
-		if err != nil {
-			return
-		}
-		// バリデーション
-		// TODO: 形式(png, jpg, jpeg, gif, HEIF)
-		// TODO: ファイルの種類->拡張子
-		// TODO: パーミッション
-		// 保存
-		c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
-	}
-	c.JSON(200, gin.H{})
+
+	// 提出記録処理と失敗レスポンス
+	err = homeworkService.SubmitHomework(bHW, form)
+
+	// images := form.File["images"] // スライス
+	// // 保存先ディレクトリ
+	// dst := "./upload/homework"
+	// // それぞれのファイルを保存
+	// for _, image := range images {
+	// 	fmt.Printf("image.Filename: %v\n", image.Filename)
+	// 	// ファイル名をuuidで作成
+	// 	fileName, err := uuid.NewRandom() // 新しいuuidの生成
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// 	// バリデーション
+	// 	// TODO: 形式(png, jpg, jpeg, gif, HEIF)
+	// 	// TODO: ファイルの種類->拡張子
+	// 	// TODO: パーミッション
+	// 	// 保存
+	// 	c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+	// }
+	// c.JSON(200, gin.H{})
 }
