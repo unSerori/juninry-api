@@ -80,7 +80,7 @@ SSH URL:
 
 #### クラスの課題情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/users/homework/upcoming`
+- **URL:** `/v1/auth/users/homeworks/upcoming`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスの期限が先のものを取得
 - **リクエスト:**
@@ -93,6 +93,7 @@ SSH URL:
 
       ```json
         {
+          "srvResMsg": "OK",
           "srvResData": [
             {
               "homeworkLimit": "0001-01-01T00:00:00Z",
