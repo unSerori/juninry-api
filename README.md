@@ -263,6 +263,16 @@ SSH URL:
       }
       ```
 
+  - ステータスコード: 404 Not Found
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {},
+          "srvResMsg": "Not Found"
+        }
+        ```
+
 #### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`
