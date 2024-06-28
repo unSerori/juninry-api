@@ -104,25 +104,14 @@ func NoticeReadHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	fmt.Println(idAdjusted + "ああああああああ" + noticeUuid)
-
 	// 構造体にマッピング
-	var bRead model.NoticeReadStatus // 構造体のインスタンス
-	if err := ctx.ShouldBindJSON(&bRead); err != nil {
-		// エラーログ
-		logging.ErrorLog("Failure to bind request.", err)
-		// レスポンス
-		resStatusCode := http.StatusBadRequest
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
+	bRead := model.NoticeReadStatus{
+		NoticeUuid: noticeUuid,
+		UserUuid: idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
-	// TODO:めそっどめいいれろくそが
-	token, err := noticeService.sssss(bRead)
+	err := noticeService.ReadNotice(bRead) 
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
@@ -178,7 +167,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	ctx.JSON(resStatusCode, gin.H{
 		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
-			"authenticationToken": token,
+			//TODO:返すものがあるなら入れる
 		},
 	})
 
