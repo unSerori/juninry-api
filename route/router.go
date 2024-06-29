@@ -48,23 +48,23 @@ func routing(engine *gin.Engine) {
 				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
 
 				// homeworksグループ
-				homeworks := users.Group("/homework")
+				homeworks := users.Group("/homeworks")
 				{
 					// 期限がある課題一覧を取得
-					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
+					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+
+					// 宿題の提出
+					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
 				}
 
 				// noticeグループ
-				notices := users.Group("/notice")
+				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notice/notices
+					notices.GET("/notices", controller.CfmReq) // /v1/auth/users/notice/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
-
-					// お知らせの新規登録
-					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notice/register
+					notices.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notice/{notice_uuid}
 				}
 			}
 		}

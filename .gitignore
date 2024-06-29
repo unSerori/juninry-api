@@ -27,6 +27,15 @@ go.work
 # End of https://www.toptal.com/developers/gitignore/api/go
 SmaSurf Quick Search
 
+# todo
+TODO*
+
+# メモファイル
+memo.txt
+
+# .vscode
+/.vscode/
+
 # envファイル
 .env
 
@@ -36,14 +45,8 @@ __debug_bin*
 # logging
 server.log
 
-# メモファイル
-memo.txt
+# asset direcotry
+/asset/*/*
 
-# todo
-TODO*
-
-# thunder-collection
-#thunder-collection*
-
-# .vscode
-/.vscode/
+# empty directory
+!.gitignore
