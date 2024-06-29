@@ -51,3 +51,8 @@ func FindHomeworkHandler(c *gin.Context) {
 		"srvResData": homeworkList,
 	})
 }
+
+// 宿題提出
+func SubmitHomeworkHandler(c *gin.Context) {
+
+}
