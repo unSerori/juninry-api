@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"juninry-api/auth"
 	"juninry-api/common"
+	"juninry-api/logging"
 	"juninry-api/model"
 	"time"
 
@@ -13,27 +13,32 @@ import (
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
 // noticeの新規登録
-func (s *NoticeService) RegisterNotice(bNotice model.Notice) (string, error) {
+func (s *NoticeService) RegisterNotice(bNotice model.Notice) (error) {
+
+	//先生かのタイプチェック
+	isTeacher, err := model.IsTeacher(bNotice.UserUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return common.NewErr(common.ErrTypePermissionDenied)
+	}
+
 	// notice_uuidを生成
 	noticeId, err := uuid.NewRandom() //新しいuuidの作成
 	if err != nil {
-		return "", err
+		return err
 	}
 	bNotice.NoticeUuid = noticeId.String() //設定
 
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	// 登録が成功したらトークンを生成する
-	token, err := auth.GenerateToken(bNotice.NoticeUuid) // トークンを取得
-	if err != nil {
-		return "", common.NewErr(common.ErrTypeGenTokenFailed, common.WithMsg(err.Error()))
-	}
-
-	return token, nil
+	return nil
 }
 
 // おしらせテーブル(1件取得用)

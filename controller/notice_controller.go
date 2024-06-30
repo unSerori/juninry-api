@@ -49,7 +49,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	fmt.Println(idAdjusted)		//　アサーションの確認
 
 	// 登録処理と失敗レスポンス
-	token, err := noticeService.RegisterNotice(bNotice)
+	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
@@ -111,9 +111,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
 		"srvResMsg": http.StatusText(resStatusCode),
-		"srvResData": gin.H{
-			"authenticationToken": token,
-		},
+		"srvResData": gin.H{},
 	})
 
 }
