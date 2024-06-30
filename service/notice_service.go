@@ -3,8 +3,9 @@ package service
 import (
 	"fmt"
 	"juninry-api/auth"
-	"juninry-api/common"
+	"juninry-api/logging"
 	"juninry-api/model"
+	"juninry-api/common"
 	"time"
 
 	"github.com/google/uuid"
@@ -185,11 +186,20 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 }
 
 // noticeの既読登録
-func (s *NoticeService) ReadNotice(bNotice model.NoticeReadStatus) error {
+func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 
-	fmt.Println(bNotice)
+  // クラス作成権限を持っているか確認
+	isTeacher, err := model.IsParent(bRead.UserUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return common.NewErr(common.ErrTypePermissionDenied)
+	}
+
 	// 構造体をレコード登録処理に投げる
-	err := model.ReadNotice(bNotice) // 第一返り血は登録成功したレコード数
+	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
 	if err != nil {
 		return err
 	}

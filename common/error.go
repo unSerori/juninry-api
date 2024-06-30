@@ -25,6 +25,7 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypeGenTokenFailed            // トークン作成失敗
 	ErrTypeNoResourceExist           // リソースが存在しない
 	ErrTypePassMismatch              // パスワードが一致しない
+	ErrTypePermissionDenied           // 権限がない
 )
 
 // エラーに対するデフォルトmsgを設定
@@ -33,6 +34,7 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypeGenTokenFailed:    "",
 	ErrTypeNoResourceExist:   "could not find the relevant ID",
 	ErrTypePassMismatch:      "password does not match",
+	ErrTypePermissionDenied:  "do not have the necessary permissions",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる

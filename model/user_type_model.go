@@ -22,7 +22,7 @@ func CreateUserTypeTestData() {
 	}
 	db.Insert(ut2)
 	ut3 := &UserType{
-		UserType: "patron",
+		UserType: "parent",
 	}
 	db.Insert(ut3)
 }
