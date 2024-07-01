@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	common "juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
@@ -84,8 +83,6 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 // お知らせ既読処理
 func NoticeReadHandler(ctx *gin.Context) {
 
-	fmt.Println("ああああああああ")
-
 	// ユーザーを特定する
 	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。
@@ -142,7 +139,6 @@ func NoticeReadHandler(ctx *gin.Context) {
 		// 処理で発生したエラーのうちDB関連でないもの
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) {
-			//　TODO:エラーハンドリング書けよ
 			// 本処理時のエラーごとに処理(:DBエラー以外)
 			switch serviceErr.Type {
 			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
