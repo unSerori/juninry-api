@@ -80,26 +80,40 @@ SSH URL:
 
 #### クラスの課題情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/users/homework/upcoming`
+- **URL:** `/v1/auth/users/homeworks/upcoming`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスの期限が先のものを取得
 - **リクエスト:**
   - ヘッダー:
-    - `Content-Type`: application/json
-    - `Authorization`: (string) 認証トークン
+    - Authorization: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
-      {
-        "srvResMsg":  "レスポンスステータスメッセージ",
-        "srvResData": {
-        
-        },
-      }
+        {
+          "srvResMsg": "OK",
+          "srvResData": [
+            {
+              "homeworkLimit": "0001-01-01T00:00:00Z",
+              "homeworkData": [
+                {
+                  "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
+                  "startPage": 24,
+                  "pageCount": 2,
+                  "homeworkNote": "がんばってくださ～い＾＾",
+                  "teachingMaterialName": "漢字ドリル3",
+                  "subjectId": 1,
+                  "subjectName": "国語",
+                  "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
+                  "className": "3-2 ふたば学級",
+                  "submitFlag": 1  // 提出フラグ 1 提出 0 未提出
+                },,,
+              ]
+            },,,
+          ]
+        }
       ```
 
 #### クラスのおてがみ情報一覧を取得するエンドポイント
@@ -188,28 +202,90 @@ SSH URL:
 
 #### クラスを新規登録するエンドポイント
 
-- **URL:** `/v1/auth/class/register`
+- **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
-- **説明:** ＊○○＊
+- **説明:** ＊クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。＊
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
   - ボディ:
-    ＊さまざまな形式のボディ値＊
+
+    ```json
+    {
+      "className": "クラスを立てる"
+    }
+    ```
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
+  - ステータスコード: 201 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
-        "srvResData": {
-        
-        },
+          "srvResMsg": "Created",
+          "srvResData": {
+            "classUUID": "19ea35a6-1e43-4cdd-bc2e-f6c790f0858e",
+            "className": "クラスを立てる",
+            "inviteCode": "1385",
+            "validUntil": "2024-07-04T00:49:41.462371507Z"
+          }
       }
       ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+#### クラスの招待IDを更新するエンドポイント
+
+- **URL:** `v1/auth/users/classes/refresh/{class_uuid}`
+- **メソッド:** PUT
+- **説明:** ＊クラスの招待IDを更新する＊
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "classUUID": "53faea61-ae69-45e9-8b66-73481f9ca879",
+          "className": "最新のクラス",
+          "inviteCode": "7895",
+          "validUntil": "2024-07-04T03:15:25Z"
+        },
+        "srvResMsg": "Created"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+  - ステータスコード: 404 Not Found
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {},
+          "srvResMsg": "Not Found"
+        }
+        ```
 
 #### ログインするエンドポイント
 

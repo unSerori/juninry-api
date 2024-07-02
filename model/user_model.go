@@ -108,6 +108,19 @@ func GetJtiById(userUuid string) (string, error) {
 	return user.JtiUuid, nil
 }
 
+// アカウントタイプが教師かどうか判定して真偽値を返す
+func IsTeacher(userUuid string) (bool, error) {
+	var user User // 取得したデータをマッピングする構造体
+	// TODO: 教員のみに制限する
+	// 該当ユーザの行を取得
+	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 1", userUuid).Exist(&user)
+	if err != nil {
+		return false, err // エラーが出てるのにfalse返すのきしょいかも
+	}
+
+	return isTeacher, nil
+}
+
 // メアドからユーザーが存在するか確認
 func CheckUserExists(mail string) (error, bool) {
 	var user User // 取得したデータをマッピングする構造体
