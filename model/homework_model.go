@@ -34,11 +34,15 @@ func InitHomeworkFK() error {
 
 // テストデータ
 func CreateHomeworkTestData() {
-	parsedTime, _ := time.Parse(time.RFC3339, "2024-06-03 06:14:11.515967422 +0000 UTC m=+0.318201036")
-	fmt.Println("homework_limit: ", parsedTime)
+	afterSixMonth := time.Now().AddDate(0, 6, 0)
+	afterOneYear := time.Now().AddDate(1, 0, 0)
+
+	fmt.Println(afterSixMonth)
+	fmt.Println(afterOneYear)
+
 	homework1 := &Homework{
 		HomeworkUuid:         "a3579e71-3be5-4b4d-a0df-1f05859a7104",
-		HomeworkLimit:        parsedTime,
+		HomeworkLimit:        afterOneYear,
 		TeachingMaterialUuid: "978f9835-5a16-4ac0-8581-7af8fac06b4e",
 		StartPage:            24,
 		PageCount:            2,
@@ -48,7 +52,7 @@ func CreateHomeworkTestData() {
 	db.Insert(homework1)
 	homework2 := &Homework{
 		HomeworkUuid:         "K2079e71-3be5-4b4d-a0df-1f05859a7104",
-		HomeworkLimit:        parsedTime,
+		HomeworkLimit:        afterSixMonth,
 		TeachingMaterialUuid: "978f9835-5a16-4ac0-8581-7af8fac06b4e",
 		StartPage:            30,
 		PageCount:            5,
@@ -58,7 +62,7 @@ func CreateHomeworkTestData() {
 	db.Insert(homework2)
 	homework3 := &Homework{
 		HomeworkUuid:         "K3079e71-3be5-4b4d-a0df-1f05859a7104",
-		HomeworkLimit:        parsedTime,
+		HomeworkLimit:        afterSixMonth,
 		TeachingMaterialUuid: "978f9835-5a16-4ac0-8581-7af8fac06b4e",
 		StartPage:            25,
 		PageCount:            1,
@@ -67,4 +71,3 @@ func CreateHomeworkTestData() {
 	}
 	db.Insert(homework3)
 }
-

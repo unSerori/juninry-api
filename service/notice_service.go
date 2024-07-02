@@ -2,11 +2,45 @@ package service
 
 import (
 	"fmt"
+	"juninry-api/common"
+	"juninry-api/logging"
 	"juninry-api/model"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
+
+// noticeの新規登録
+func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
+
+	//先生かのタイプチェック
+	isTeacher, err := model.IsTeacher(bNotice.UserUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	// notice_uuidを生成
+	noticeId, err := uuid.NewRandom() //新しいuuidの作成
+	if err != nil {
+		return err
+	}
+	bNotice.NoticeUuid = noticeId.String() //設定
+
+	// 構造体をレコード登録処理に投げる
+	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
@@ -25,9 +59,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	if err != nil {
 		return NoticeDetail{}, err //nilで返せない!不思議!!
 	}
-
-	//確認用
-	// fmt.Println(noticeDetail)
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
@@ -95,8 +126,8 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
 
-		//TODO:キモイコードどうにかする(まじで解決しろ)
-		save := userUuid
+		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
+		userUuidSave := userUuid
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
@@ -124,7 +155,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
 		//確認しているか取得
-		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, save)
+		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, userUuidSave)
 		if err != nil {
 			return []Notice{}, err
 		}
@@ -139,7 +170,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
 		//宣言したスライスに追加していく
 		// formattedAllNotices = append(formattedAllNotices, notices)
-		temp = append(temp, notices)		//並べ替えるために一時的にtempに保存する
+		temp = append(temp, notices) //並べ替えるために一時的にtempに保存する
 	}
 
 	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
@@ -154,4 +185,26 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 	fmt.Println(formattedAllNotices)
 
 	return formattedAllNotices, nil
+}
+
+// noticeの既読登録
+func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
+
+	// クラス作成権限を持っているか確認
+	isParent, err := model.IsParent(bRead.UserUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+	if !isParent { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	// 構造体をレコード登録処理に投げる
+	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

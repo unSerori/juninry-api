@@ -6,12 +6,12 @@ import (
 
 // おしらせテーブル
 type Notice struct { // typeで型の定義, structは構造体
-	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`        // おしらせの一意ID　○
-	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle"` // おしらせのタイトル　○
+	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`        // おしらせの一意ID
+	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle"` // おしらせのタイトル
 	NoticeExplanatory string    `xorm:"text" json:"noticeExplanatory"`           // おしらせ内容
-	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`     // おしらせの時刻　○
-	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`    // おしらせ発行ユーザ　○
-	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID"`   // どのクラスのお知らせか　○
+	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`     // おしらせの時刻
+	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`    // おしらせ発行ユーザ
+	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID"`   // どのクラスのお知らせか
 }
 
 // テーブル名
@@ -61,7 +61,14 @@ func CreateNoticeTestData() {
 
 }
 
-// classUuidで絞り込んだ結果を返す
+// 新規お知らせ登録
+func CreateNotice(record Notice) (int64, error){
+	
+	affected, err := db.Insert(record)
+	return affected, err
+}
+
+// classUuidで絞り込んだnoticeの結果を返す
 func FindNotices(classUuids []string) ([]Notice, error) {
 
 	// 結果を格納する変数宣言(findの結果)
@@ -80,6 +87,7 @@ func FindNotices(classUuids []string) ([]Notice, error) {
 	return notices, nil
 }
 
+// noticeUuidで絞り込んだnoticeの詳細を返す
 func GetNoticeDetail(noticeUuid string) (Notice, error) {
 
 	//結果格納用変数
