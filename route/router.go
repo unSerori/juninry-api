@@ -64,8 +64,11 @@ func routing(engine *gin.Engine) {
 					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notices/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 
+					//　お知らせ新規登録
+					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
+          
 					// お知らせ既読済み処理
 					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
 				}
