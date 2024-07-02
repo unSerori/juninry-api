@@ -83,25 +83,19 @@ func SubmitHomeworkHandler(c *gin.Context) {
 	}
 
 	// 提出記録処理と失敗レスポンス
-	err = homeworkService.SubmitHomework(bHW, form)
+	err = homeworkService.SubmitHomework(c, bHW, form)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		return
+	}
 
-	// images := form.File["images"] // スライス
-	// // 保存先ディレクトリ
-	// dst := "./upload/homework"
-	// // それぞれのファイルを保存
-	// for _, image := range images {
-	// 	fmt.Printf("image.Filename: %v\n", image.Filename)
-	// 	// ファイル名をuuidで作成
-	// 	fileName, err := uuid.NewRandom() // 新しいuuidの生成
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// 	// バリデーション
-	// 	// TODO: 形式(png, jpg, jpeg, gif, HEIF)
-	// 	// TODO: ファイルの種類->拡張子
-	// 	// TODO: パーミッション
-	// 	// 保存
-	// 	c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
-	// }
-	// c.JSON(200, gin.H{})
+	// 成功レスポンス 200番
+	// 成功ログ
+	logging.SuccessLog("Successful submission homework.")
+	// レスポンス
+	resStatusCode := http.StatusCreated
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": gin.H{},
+	})
 }

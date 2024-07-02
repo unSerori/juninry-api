@@ -2,9 +2,13 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"juninry-api/model"
 	"mime/multipart"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HomeworkService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
@@ -70,6 +74,34 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	return transformedDataList, nil
 }
 
-func (s *HomeworkService) SubmitHomework(bHW model.HomeworkSubmission, form *multipart.Form) error {
+// 宿題登録処理
+func (s *HomeworkService) SubmitHomework(c *gin.Context, bHW model.HomeworkSubmission, form *multipart.Form) error {
+	// 画像の保存
+	images := form.File["images"] // スライスからimages fieldを取得
+	// 保存先ディレクトリ
+	dst := "./upload/homework"
+	// それぞれのファイルを保存
+	for _, image := range images {
+		fmt.Printf("image.Filename: %v\n", image.Filename)
+		// ファイル名をuuidで作成
+		fileName, err := uuid.NewRandom() // 新しいuuidの生成
+		if err != nil {
+			return err
+		}
+		// バリデーション
+		// TODO: 形式(png, jpg, jpeg, gif, HEIF)
+		// TODO: ファイルの種類->拡張子
+		// TODO: パーミッション
+		// 保存
+		c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+	}
+
+	// 画像名スライスを文字列に変換し、
+	// list :=
+	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
+	// bHW.list =
+	// テーブルに追加。
+	// ins
+
 	return errors.New("hoge")
 }
