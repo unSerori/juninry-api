@@ -27,7 +27,7 @@ func FindUserHomework(userUuid string) ([]UserHomework, error) {
 	//クソデカ構造体をとるすごいやつだよ
 	err := db.Table("homeworks").
 		Join("LEFT", "teaching_materials", "homeworks.teaching_material_uuid = teaching_materials.teaching_material_uuid").
-		Where("homework_limit > ?", "now()").
+		Where("homework_limit > ?", time.Now()).
 		Join("LEFT", "subjects", "teaching_materials.subject_id = subjects.subject_id").
 		Join("LEFT", "class_memberships", "teaching_materials.class_uuid = class_memberships.class_uuid").
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
