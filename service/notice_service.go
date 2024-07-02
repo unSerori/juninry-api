@@ -5,7 +5,6 @@ import (
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
-	"juninry-api/common"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +13,7 @@ import (
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
 // noticeの新規登録
-func (s *NoticeService) RegisterNotice(bNotice model.Notice) (error) {
+func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 	//先生かのタイプチェック
 	isTeacher, err := model.IsTeacher(bNotice.UserUuid)
@@ -191,7 +190,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 // noticeの既読登録
 func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 
-  // クラス作成権限を持っているか確認
+	// クラス作成権限を持っているか確認
 	isParent, err := model.IsParent(bRead.UserUuid)
 	if err != nil { // エラーハンドル
 		return err
