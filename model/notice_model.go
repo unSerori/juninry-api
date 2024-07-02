@@ -66,7 +66,6 @@ func CreateNotice(record Notice) (int64, error){
 	
 	affected, err := db.Insert(record)
 	return affected, err
-
 }
 
 // classUuidで絞り込んだnoticeの結果を返す

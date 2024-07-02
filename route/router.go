@@ -68,11 +68,23 @@ func routing(engine *gin.Engine) {
 
 					//　お知らせ新規登録
 					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
+          
+					// お知らせ既読済み処理
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+				}
+
+				// classesグループ
+				classes := users.Group("/classes")
+				{
+					// クラスを作成する
+					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
+
+					// 招待コードを更新する
+					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
 				}
 			}
 		}
 	}
-
 }
 
 // ファイルを設定

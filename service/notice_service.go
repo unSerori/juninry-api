@@ -5,6 +5,7 @@ import (
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
+	"juninry-api/common"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,6 +40,7 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) (error) {
 	}
 
 	return nil
+
 }
 
 // おしらせテーブル(1件取得用)
@@ -58,9 +60,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	if err != nil {
 		return NoticeDetail{}, err //nilで返せない!不思議!!
 	}
-
-	//確認用
-	// fmt.Println(noticeDetail)
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
@@ -187,4 +186,26 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 	fmt.Println(formattedAllNotices)
 
 	return formattedAllNotices, nil
+}
+
+// noticeの既読登録
+func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
+
+  // クラス作成権限を持っているか確認
+	isParent, err := model.IsParent(bRead.UserUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+	if !isParent { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	// 構造体をレコード登録処理に投げる
+	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -384,6 +384,26 @@ SSH URL:
       }
       ```
 
+#### お知らせ既読処理をするエンドポイント
+
+- **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
+- **メソッド:** POST
+- **説明:** notice_read_statusにデータを追加する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+  
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "OK" 
+      }
+      ```
+
 ### API仕様書てんぷれ
 
 #### ＊○○＊するエンドポイント
