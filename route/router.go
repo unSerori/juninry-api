@@ -61,10 +61,16 @@ func routing(engine *gin.Engine) {
 				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notices.GET("/notices", controller.CfmReq) // /v1/auth/users/notices/notices
+					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.TestJson) // /v1/auth/users/notices/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+
+					//　お知らせ新規登録
+					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
+          
+					// お知らせ既読済み処理
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
 				}
 
 				// classesグループ
@@ -73,15 +79,12 @@ func routing(engine *gin.Engine) {
 					// クラスを作成する
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
 
-
 					// 招待コードを更新する
 					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
-
 				}
 			}
 		}
 	}
-
 }
 
 // ファイルを設定

@@ -347,6 +347,63 @@ SSH URL:
       }
       ```
 
+#### お知らせの新規登録するエンドポイント
+
+- **URL:** `/v1/auth/users/notice/register`
+- **メソッド:** POST
+- **説明:** お知らせの新規登録をする
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+      {
+        "srvResData": {
+          "notices": {
+            "NoticeTitle": "【持ち物】習字道具必要です",
+            "NoticeDate": "2024-06-11T03:23:39Z",
+            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+        }},
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "authenticationToken": "トークン",
+          "srvResMsg": "OK"
+        },
+      }
+      ```
+
+#### お知らせ既読処理をするエンドポイント
+
+- **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
+- **メソッド:** POST
+- **説明:** notice_read_statusにデータを追加する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+  
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "OK" 
+      }
+      ```
+
 ### API仕様書てんぷれ
 
 #### ＊○○＊するエンドポイント

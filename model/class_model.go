@@ -56,7 +56,7 @@ func GetClass(classUuid string) (Class, error) {
 // 新規ユーザ登録
 // 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、成功した列数とerrorを返す
 func CreateClass(record Class) (int64, error) {
-	affected, err := db.Insert(record)
+	affected, err := db.Nullable("invite_code", "valid_until").Insert(record)
 	return affected, err
 }
 

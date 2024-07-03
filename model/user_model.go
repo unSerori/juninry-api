@@ -113,7 +113,7 @@ func IsTeacher(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
 	// TODO: 教員のみに制限する
 	// 該当ユーザの行を取得
-	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 2", userUuid).Exist(&user)
+	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 1", userUuid).Exist(&user)
 	if err != nil {
 		return false, err // エラーが出てるのにfalse返すのきしょいかも
 	}
@@ -168,4 +168,16 @@ func GetIdByMail(mail string) (string, error, bool) {
 	}
 
 	return user.UserUuid, nil, true
+}
+
+// アカウントタイプが親かどうか判定して真偽値を返す
+func IsParent(userUuid string) (bool, error) {
+	var user User // 取得したデータをマッピングする構造体
+	// 該当ユーザの行を取得
+	isParent, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
+	if err != nil {
+		return false, err // エラーが出てるのにfalse返すのきしょいかも
+	}
+
+	return isParent, nil
 }
