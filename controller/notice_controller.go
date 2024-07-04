@@ -46,7 +46,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	fmt.Println(idAdjusted)		//　アサーションの確認
+	fmt.Println(idAdjusted)   //　アサーションの確認
 
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
@@ -110,7 +110,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{},
 	})
 
@@ -119,11 +119,27 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 // お知らせ1件取得
 func GetNoticeDetailHandler(ctx *gin.Context) {
 
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	fmt.Println(idAdjusted)   //　アサーションの確認
+
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
 	//お知らせのレコードを取ってくる
-	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid)
+	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid, idAdjusted)
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("notice find error", err)
@@ -206,11 +222,11 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 構造体にマッピング
 	bRead := model.NoticeReadStatus{
 		NoticeUuid: noticeUuid,
-		UserUuid: idAdjusted,
+		UserUuid:   idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead) 
+	err := noticeService.ReadNotice(bRead)
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
@@ -263,7 +279,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},

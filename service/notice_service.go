@@ -44,15 +44,19 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
-	NoticeTitle       string    //お知らせのタイトル
-	NoticeExplanatory string    //お知らせの内容
-	NoticeDate        time.Time //お知らせの作成日時
+	NoticeUuid        string    // おしらせUUID
+	NoticeTitle       string    // おしらせのタイトル
+	NoticeExplanatory string    // おしらせの内容
+	NoticeDate        time.Time // おしらせの作成日時
 	UserName          string    // おしらせ発行ユーザ
+	ClassUuid         string    // クラスUUID
 	ClassName         string    // どのクラスのお知らせか
+	RefUuid           string    // 引用UUID
+	ReadStatus				int				// 既読フラグ
 }
 
 // お知らせ詳細取得
-func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error) {
+func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (NoticeDetail, error) {
 
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
@@ -65,16 +69,32 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
+		NoticeUuid:				 noticeDetail.NoticeUuid,				 //おしらせ引用UUID
+		ClassUuid:				 noticeDetail.ClassUuid,				 //おしらせ引用UUID
+		RefUuid:					 noticeDetail.RefUuid,					 //おしらせ引用UUID
 	}
 
+	//確認しているか取得
+	status, err := model.GetNoticeReadStatus(noticeUuid, userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	fmt.Println(status)
+	//確認していた場合、ReadStatusに1を保存する
+	formattedNotice.ReadStatus = 0
+	if status {
+			formattedNotice.ReadStatus = 1
+	}
+	
 	//userUuidをuserNameに整形
-	userUuid := noticeDetail.UserUuid
-	user, nil := model.GetUser(userUuid)
+	teacherUuid := noticeDetail.UserUuid
+	teacher, nil := model.GetUser(teacherUuid)
 	if err != nil {
 		return NoticeDetail{}, err
 	}
 	//整形後formatに追加
-	formattedNotice.UserName = user.UserName // おしらせ発行ユーザ
+	formattedNotice.UserName = teacher.UserName // おしらせ発行ユーザ
 
 	//classUuidをclassNameに整形
 	classUuid := noticeDetail.ClassUuid
