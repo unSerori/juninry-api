@@ -106,6 +106,75 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 	return class, nil
 }
 
+// 児童の構造体
+type JuniorData struct {
+	// ここに出席番号を追加
+	UserName string `json:"userName"`
+	GenderId int    `json:"genderId"`
+}
+// クラスごとに児童のデータをまとめた構造体
+type TransFormData struct {
+	ClassName string       `json:"className"`
+	JuniorData []JuniorData `json:"juniorData"`
+}
+
+// 自身が参加しているクラスに参加しているユーザ情報を全権取得
+func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
+
+	// useridでユーザ情報を取得
+	myClass, err := model.FindClassMemberships(useruuid)
+	if err != nil {
+		return nil, err
+	}
+	// for文でクラスのIDを配列に格納
+	var classUUIDs []string
+	for _,i := range myClass {
+		classUUIDs = append(classUUIDs, i.ClassUuid)
+	}
+	// UUIDにあわせてクラス名を取得
+	// クラス名をキー、バリューをデータのマップにする
+	transformedDataMap := make(map[string][]JuniorData)
+	for _,uuid := range classUUIDs {
+		// uuid
+		class,err := model.GetClass(uuid)
+		if err != nil {
+			return nil, err
+		}
+		// 参加しているユーザーを全取得
+		memberships,err := model.FindClassMembers(uuid)
+		if err != nil {
+			return nil, err
+		}
+		// ユーザーIDの配列に格納
+		var membershipsUUIDs []string
+		for _,i := range memberships {
+			membershipsUUIDs = append(membershipsUUIDs, i.UserUuid)
+		}
+		// 配列からユーザー情報を取得
+		classmates,err := model.GetUsers(membershipsUUIDs)
+		if err != nil {
+			return nil, err
+		}
+		for _, classmate := range classmates {
+			juniorData := JuniorData{
+				UserName: classmate.UserName,
+				GenderId: classmate.GenderId,
+			}
+			transformedDataMap[class.ClassName] = append(transformedDataMap[class.ClassName], juniorData)
+		}
+	}
+	// つくったマップをさらに成形
+	var transformedDataList []TransFormData
+	for className, juniorData := range transformedDataMap {
+		transformedData := TransFormData{
+			ClassName: className,
+			JuniorData: juniorData,
+		}
+		transformedDataList = append(transformedDataList, transformedData)
+	}
+	return transformedDataList, err
+}
+
 func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, classUuid string) (model.Class, error) {
 
 	// クラス作成権限を持っているか確認

@@ -76,6 +76,9 @@ func routing(engine *gin.Engine) {
 				// classesグループ
 				classes := users.Group("/classes")
 				{
+					// クラスに所属する人間たちを返す
+					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
+
 					// クラスを作成する
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
 

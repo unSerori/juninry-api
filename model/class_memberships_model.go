@@ -61,3 +61,14 @@ func JoinClass(record ClassMembership) (int64, error) {
 	affected, err := db.Insert(record)
 	return affected, err
 }
+
+// クラスIDから参加しているユーザーを全取得
+func FindClassMembers(classUuid string) ([]ClassMembership, error) {
+	var classMemberships []ClassMembership
+	//uuidをWhere句で条件指定
+	err := db.Where("class_uuid = ?", classUuid).Find(&classMemberships)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+	return classMemberships, nil
+}

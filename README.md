@@ -200,6 +200,38 @@ SSH URL:
       }
       ```
 
+#### クラスメイトを取得するエンドポイント
+
+- **URL:** `/＊エンドポイントパス＊`
+- **メソッド:** GET
+- **説明:** 自分のクラスのクラスメイトを取得
+- **リクエスト:**
+  - ヘッダー:
+    - - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "userData": [
+            {
+              "className": "3-2 ふたば学級",
+              "juniorData": [
+                {
+                  "userName": "test pupil",
+                  "genderId": 1
+                }
+              ]
+            }
+          ]
+        },
+        "srvResMsg": "OK"
+      }
+      ```
+
 #### クラスを新規登録するエンドポイント
 
 - **URL:** `/v1/auth/users/classes/register`

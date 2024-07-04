@@ -75,6 +75,48 @@ func RegisterClassHandler(c *gin.Context) {
 	})
 }
 
+// ユーザーIDから参加しているクラスを取得し、生徒一覧を返す
+func GetClasssmaitesHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	
+	// idからクラスメイトの情報を取得
+	classmates, err := ClassService.GetClassMates(idAdjusted)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to get user.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	// 成功ログ
+	logging.SuccessLog("Successful users get.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"userData": classmates,
+		},
+	})
+}
+
 func GenerateInviteCodeHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")

@@ -53,6 +53,20 @@ func GetClass(classUuid string) (Class, error) {
 	return class, nil
 }
 
+// 複数クラス取得
+func GetClasses(classUUids []string) ([]Class, error) {
+	// 結果格納用変数
+	var classes []Class
+
+	// 全件取得
+	err := db.In("class_uuid", classUUids).Find(&classes)
+	if err != nil {
+		return nil, err
+	}
+
+	return classes, nil
+}
+
 // 新規ユーザ登録
 // 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、成功した列数とerrorを返す
 func CreateClass(record Class) (int64, error) {
