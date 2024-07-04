@@ -111,9 +111,8 @@ func GetClasssmaitesHandler(c *gin.Context) {
 	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
-		"srvResData": gin.H{
-			"userData": classmates,
-		},
+		"srvResData": classmates,
+		
 	})
 }
 

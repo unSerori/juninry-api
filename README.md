@@ -207,7 +207,8 @@ SSH URL:
 - **説明:** 自分のクラスのクラスメイトを取得
 - **リクエスト:**
   - ヘッダー:
-    - - `Authorization`: (string) 認証トークン
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
 
 - **レスポンス:**
   - ステータスコード: ステータスコード: 200 OK
@@ -215,8 +216,7 @@ SSH URL:
 
       ```json
       {
-        "srvResData": {
-          "userData": [
+        "srvResData": [
             {
               "className": "3-2 ふたば学級",
               "juniorData": [
@@ -226,8 +226,7 @@ SSH URL:
                 }
               ]
             }
-          ]
-        },
+        ],
         "srvResMsg": "OK"
       }
       ```
