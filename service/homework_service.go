@@ -3,11 +3,11 @@ package service
 import (
 	"errors"
 	"fmt"
+	"juninry-api/dip"
 	"juninry-api/model"
 	"mime/multipart"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -75,7 +75,8 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 }
 
 // 宿題登録処理
-func (s *HomeworkService) SubmitHomework(c *gin.Context, bHW model.HomeworkSubmission, form *multipart.Form) error {
+// インターフェース型で依存性を受け取ることにより、具体的な実装(gin.Context, GinContextWrapper)ではなくインターフェースに依存し、依存性逆転が実現できる。
+func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.HomeworkSubmission, form *multipart.Form) error {
 	// 画像の保存
 	images := form.File["images"] // スライスからimages fieldを取得
 	// 保存先ディレクトリ
@@ -93,7 +94,7 @@ func (s *HomeworkService) SubmitHomework(c *gin.Context, bHW model.HomeworkSubmi
 		// TODO: ファイルの種類->拡張子
 		// TODO: パーミッション
 		// 保存
-		c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+		uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+".png") // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
 	}
 
 	// 画像名スライスを文字列に変換し、

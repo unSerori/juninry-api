@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"juninry-api/dip"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -82,9 +83,12 @@ func SubmitHomeworkHandler(c *gin.Context) {
 		return
 	}
 
+	// 依存性注入
+	fileUploader := &dip.GinContextWrapper{C: c} // サービス層で使えるように、依存性をラッパー構造体のインスタンスとして作成
+
 	// 提出記録処理と失敗レスポンス
-	err = homeworkService.SubmitHomework(c, bHW, form)
-	if err != nil { // エラーハンドル
+	err = homeworkService.SubmitHomework(fileUploader, bHW, form) // 依存性を渡す
+	if err != nil {                                               // エラーハンドル
 		// カスタムエラーを仕分ける
 		return
 	}
