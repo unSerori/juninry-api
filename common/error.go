@@ -27,16 +27,18 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypePassMismatch               // パスワードが一致しない
 	ErrTypePermissionDenied           // 権限がない
 	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
+	ErrTypeInvalidFileFormat          // ファイル形式が無効
 )
 
 // エラーに対するデフォルトmsgを設定
 var errTypeMsg = map[ErrType]string{
-	ErrTypeHashingPassFailed: "",
-	ErrTypeGenTokenFailed:    "",
-	ErrTypeNoResourceExist:   "could not find the relevant ID",
-	ErrTypePassMismatch:      "password does not match",
-	ErrTypePermissionDenied:  "do not have the necessary permissions",
+	ErrTypeHashingPassFailed:  "",
+	ErrTypeGenTokenFailed:     "",
+	ErrTypeNoResourceExist:    "could not find the relevant ID",
+	ErrTypePassMismatch:       "password does not match",
+	ErrTypePermissionDenied:   "do not have the necessary permissions",
 	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
+	ErrTypeInvalidFileFormat:  "",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる
