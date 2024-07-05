@@ -60,9 +60,13 @@ func defaultNewErrParams(errType ErrType) *NewErrParams {
 }
 
 // デフォルト引数msgのオプション関数、オプション関数はデフォルト引数を仕様とする関数の呼び出し側で使うのでパブリック
-func WithMsg(msg string) NewErrParam {
+func WithMsg(msg interface{}) NewErrParam {
 	return func(nep *NewErrParams) { // デフォルト引数管理構造体を受け取り、その構造体にオプション関数が受け取った値を設定する無名関数を返す
-		nep.msg = msg
+		msgAdjusted, ok := msg.(string)
+		if !ok {
+			nep.msg = "NIL"
+		}
+		nep.msg = msgAdjusted
 	}
 }
 

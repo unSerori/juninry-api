@@ -3,9 +3,12 @@ package service
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common"
 	"juninry-api/dip"
 	"juninry-api/model"
 	"mime/multipart"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -81,20 +84,47 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 	images := form.File["images"] // スライスからimages fieldを取得
 	// 保存先ディレクトリ
 	dst := "./upload/homework"
+
 	// それぞれのファイルを保存
 	for _, image := range images {
-		fmt.Printf("image.Filename: %v\n", image.Filename)
 		// ファイル名をuuidで作成
 		fileName, err := uuid.NewRandom() // 新しいuuidの生成
 		if err != nil {
 			return err
 		}
+
 		// バリデーション
-		// TODO: 形式(png, jpg, jpeg, gif, HEIF)
-		// TODO: ファイルの種類->拡張子
+
+		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
+		mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
+		ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
+		if !ok {
+			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
+		}
+
+		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
+		buffer := make([]byte, 512) // バイトスライスのバッファを作成
+		file, err := image.Open()   // multipart.Formを実装するFileオブジェクトを直接取得
+		if err != nil {
+			return err
+		}
+		file.Read(buffer)                                  // ファイルをバッファに読み込む
+		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
+		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
+		if !ok {
+			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
+		}
+		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
+
 		// TODO: パーミッション
 		// 保存
-		uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+".png") // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+		fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
+		fmt.Printf("mimeType: %v\n", mimeType)                 // リクエストヘッダからのContent-Type
+		fmt.Printf("mimeTypeByBinary: %v\n", mimeTypeByBinary) // バイナリからのContent-Type
+		fmt.Printf("validType: %v\n", validType)
+		fmt.Printf("fileExt: %v\n", fileExt)
+		fmt.Println("filename: " + dst + "/" + fileName.String() + "." + fileExt)
+		uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
 	}
 
 	// 画像名スライスを文字列に変換し、
@@ -105,4 +135,23 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 	// ins
 
 	return errors.New("hoge")
+}
+
+// 許可されたMIMEタイプかどうかを確認、許可されていた場合は一致したタイプを返す
+func validMime(mimetype string) (bool, string) {
+	// 有効なファイルタイプを定義
+	var allowedMimeTypes = []string{
+		"image/png",
+		"image/jpeg",
+		"image/jpg",
+		"image/gif",
+	}
+
+	for _, allowedMimeType := range allowedMimeTypes {
+		if strings.EqualFold(allowedMimeType, mimetype) { // 大文字小文字を無視して文字列比較
+			return true, allowedMimeType // 一致した時点で早期リターン
+		}
+	}
+
+	return false, ""
 }
