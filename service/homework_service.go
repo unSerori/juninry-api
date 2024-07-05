@@ -87,12 +87,6 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 
 	// それぞれのファイルを保存
 	for _, image := range images {
-		// ファイル名をuuidで作成
-		fileName, err := uuid.NewRandom() // 新しいuuidの生成
-		if err != nil {
-			return err
-		}
-
 		// バリデーション
 
 		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
@@ -101,13 +95,13 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 		if !ok {
 			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
 		}
-
 		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 		buffer := make([]byte, 512) // バイトスライスのバッファを作成
 		file, err := image.Open()   // multipart.Formを実装するFileオブジェクトを直接取得
 		if err != nil {
 			return err
 		}
+		defer file.Close()                                 // 終了後破棄
 		file.Read(buffer)                                  // ファイルをバッファに読み込む
 		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
@@ -115,6 +109,12 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
 		}
 		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
+
+		// ファイル名をuuidで作成
+		fileName, err := uuid.NewRandom() // 新しいuuidの生成
+		if err != nil {
+			return err
+		}
 
 		// TODO: パーミッション
 		// 保存
