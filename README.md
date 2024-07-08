@@ -287,6 +287,49 @@ SSH URL:
         }
         ```
 
+#### クラスに所属するエンドポイント
+
+- **URL:** `/v1/auth/users/classes/join/:invite_code`
+- **メソッド:** POST
+- **説明:** クラスに生徒、職員を所属させる。
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {
+        "className": "ゆるふわ"
+      },
+      "srvResMsg": "OK"
+    }
+    ```
+
+  - ステータスコード: 409 Conflict
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Conflict"
+    }
+    ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Forbidden"
+    }
+    ```
+
+
 #### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`
