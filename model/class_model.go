@@ -20,7 +20,7 @@ func (Class) TableName() string {
 
 // テストデータ
 func CreateClassTestData() {
-	parsedTime, _ := time.Parse(time.RFC3339, "2025-06-03 06:14:11.515967422 +0000 UTC m=+0.318201036")
+	parsedTime := time.Now().AddDate(0, 0, -1)
 	class1 := &Class{
 		ClassUuid:  "09eba495-fe09-4f54-a856-9bea9536b661",
 		ClassName:  "3-2 ふたば学級",
@@ -35,6 +35,7 @@ func CreateClassTestData() {
 		ValidUntil: parsedTime,
 	}
 	db.Insert(class2)
+
 }
 
 // クラス取得
