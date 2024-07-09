@@ -18,11 +18,11 @@ func CreateUserTypeTestData() {
 	}
 	db.Insert(ut1)
 	ut2 := &UserType{
-		UserType: "pupil",
+		UserType: "junior",
 	}
 	db.Insert(ut2)
 	ut3 := &UserType{
-		UserType: "parent",
+		UserType: "patron",
 	}
 	db.Insert(ut3)
 }
