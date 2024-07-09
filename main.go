@@ -5,7 +5,6 @@ import (
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/route"
-	"juninry-api/scheduler"
 )
 
 // main method
@@ -26,9 +25,6 @@ func main() {
 		logging.ErrorLog("Couldnt receive router engine.", err) // エラー内容を出力し早期リターン
 		return
 	}
-
-	// スケジューラを初期化して開始
-	scheduler.StartScheduler()
 
 	// 鯖起動
 	router.Run(":4561")
