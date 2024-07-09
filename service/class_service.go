@@ -147,12 +147,9 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 		logging.ErrorLog("Do not have the necessary permissions", nil)
 		return "", common.NewErr(common.ErrTypePermissionDenied)
 	}
-	fmt.Println("isParent: ", isParent)
 
 	// クラスUUIDが存在するかどうか
 	targetClass, err := model.GetClassByInviteCode(inviteCode)
-	fmt.Println("targetClass: ", targetClass)
-	fmt.Println("err: ", err)
 	if err != nil { // エラーハンドル
 
 		return "", err
@@ -160,8 +157,6 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 	if targetClass.ClassUuid == "" { // そんなクラス存在しない場合
 		return "", common.NewErr(common.ErrTypeNoResourceExist)
 	}
-
-	fmt.Println("targetClass: ", targetClass)
 
 	// クラスに参加させる
 	classMembership := model.ClassMembership{

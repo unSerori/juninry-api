@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -60,14 +59,11 @@ func GetClassByInviteCode(inviteCode string) (Class, error) {
 	//結果格納用変数
 	var class Class
 
-	fmt.Println("inviteCode: ", inviteCode)
-
 	//inviteCodeで絞り込んで1件取得
 	_, err := db.Where("invite_code =?", inviteCode).Get(
 		&class,
 	)
 
-	fmt.Println("class: ", class)
 	// データが取得できなかったらerrを返す
 	if err != nil {
 		return Class{}, err
