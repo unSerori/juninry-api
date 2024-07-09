@@ -12,7 +12,7 @@ type Notice struct { // typeで型の定義, structは構造体
 	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`     // おしらせの時刻
 	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`    // おしらせ発行ユーザ
 	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID"`   // どのクラスのお知らせか
-	RefUuid						string		`xorm:"varchar(36)" default NULL json:"refUUID"`							 // おしらせ引用もとUuid	
+	RefUuid						string		`xorm:"varchar(36) default NULL" json:"refUUID"`							 // おしらせ引用もとUuid	
 }
 
 // テーブル名
