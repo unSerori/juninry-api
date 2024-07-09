@@ -27,3 +27,18 @@ func ErrorLog(errName string, err error) {
 		log.Printf("Error: NIL")
 	}
 }
+
+// 情報の記録
+func InfoLog(title string, info string) {
+	log.Printf("INFO LOG: %s\n", title)
+	log.Printf("Time: %v\n", time.Now()) // 時刻
+	if info != "" {
+		log.Printf("Info: \n%s\n", info)
+		//log.Printf("Info: %s\n", info)
+	}
+}
+
+// 単純なprintf
+func SimpleLog(str string) {
+	log.Print(str)
+}

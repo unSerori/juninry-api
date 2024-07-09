@@ -1,24 +1,30 @@
 package service
 
 import (
+	"errors"
+	"fmt"
+	"juninry-api/dip"
 	"juninry-api/model"
+	"mime/multipart"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type HomeworkService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID UUIDを大文字というきもち
-	StartPage                 int    // 開始ページ
-	PageCount                 int    // ページ数
-	HomeworkNote              string // 課題の説明
-	TeachingMaterialName      string // 教材名
-	SubjectId                 int    // 教科ID
-	SubjectName               string // 教科名
-	TeachingMaterialImageUuid string `json:"TeachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな UUIDを大文字というきもち
-	ClassName                 string // クラス名
-	SubmitFlag                int    // 提出フラグ 1 提出 0 未提出
+	HomeworkUuid              string `json:"homeworkUuid"` // 課題ID
+	StartPage                 int    `json:"startPage"`                 // 開始ページ
+	PageCount                 int    `json:"pageCount"`                 // ページ数
+	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
+	TeachingMaterialName      string `json:"teachingMaterialName"`      // 教材名
+	SubjectId                 int    `json:"subjectId"`                 // 教科ID
+	SubjectName               string `json:"subjectName"`               // 教科名
+	TeachingMaterialImageUuid string `json:"teachingMaterialImageUuid"` // 画像ID どういう扱いになるのかな
+	ClassName                 string `json:"className"`                 // クラス名
+	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
 }
 
 // 締め切りごとに課題データをまとめた構造体
@@ -66,4 +72,37 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 
 	//できたら返す
 	return transformedDataList, nil
+}
+
+// 宿題登録処理
+// インターフェース型で依存性を受け取ることにより、具体的な実装(gin.Context, GinContextWrapper)ではなくインターフェースに依存し、依存性逆転が実現できる。
+func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.HomeworkSubmission, form *multipart.Form) error {
+	// 画像の保存
+	images := form.File["images"] // スライスからimages fieldを取得
+	// 保存先ディレクトリ
+	dst := "./upload/homework"
+	// それぞれのファイルを保存
+	for _, image := range images {
+		fmt.Printf("image.Filename: %v\n", image.Filename)
+		// ファイル名をuuidで作成
+		fileName, err := uuid.NewRandom() // 新しいuuidの生成
+		if err != nil {
+			return err
+		}
+		// バリデーション
+		// TODO: 形式(png, jpg, jpeg, gif, HEIF)
+		// TODO: ファイルの種類->拡張子
+		// TODO: パーミッション
+		// 保存
+		uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+".png") // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+	}
+
+	// 画像名スライスを文字列に変換し、
+	// list :=
+	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
+	// bHW.list =
+	// テーブルに追加。
+	// ins
+
+	return errors.New("hoge")
 }
