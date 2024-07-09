@@ -8,6 +8,7 @@ import (
 	"juninry-api/model"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -84,6 +85,12 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 	images := form.File["images"] // スライスからimages fieldを取得
 	// 保存先ディレクトリ
 	dst := "./upload/homework"
+	// ディレクトリが存在しない場合
+	if _, err := os.Stat(dst); os.IsNotExist(err) { // ファイル情報を取得, 取得できないならerrができる // 取得できなかったとき、ファイルが存在しないことが理由なら新しく作成
+		if err := os.MkdirAll(dst, 0644); err != nil {
+			return err
+		}
+	}
 
 	// それぞれのファイルを保存
 	for _, image := range images {
@@ -116,7 +123,6 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 			return err
 		}
 
-		// TODO: パーミッション
 		// 保存
 		fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
 		fmt.Printf("mimeType: %v\n", mimeType)                 // リクエストヘッダからのContent-Type
@@ -124,7 +130,7 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 		fmt.Printf("validType: %v\n", validType)
 		fmt.Printf("fileExt: %v\n", fileExt)
 		fmt.Println("filename: " + dst + "/" + fileName.String() + "." + fileExt)
-		uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+		//out, err := os.OpenFile()  //uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
 	}
 
 	// 画像名スライスを文字列に変換し、
