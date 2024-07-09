@@ -52,7 +52,7 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 	ClassUuid         string    // クラスUUID
 	ClassName         string    // どのクラスのお知らせか
 	RefUuid           string    // 引用UUID
-	ReadStatus				int				// 既読フラグ
+	ReadStatus        int       // 既読フラグ
 }
 
 // お知らせ詳細取得
@@ -69,9 +69,9 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
-		NoticeUuid:				 noticeDetail.NoticeUuid,				 //おしらせ引用UUID
-		ClassUuid:				 noticeDetail.ClassUuid,				 //おしらせ引用UUID
-		RefUuid:					 noticeDetail.RefUuid,					 //おしらせ引用UUID
+		NoticeUuid:        noticeDetail.NoticeUuid,        //おしらせ引用UUID
+		ClassUuid:         noticeDetail.ClassUuid,         //おしらせ引用UUID
+		RefUuid:           noticeDetail.RefUuid,           //おしらせ引用UUID
 	}
 
 	//確認しているか取得
@@ -84,9 +84,9 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	//確認していた場合、ReadStatusに1を保存する
 	formattedNotice.ReadStatus = 0
 	if status {
-			formattedNotice.ReadStatus = 1
+		formattedNotice.ReadStatus = 1
 	}
-	
+
 	//userUuidをuserNameに整形
 	teacherUuid := noticeDetail.UserUuid
 	teacher, nil := model.GetUser(teacherUuid)
@@ -110,9 +110,11 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 
 // おしらせテーブル(全件取得用)
 type Notice struct { // typeで型の定義, structは構造体
+	NoticeUuid  string    // おしらせUUID
 	NoticeTitle string    //お知らせのタイトル
 	NoticeDate  time.Time //お知らせの作成日時
 	UserName    string    // おしらせ発行ユーザ
+	ClassUuid   string    // クラスUUID
 	ClassName   string    // どのクラスのお知らせか
 	ReadStatus  int       //お知らせを確認しているか
 }
@@ -151,6 +153,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
+			NoticeUuid:  notice.NoticeUuid,  //おしらせUuid
 			NoticeTitle: notice.NoticeTitle, //お知らせのタイトル
 			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
 		}
@@ -172,6 +175,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 			return []Notice{}, err
 		}
 		//整形後formatに追加
+		notices.ClassUuid = classUuid       // おしらせUuid
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
 		//確認しているか取得
@@ -189,7 +193,6 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		}
 
 		//宣言したスライスに追加していく
-		// formattedAllNotices = append(formattedAllNotices, notices)
 		temp = append(temp, notices) //並べ替えるために一時的にtempに保存する
 	}
 
