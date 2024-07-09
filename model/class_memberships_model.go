@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 // ユーザのクラス所属中間テーブル
 type ClassMembership struct {
 	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
@@ -62,8 +60,6 @@ func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
 // 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、可否とerrorを返す
 func JoinClass(record ClassMembership) (bool, error) {
 	affected, err := db.Insert(record)
-	fmt.Println(affected)
-	fmt.Println(err)
 	if err != nil || affected == 0 { //エラーハンドル
 		return false, err // 受け取ったエラーを返す
 	}
