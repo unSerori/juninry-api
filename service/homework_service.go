@@ -27,6 +27,14 @@ type TransformedData struct {
 	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
 }
 
+// クラスごとに課題データをまとめた構造体
+type ClassHomeworkSummary struct {
+	ClassName string      `json:"className"` //提出期限
+	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+}
+
+
+
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
 
@@ -59,6 +67,47 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	for limit, homeworkData := range transformedDataMap {
 		transformedData := TransformedData{
 			HomeworkLimit: limit,
+			HomeworkData:  homeworkData,
+		}
+		transformedDataList = append(transformedDataList, transformedData)
+	}
+
+	//できたら返す
+	return transformedDataList, nil
+}
+
+// userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
+func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
+
+	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
+	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	if err != nil { //エラーハンドル エラーを上に投げるだけ
+		return nil, err
+	}
+
+	// クラス名をキー、バリューを課題データのマップにする
+	transformedDataMap := make(map[string][]HomeworkData)
+	for _, userHomework := range userHomeworkList {
+		homeworkData := HomeworkData{
+			HomeworkUuid:              userHomework.HomeworkUuid,
+			StartPage:                 userHomework.StartPage,
+			PageCount:                 userHomework.PageCount,
+			HomeworkNote:              userHomework.HomeworkNote,
+			TeachingMaterialName:      userHomework.TeachingMaterialName,
+			SubjectId:                 userHomework.SubjectId,
+			SubjectName:               userHomework.SubjectName,
+			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
+			ClassName:                 userHomework.ClassName,
+			SubmitFlag:                userHomework.SubmitFlag,
+		}
+		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
+	}
+
+	//作ったマップをさらに整形
+	var transformedDataList []ClassHomeworkSummary
+	for className, homeworkData := range transformedDataMap {
+		transformedData := ClassHomeworkSummary{
+			ClassName: className,
 			HomeworkData:  homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)

@@ -76,6 +76,7 @@ func RegisterClassHandler(c *gin.Context) {
 }
 
 // ユーザーIDから参加しているクラスを取得し、生徒一覧を返す
+// TODO:ユーザータイプに合わせてリクエスト変わるんでは、、？となっているなう
 func GetClasssmaitesHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
@@ -91,6 +92,9 @@ func GetClasssmaitesHandler(c *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
+
+	// 先生の場合と生徒の場合はidをそのまま使う
+	// 保護者の場合は子供のidを取得して使う
 	
 	// idからクラスメイトの情報を取得
 	classmates, err := ClassService.GetClassMates(idAdjusted)

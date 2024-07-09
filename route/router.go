@@ -53,6 +53,9 @@ func routing(engine *gin.Engine) {
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
+					// 次の日が期限の課題一覧を取得
+					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+
 					// 宿題の提出
 					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
 				}
