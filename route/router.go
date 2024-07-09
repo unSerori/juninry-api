@@ -82,6 +82,13 @@ func routing(engine *gin.Engine) {
 					// 招待コードを更新する
 					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
 				}
+
+				// ouchiesグループ
+				ouchies := users.Group("/ouchies")
+				{
+					// おうち作成
+					ouchies.POST("/register",  controller.RegisterOuchiHandler)	// /v1/auth/users/ouchies/register
+				}
 			}
 		}
 	}
