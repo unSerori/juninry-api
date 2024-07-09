@@ -1,9 +1,15 @@
 package model
 
+import (
+	"time"
+)
+
 // おうちテーブル
 type Ouchi struct {
 	OuchiUuid string `xorm:"varchar(36) pk" json:"ouchiUUID"`       // ユーザータイプID
 	OuchiName string `xorm:"varchar(15) not null" json:"ouchiName"` // ユーザータイプ  // teacher, pupil, parents
+	InviteCode string    `xorm:"char(4) unique" json:"inviteCode"`      // 招待ID
+	ValidUntil time.Time `xorm:"datetime" json:"validUntil" `           // 有効期限
 }
 
 // テーブル名
@@ -23,4 +29,10 @@ func CreateOuchiTestData() {
 		OuchiName: "たんぽぽ施設",
 	}
 	db.Insert(ouchi2)
+}
+
+// 招待コード更新
+func UpdateOuchiInviteCode(record Ouchi) (int64, error) {
+	affected, err := db.Where("ouchi_uuid = ?", record.OuchiUuid).Cols("invite_code", "valid_until").Update(&record)
+	return affected, err
 }
