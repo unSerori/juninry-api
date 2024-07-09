@@ -38,6 +38,16 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+	user3 := &User{
+		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		UserName:    "test teacher",
+		UserTypeId:  1,
+		MailAddress: "test-teacher@gmail.com",
+		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
+		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
+	}
+	db.Insert(user3)
+
 	user4 := &User{
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
@@ -181,3 +191,9 @@ func IsParent(userUuid string) (bool, error) {
 
 	return isParent, nil
 }
+
+// // ouchiUuidとclassUuidからガキを取得
+// func GetPupil(ouchiUuid string, classUuid string)(string, error) {
+
+
+// }

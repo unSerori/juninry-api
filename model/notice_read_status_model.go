@@ -50,10 +50,30 @@ func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
 	return has, nil
 }
 
+// noticeUuidで絞った結果を返す
+func GetNoticeStatusList(noticeUuid string) ([]NoticeReadStatus, error) {
+	//TODO:削除
+	fmt.Println("もでるです")
+
+	// 結果を格納する変数宣言(findの結果)
+	var noticeReadStatus []NoticeReadStatus
+
+	// noticeUuidで条件指定
+	err := db.Where("notice_uuid = ?", noticeUuid).Find(&noticeReadStatus)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return nil, err
+	}
+
+	// エラーが出なければ取得結果を返す
+	return noticeReadStatus, nil
+}
+
 // お知らせ確認登録
-func ReadNotice(record NoticeReadStatus) (error){
-	
+func ReadNotice(record NoticeReadStatus) error {
+
 	affected, err := db.Insert(record)
 	fmt.Println(affected)
 	return err
 }
+

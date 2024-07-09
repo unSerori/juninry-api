@@ -121,7 +121,7 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
 	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
+	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
 		// エラーログ
 		logging.ErrorLog("The id is not stored.", nil)
 		// レスポンス
@@ -283,6 +283,49 @@ func NoticeReadHandler(ctx *gin.Context) {
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},
+	})
+
+}
+
+func GetNoticestatusHandler(ctx *gin.Context) {
+
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	fmt.Println(idAdjusted)   //　アサーションの確認
+
+	//notice_uuidの取得
+	noticeUuid := ctx.Param("notice_uuid")
+
+	fmt.Println(noticeUuid)
+
+	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("notice find error", err)
+		// レスポンス
+		ctx.JSON(http.StatusBadRequest, gin.H{})
+
+		return
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful noticeStatus get.")
+	// レスポンス(StatusOK　成功200番)
+	ctx.JSON(http.StatusOK, gin.H{
+		"srvResMsg":  "Successful noticeStatus get.",
+		"srvResData": noticeStatus,
 	})
 
 }

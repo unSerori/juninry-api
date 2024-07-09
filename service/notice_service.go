@@ -231,3 +231,74 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 
 	return nil
 }
+
+
+// 特定のお知らせ既読済み一覧
+type NoticeStatus struct {
+	UserName   string // ガキの名前
+	GenderCode string //性別コード
+}
+
+func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) (NoticeStatus, error) {
+
+	//TODO:削除
+	fmt.Println("さーびすです")
+	fmt.Println(noticeUuid)
+
+	//おしらせがどのクラスのものなのかを取ってくる
+	temp, err := model.GetNoticeDetail(noticeUuid)
+	if err != nil {
+		return NoticeStatus{}, err
+	}
+	//わかりやすよう、tempのclassUuidだけ取ってきとく
+	classUuid := temp.ClassUuid
+	fmt.Println("classUuid:::" + classUuid)
+
+	//お知らせの既読済情報一覧を取ってくる
+	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
+	if err != nil {
+		return NoticeStatus{}, err
+	}
+
+	//構造体からスライスに変換する(userUuidを持ってる配列を作る)
+	var userUuids []string
+	for _, statusList := range noticeReadStatus {
+		userUuid := statusList.UserUuid
+		userUuids = append(userUuids, userUuid)
+	}
+
+	// userUuidsはお知らせを既読しているユーザの一覧を保持
+	fmt.Println(userUuids)
+
+	// userUuidからouhciUuidの一覧を作る
+	var ouchiUuids []string
+	for _, usersList := range userUuids {
+		//usesrを一つ取って
+		userUuid := usersList
+		//getUserでユーザ情報取ってくる
+		userDetail, err := model.GetUser(userUuid) // user情報のすべてが返るのでdetailにしてる
+		if err != nil {
+			return NoticeStatus{}, err
+		}
+
+		// ouchiUuidがnullやった場合の処理
+		if userDetail.OuchiUuid == nil {
+			logging.ErrorLog("OuchiUuid is nil for user UUID %s", err)
+			return NoticeStatus{}, err
+		}
+
+		//取ってきた情報のouchiUuidを追加していく
+		ouchiUuids = append(ouchiUuids, *userDetail.OuchiUuid)
+	}
+
+	// ouchiUuid 一覧を保持
+	fmt.Println(ouchiUuids)
+
+	noticeStatus := NoticeStatus{
+		UserName:   userUuid,
+		GenderCode: "0",
+	}
+
+	return noticeStatus, err
+}
+
