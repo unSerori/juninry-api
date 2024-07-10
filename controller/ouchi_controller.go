@@ -31,15 +31,15 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 	idAdjusted := id.(string) // アサーション
 
 	//構造体に値をバインド
-	var bClass model.Class
-	if err := ctx.ShouldBindJSON(&bClass); err != nil {
+	var bOuchi model.Ouchi
+	if err := ctx.ShouldBindJSON(&bOuchi); err != nil {
 		fmt.Print("バインド失敗")
 		// エラーログ
 		return
 	}
 
 	// 登録処理を投げてなんかいろいろもらう
-	class, err := ClassService.PermissionCheckedClassCreation(idAdjusted, bClass)
+	ouchi, err := OuchiService.PermissionCheckedOuchiCreation(idAdjusted, bOuchi)
 	if err != nil {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
@@ -57,7 +57,7 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 			}
 		} else {
 			// エラーログ
-			logging.ErrorLog("Class creation was not possible due to other problems.", err)
+			logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
 		}
 		resStatusCode := http.StatusBadRequest
 		ctx.JSON(resStatusCode, gin.H{
@@ -71,7 +71,6 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 	resStatusCode := http.StatusCreated
 	ctx.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
-		"srvResData": class,
+		"srvResData": ouchi,
 	})
 }
-

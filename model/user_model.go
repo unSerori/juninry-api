@@ -171,7 +171,7 @@ func GetIdByMail(mail string) (string, error, bool) {
 }
 
 // アカウントタイプが親かどうか判定して真偽値を返す
-func IsParent(userUuid string) (bool, error) {
+func IsPatron(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
 	// 該当ユーザの行を取得
 	isParent, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
@@ -180,4 +180,13 @@ func IsParent(userUuid string) (bool, error) {
 	}
 
 	return isParent, nil
+}
+
+// ユーザにouchiUuidを付与
+func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
+	// ouchiUuidフィールドにポインタを指定
+	user := User{OuchiUuid: &ouchiUuid}
+	// 付与処理（更新処理）
+	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
+	return affected, err
 }

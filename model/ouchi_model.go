@@ -8,7 +8,7 @@ import (
 type Ouchi struct {
 	OuchiUuid string `xorm:"varchar(36) pk" json:"ouchiUUID"`       // ユーザータイプID
 	OuchiName string `xorm:"varchar(15) not null" json:"ouchiName"` // ユーザータイプ  // teacher, pupil, parents
-	InviteCode string    `xorm:"char(4) unique" json:"inviteCode"`      // 招待ID
+	InviteCode string    `xorm:"char(6) unique" json:"inviteCode"`      // 招待ID
 	ValidUntil time.Time `xorm:"datetime" json:"validUntil" `           // 有効期限
 }
 
@@ -29,6 +29,13 @@ func CreateOuchiTestData() {
 		OuchiName: "たんぽぽ施設",
 	}
 	db.Insert(ouchi2)
+}
+
+// 新規おうち登録
+// 新しい構造体をレコードとして受け取り、ouchiテーブルにinsertし、成功した列数とerrorを返す
+func CreateOuchi(record Ouchi) (int64, error) {
+	affected, err := db.Nullable("invite_code", "valid_until").Insert(record)
+	return affected, err
 }
 
 // 招待コード更新

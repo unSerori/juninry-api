@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
 
 type OuchiService struct{}
@@ -30,8 +31,8 @@ func (s *OuchiService) generateOuchiInviteCode(bOuchi model.Ouchi) (model.Ouchi,
 		if err != nil { // 乱数生成でエラーが出たら泣く
 			continue
 		}
-		// 4桁文字列にキャストしてバインド
-		bOuchi.InviteCode = fmt.Sprintf("%04d", inviteCode.Int64())
+		// 6桁文字列にキャストしてバインド
+		bOuchi.InviteCode = fmt.Sprintf("%06d", inviteCode.Int64())
 
 		// クラステーブルに追加
 		_, err = model.UpdateOuchiInviteCode(bOuchi)
@@ -56,3 +57,60 @@ func (s *OuchiService) generateOuchiInviteCode(bOuchi model.Ouchi) (model.Ouchi,
 	return model.Ouchi{}, common.NewErr(common.ErrTypeMaxAttemptsReached)
 }
 
+func (s *OuchiService) PermissionCheckedOuchiCreation(userUuid string, bOuchi model.Ouchi) (model.Ouchi, error) {
+
+	// おうち作成権限を持っているか確認
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+	fmt.Println(isPatron)
+	if !isPatron { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return model.Ouchi{}, common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	// ユーザがすでにおうちに所属していないかの確認
+	user, err := model.GetUser(userUuid)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+	// null確認
+	if user.OuchiUuid != nil {
+		logging.ErrorLog("You are already assigned to an Ouchi", nil)
+		return model.Ouchi{}, err
+	}
+
+	// おうち作成
+	// おうちUUIDの生成
+	ouchiUuid, err := uuid.NewRandom() // 新しいuuidの生成
+	if err != nil {                    // 空の構造体とエラー
+		return model.Ouchi{}, err
+	}
+
+	bOuchi.OuchiUuid = ouchiUuid.String() // バインド
+
+	// おうち作成
+	_, err = model.CreateOuchi(bOuchi)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err // uuidの作成がおかしくなければ問題ないけど、登録結果が0件で正常終了することなんかあるか？
+	}
+
+	// 招待コード入ったクラスもらえます！
+	ouchi, err := s.generateOuchiInviteCode(bOuchi)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+
+	// 保護者にouchiUuidを付与
+	_, err = model.AssignOuchi(userUuid, bOuchi.OuchiUuid)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+
+	fmt.Println("確認")
+	fmt.Println(ouchi)
+
+	//エラーが出なかった場合、コミットして作成したクラスを返す
+	return ouchi, nil
+}
