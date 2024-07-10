@@ -139,11 +139,11 @@ func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, class
 func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode string) (string, error) {
 
 	// クラス参加権限を持っているか確認
-	isParent, err := model.IsParent(userUuid)
+	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return "", err
 	}
-	if isParent { // 親がクラスに直接入ってくるなってやつです
+	if isPatron { // 親がクラスに直接入ってくるなってやつです
 		logging.ErrorLog("Do not have the necessary permissions", nil)
 		return "", common.NewErr(common.ErrTypePermissionDenied)
 	}
