@@ -114,3 +114,32 @@ func (s *OuchiService) PermissionCheckedOuchiCreation(userUuid string, bOuchi mo
 	//エラーが出なかった場合、コミットして作成したクラスを返す
 	return ouchi, nil
 }
+
+func (s *OuchiService) PermissionCheckedRefreshOuchiInviteCode(userUuid string, ouchiUuid string) (model.Ouchi, error) {
+
+	// クラス作成権限を持っているか確認
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err // トークンあるのにユーザーがいないことはあり得ないのでないと思うが、、、？
+	}
+	if !isPatron { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return model.Ouchi{}, common.NewErr(common.ErrTypePermissionDenied)
+	}
+	// クラスUUIDが存在するかどうか
+	targetouchi, err := model.GetOuchi(ouchiUuid)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+	if targetouchi.OuchiUuid == "" { // そんなクラス存在しない場合
+		return model.Ouchi{}, common.NewErr(common.ErrTypeNoResourceExist)
+	}
+
+	// 招待コード入ったクラスもらえます！
+	ouchi, err := s.generateOuchiInviteCode(targetouchi)
+	if err != nil { // エラーハンドル
+		return model.Ouchi{}, err
+	}
+	//エラーが出なかった場合、コミットして作成したクラスを返す
+	return ouchi, nil
+}

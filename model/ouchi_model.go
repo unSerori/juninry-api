@@ -43,3 +43,20 @@ func UpdateOuchiInviteCode(record Ouchi) (int64, error) {
 	affected, err := db.Where("ouchi_uuid = ?", record.OuchiUuid).Cols("invite_code", "valid_until").Update(&record)
 	return affected, err
 }
+
+// おうち取得
+func GetOuchi(ouchiUuid string) (Ouchi, error) {
+	//結果格納用変数
+	var ouchi Ouchi
+
+	//ouchiUuidで絞り込んで1件取得
+	_, err := db.Where("ouchi_uuid =?", ouchiUuid).Get(
+		&ouchi,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Ouchi{}, err
+	}
+
+	return ouchi, nil
+}
