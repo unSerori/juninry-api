@@ -3,7 +3,7 @@ package model
 // ユーザーの種類のテーブル
 type UserType struct {
 	UserTypeId int    `xorm:"pk autoincr" json:"userTypeId"`               // ユーザータイプID
-	UserType   string `xorm:"varchar(15) not null unique" json:"userType"` // ユーザータイプ  // teacher, pupil, patron
+	UserType   string `xorm:"varchar(15) not null unique" json:"userType"` // ユーザータイプ  // teacher, junior, patron
 }
 
 // テーブル名
