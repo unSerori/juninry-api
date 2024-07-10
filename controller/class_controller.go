@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 )
 
 var ClassService = service.ClassService{}
@@ -138,4 +139,81 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": class,
 	})
+}
+
+func JoinClassHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	idAdjusted := id.(string) // アサーション
+	// クラスUUIDを取得
+	inviteCode := c.Param("invite_code")
+
+	// クラスに参加
+	className, err := ClassService.PermissionCheckedJoinClass(idAdjusted, inviteCode)
+	if err != nil {
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
+			if mysqlErr.Number == 1062 { // 重複エラー
+				logging.ErrorLog("The class has already joined", err)
+				resStatusCode := http.StatusConflict
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			}
+		}
+
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) { // カスタムエラーの場合
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied: // 権限を持っていない
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				resStatusCode := http.StatusForbidden
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			case common.ErrTypeNoResourceExist: // 招待コード違います
+				logging.ErrorLog("The resource does not exist", err)
+				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default:
+				logging.ErrorLog("Class creation was not possible due to other problems.", err)
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			}
+
+		}
+	}
+
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"className": className,
+		},
+	})
+
 }

@@ -5,6 +5,7 @@ import (
 	"juninry-api/auth"
 	"juninry-api/logging"
 	"juninry-api/model"
+	"juninry-api/scheduler"
 
 	"github.com/joho/godotenv"
 )
@@ -47,6 +48,9 @@ func Init() error {
 		logging.ErrorLog("Failed auth init.", err)
 		return err
 	}
+
+	// スケジューラを初期化して開始
+	scheduler.StartScheduler()
 
 	return nil
 }
