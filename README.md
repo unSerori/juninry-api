@@ -223,13 +223,13 @@ SSH URL:
 
       ```json
       {
-          "srvResMsg": "Created",
-          "srvResData": {
-            "classUUID": "19ea35a6-1e43-4cdd-bc2e-f6c790f0858e",
-            "className": "クラスを立てる",
-            "inviteCode": "1385",
-            "validUntil": "2024-07-04T00:49:41.462371507Z"
-          }
+      "srvResData": {
+        "ouchiUUID": "fe9462d6-bd7e-4b04-8b6a-785e9231b4d5",
+        "ouchiName": "テスト家",
+        "inviteCode": "009574",
+        "validUntil": "2024-07-16T13:44:02.603671112Z"
+      },
+      "srvResMsg": "Created"
       }
       ```
 
@@ -401,6 +401,23 @@ SSH URL:
         "srvResMsg": "OK" 
       }
       ```
+
+#### おうちを新規登録するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/register`
+- **メソッド:** POST
+- **説明:** ＊おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。＊
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "ouchiName": "おうちを立てる"
+    }
+    ```
 
 ### API仕様書てんぷれ
 
