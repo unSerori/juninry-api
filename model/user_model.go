@@ -174,10 +174,10 @@ func GetIdByMail(mail string) (string, error, bool) {
 func IsPatron(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
 	// 該当ユーザの行を取得
-	isParent, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
+	isPatron, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
 	if err != nil {
 		return false, err // エラーが出てるのにfalse返すのきしょいかも
 	}
 
-	return isParent, nil
+	return isPatron, nil
 }
