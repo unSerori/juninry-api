@@ -84,15 +84,15 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 		return model.Class{}, err // uuidの作成がおかしくなければ問題ないけど、登録結果が0件で正常終了することなんかあるか？
 	}
 
-	// 所属構造体にユーザーIDとクラスIDをバインド
-	classMemberships := model.ClassMembership{
-		ClassUuid: bClass.ClassUuid,
+	// クラスに参加する
+	classMembership := model.ClassMembership{
 		UserUuid:  userUuid,
+		ClassUuid: bClass.ClassUuid,
 	}
 
-	// 教員をクラスに所属させる
-	_, err = model.JoinClass(classMemberships)
-	if err != nil { // エラーハンドル
+	// クラスに参加
+	success, err := model.JoinClass(classMembership)
+	if err != nil || !success { // エラーハンドル
 		return model.Class{}, err
 	}
 
@@ -133,4 +133,49 @@ func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, class
 	}
 	//エラーが出なかった場合、コミットして作成したクラスを返す
 	return class, nil
+}
+
+// クラスに参加させる
+func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode string) (string, error) {
+
+	// クラス参加権限を持っているか確認
+	isParent, err := model.IsParent(userUuid)
+	if err != nil { // エラーハンドル
+		return "", err
+	}
+	if isParent { // 親がクラスに直接入ってくるなってやつです
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return "", common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	// クラスUUIDが存在するかどうか
+	targetClass, err := model.GetClassByInviteCode(inviteCode)
+	if err != nil { // エラーハンドル
+
+		return "", err
+	}
+	if targetClass.ClassUuid == "" { // そんなクラス存在しない場合
+		return "", common.NewErr(common.ErrTypeNoResourceExist)
+	}
+
+	// クラスに参加させる
+	classMembership := model.ClassMembership{
+		UserUuid:  userUuid,
+		ClassUuid: targetClass.ClassUuid,
+	}
+
+	// クラスに所属しようね
+	success, err := model.JoinClass(classMembership)
+	if err != nil || !success { // エラーハンドル
+		return "", err
+	}
+
+	// 所属したクラス名を返す
+	class, err := model.GetClass(classMembership.ClassUuid)
+	if err != nil { // エラーハンドル
+		return "", err
+	}
+
+	// エラーが出なかった場合、クラス名を返す
+	return class.ClassName, nil
 }
