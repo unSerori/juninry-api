@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"fmt"
+	"io"
 	"juninry-api/common"
 	"juninry-api/dip"
 	"juninry-api/model"
@@ -104,12 +104,12 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 		}
 		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 		buffer := make([]byte, 512) // バイトスライスのバッファを作成
-		file, err := image.Open()   // multipart.Formを実装するFileオブジェクトを直接取得
+		file, err := image.Open()   // multipart.Formを実装するFileオブジェクトを直接取得  // このバイナリはファイルタイプの特定とファイル保存書き込み処理で使う
 		if err != nil {
 			return err
 		}
 		defer file.Close()                                 // 終了後破棄
-		file.Read(buffer)                                  // ファイルをバッファに読み込む
+		file.Read(buffer)                                  // ファイルをバッファに読み込む  // 読み込んだバイト数とエラーを返す
 		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
 		if !ok {
@@ -123,14 +123,37 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 			return err
 		}
 
+		// ファイルパスを生成
+		filePath := dst + "/" + fileName.String() + "." + fileExt
+
+		// 確認
+		// fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
+		// fmt.Printf("mimeType: %v\n", mimeType)                 // リクエストヘッダからのContent-Type
+		// fmt.Printf("mimeTypeByBinary: %v\n", mimeTypeByBinary) // バイナリからのContent-Type
+		// fmt.Printf("validType: %v\n", validType)
+		// fmt.Printf("fileExt: %v\n", fileExt)
+		// fmt.Println("filePath: " + dst + "/" + fileName.String() + "." + fileExt)
+
 		// 保存
-		fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
-		fmt.Printf("mimeType: %v\n", mimeType)                 // リクエストヘッダからのContent-Type
-		fmt.Printf("mimeTypeByBinary: %v\n", mimeTypeByBinary) // バイナリからのContent-Type
-		fmt.Printf("validType: %v\n", validType)
-		fmt.Printf("fileExt: %v\n", fileExt)
-		fmt.Println("filename: " + dst + "/" + fileName.String() + "." + fileExt)
-		//out, err := os.OpenFile()  //uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+		//uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+
+		// ファイルを開く
+		oFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644) // ファイルが存在しない場合に新規作成|O_CREATEと組み合わせることで同名ファイル存在時にエラーを発生|書き込み専用で開く
+		if err != nil {
+			return err
+		}
+		defer oFile.Close() // リソース解放
+		// 読み書き位置の設定
+		if _, err := file.Seek(0, io.SeekStart); err != nil { // 書き込みたいデータ
+			return err
+		}
+		if _, err := oFile.Seek(0, io.SeekStart); err != nil { // 開いたファイル
+			return err
+		}
+		// データをコピー
+		if _, err := io.Copy(oFile, file); err != nil { // io.Copy()はimage<-*multipart.FileHeaderを解釈できないので、バイナリからファイルタイプを特定するために取得したFileオブジェクトを利用
+			return nil
+		}
 	}
 
 	// 画像名スライスを文字列に変換し、
