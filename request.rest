@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzQ0Njc0MzYsImlkIjoiZmUyNzExMGYtOTBjMS00MDAxLWI1NmYtNDNmNWUzNjk3YjFiIiwianRpIjoiMzU3OTBjNWEtNzEwOC00YjE1LWE5YmYtZTc2MGI4YWIwMWVlIn0.jS9tO9hqqBnO93cEHrN_TqxQjNNu7a6OFl0z1Qr360M
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMjIzNTQsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiYWJkNWFiOWEtNDQ5Mi00NTVmLTk3Y2UtZWE1YWRhYjdiYmVjIn0.VdjuaHux3d0ESTLiTQDz3Az12jM_rDz9IulzvPRC6ws
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -26,3 +26,37 @@ Content-Type: image/png
 
 < ./asset/images/colombia.jpg
 --{{boundary}}--
+
+### 教師ログインくん
+POST {{base_url}}{{api_v}}/users/login HTTP/1.1
+Content-Type: application/json
+{
+  "userName": "test teacher",
+  "userTypeId": 1,
+  "mailAddress": "test-teacher@gmail.com",
+  "password": "C@tt"
+}
+
+### 教師ログインくん
+POST {{base_url}}{{api_v}}/users/login HTTP/1.1
+Content-Type: application/json
+{
+  "userName": "test teacher",
+  "userTypeId": 1,
+  "mailAddress": "test-teacher@gmail.com",
+  "password": "C@tt"
+}
+
+### 親ログインくん
+POST {{base_url}}{{api_v}}/users/login HTTP/1.1
+Content-Type: application/json
+{
+  "userName": "test teacher",
+  "userTypeId": 1,
+  "mailAddress": "test-teacher@gmail.com",
+  "password": "C@tt"
+}
+
+### 課題一覧の取得
+GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
+Authorization: {{jwt}}

@@ -15,6 +15,12 @@ import (
 
 type ClassService struct{}
 
+// クラス名とクラスUUIDの構造体　一覧取得に使う
+type ClassDetail struct {
+	ClassUuid string `json:"classUUID"`
+	ClassName string `json:"className"`
+}
+
 // 招待コード生成部分
 // クラス内でしか呼び出されない
 func (s *ClassService) generateInviteCode(bClass model.Class) (model.Class, error) {
@@ -57,6 +63,73 @@ func (s *ClassService) generateInviteCode(bClass model.Class) (model.Class, erro
 	return model.Class{}, common.NewErr(common.ErrTypeMaxAttemptsReached)
 }
 
+// クラス一覧取得
+func (s *ClassService) GetClassList(userUuid string) ([]ClassDetail, error) {
+
+	// 結果格納用変数
+	var userUuids []string
+
+	// ユーザーが親の場合は子供のIDを取得する必要
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if isPatron { // 親ユーザーの場合
+		// おうちIDを取得
+		user, err := model.GetUser(userUuid)
+		if err != nil { // エラーハンドル
+			return nil, err
+		}
+		if user.OuchiUuid == nil {
+			// TODO: エラー:おうちないのになにしてんのエラー
+			return nil, common.NewErr(common.ErrTypePermissionDenied)
+		}
+
+		// 同じお家IDの子供のユーザーIDを取得
+		userUuids, err = model.GetChildren(*user.OuchiUuid)
+		if err != nil { // エラーハンドル
+			return nil, err
+		}
+		if len(userUuids) == 0 {
+			// TODO: エラー:おうちに子供はいないのになにしてんのエラー
+			return nil, common.NewErr(common.ErrTypePermissionDenied)
+		}
+
+	} else {
+		userUuids = append(userUuids, userUuid)
+	}
+
+	// 所属しているクラスのUUIDを取得
+	classes, err := model.GetClassList(userUuids)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+
+	// クラスUuidのスライスに変換
+	classUuids := make([]string, len(classes))
+	for i, class := range classes {
+		classUuids[i] = class.ClassUuid
+	}
+
+	// クラスUUIDからクラス情報を取得
+	classes, err = model.GetClassesByUUIDs(classUuids)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+
+	// 招待コードの有効期限は見せないよ
+	classDetails := make([]ClassDetail, 0, len(classes))
+	for _, class := range classes {
+		classDetails = append(classDetails, ClassDetail{
+			ClassUuid: class.ClassUuid,
+			ClassName: class.ClassName,
+		})
+	}
+
+	return classDetails, nil
+}
+
+// クラス作成
 func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass model.Class) (model.Class, error) {
 
 	// クラス作成権限を持っているか確認

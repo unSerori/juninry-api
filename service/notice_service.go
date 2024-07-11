@@ -191,7 +191,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 
 	// クラス作成権限を持っているか確認
-	isParent, err := model.IsParent(bRead.UserUuid)
+	isParent, err := model.IsPatron(bRead.UserUuid)
 	if err != nil { // エラーハンドル
 		return err
 	}

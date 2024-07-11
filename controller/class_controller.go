@@ -14,6 +14,52 @@ import (
 
 var ClassService = service.ClassService{}
 
+// クラス一覧取得
+func GetAllClassesHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	// サービスに投げるよ
+	classes, err := ClassService.GetClassList(idAdjusted)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failed to get class list.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// 処理後の成功
+	// 成功ログ
+	logging.SuccessLog("Successful get class list.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"classes": classes,
+		},
+	})
+
+}
+
+// クラス作成
 func RegisterClassHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
