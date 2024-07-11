@@ -116,7 +116,7 @@ SSH URL:
         }
       ```
 
-#### クラスのおてがみ情報一覧を取得するエンドポイント
+#### おてがみ情報一覧を取得するエンドポイント
 
 - **URL:** `/v1/auth/users/notice/notices`
 - **メソッド:** GET
@@ -133,13 +133,17 @@ SSH URL:
       ```json
       {
         "srvResData": {
-          "notices": {
-            "NoticeTitle": "【持ち物】おべんと",
-            "NoticeDate": "2024-06-11T03:23:39Z",
+        "notices": [
+          {
+            "NoticeUuid": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
+            "NoticeTitle": "【持ち物】おべんとうとぞうきん",
+            "NoticeDate": "2024-07-11T00:42:57Z",
             "UserName": "test teacher",
+            "ClassUuid": "09eba495-fe09-4f54-a856-9bea9536b661",
             "ClassName": "3-2 ふたば学級",
             "ReadStatus": 0
-        }},
+          }
+        ]}      
       }
       ```
 
@@ -329,7 +333,6 @@ SSH URL:
     }
     ```
 
-
 #### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`
@@ -461,6 +464,53 @@ SSH URL:
       "ouchiName": "おうちを立てる"
     }
     ```
+
+#### おうち招待コード更新するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/refresh/{ouchi_uuid}`
+- **メソッド:** PUT
+- **説明:** おうち招待コードの更新
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+  
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "ouchiUUID": "6fd7caf3-9ec9-4487-917e-f0fa75fb5ad2",
+          "ouchiName": "テスト3家",
+          "inviteCode": "007019",
+          "validUntil": "2024-07-17T05:31:39.384195368Z"
+        },
+        "srvResMsg": "Created"
+      }
+      ```
+
+#### おうちに所属するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/join/{invite_code}`
+- **メソッド:** POST
+- **説明:** ユーザにouchiUuidを付与する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {
+            "className": "テスト3家"
+          },
+          "srvResMsg": "OK"
+        }      
+      ```
 
 ### API仕様書てんぷれ
 
