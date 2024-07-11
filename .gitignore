@@ -31,7 +31,7 @@ SmaSurf Quick Search
 TODO*
 
 # メモファイル
-memo.txt
+memo.*
 
 # .vscode
 /.vscode/
@@ -47,6 +47,9 @@ server.log
 
 # asset direcotry
 /asset/*/*
+
+# upload directory
+/upload/homework/*
 
 # empty directory
 !.gitignore

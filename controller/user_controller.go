@@ -170,6 +170,15 @@ func LoginHandler(c *gin.Context) {
 		})
 		return
 	}
+	// // 構造体の中身をチェック
+	// st := reflect.TypeOf(bUser)  // 型を取得
+	// sv := reflect.ValueOf(bUser) // 値を取得
+	// // 構造体のフィールド数だけループ
+	// for i := 0; i < st.NumField(); i++ {
+	// 	fieldName := st.Field(i).Name                             // フィールド名を取得
+	// 	fieldValue := sv.Field(i)                                 // フィールドの値を取得
+	// 	fmt.Printf("%s: %v\n", fieldName, fieldValue.Interface()) // フィールド名と値を出力
+	// }
 
 	// ログイン処理と失敗レスポンス
 	token, err := userService.LoginUser(bUser)

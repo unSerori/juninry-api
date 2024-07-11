@@ -57,9 +57,13 @@ func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
 }
 
 // ユーザーをクラスに所属させるよ
-func JoinClass(record ClassMembership) (int64, error) {
+// 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、可否とerrorを返す
+func JoinClass(record ClassMembership) (bool, error) {
 	affected, err := db.Insert(record)
-	return affected, err
+	if err != nil || affected == 0 { //エラーハンドル
+		return false, err // 受け取ったエラーを返す
+	}
+	return true, nil
 }
 
 // クラスIDから参加しているユーザーを全取得
