@@ -171,8 +171,8 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 	// // 構造体の中身をチェック
-	// st := reflect.TypeOf(bUser)  // 型を取得
-	// sv := reflect.ValueOf(bUser) // 値を取得
+	// st := reflect.TypeOf(bUser)  // 型を取得 構造体がポインタなら*ptrを渡す
+	// sv := reflect.ValueOf(bUser) // 値を取得 構造体がポインタなら*ptrを渡す
 	// // 構造体のフィールド数だけループ
 	// for i := 0; i < st.NumField(); i++ {
 	// 	fieldName := st.Field(i).Name                             // フィールド名を取得

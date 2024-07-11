@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"io"
 	"juninry-api/common"
 	"juninry-api/model"
@@ -163,9 +162,14 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 
 	// 画像名スライスを文字列に変換し、
 	imageNameListString := strings.Join(imageNameList, ", ")
-	fmt.Printf("imageNameListString: %v\n", imageNameListString)
 	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
 	bHW.ImageNameListString = imageNameListString
+
+	// DBに登録
+	_, err := model.StoreHomework(bHW)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -38,4 +38,11 @@ func CreateHomeworkSubmissionTestData() {
 	db.Insert(hs1)
 }
 
-//
+// 提出構造体を登録
+func StoreHomework(hwS *HomeworkSubmission) (bool, error) {
+	affected, err := db.Insert(hwS)
+	if err != nil || affected == 0 {
+		return false, err
+	}
+	return true, err
+}

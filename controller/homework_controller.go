@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -107,6 +109,29 @@ func SubmitHomeworkHandler(c *gin.Context) {
 	err = homeworkService.SubmitHomework(bHW, form) // 依存性を渡す
 	if err != nil {                                 // エラーハンドル
 		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeInvalidFileFormat: // 画像形式が不正,
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // 500番
+				// エラーログ
+				logging.ErrorLog("Internal Server Error.", err)
+				// レスポンス
+				resStatusCode := http.StatusInternalServerError
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
 		return
 	}
 
