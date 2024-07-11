@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -98,6 +99,21 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 	for _, image := range images {
 		// バリデーション
 
+		// ファイルサイズ
+		var maxSize int64                                                        // 上限設定値
+		maxSize = 10485760                                                       // default値10MB
+		if maxSizeByEnv := os.Getenv("MULTIPART_MAX_SIZE"); maxSizeByEnv != "" { // 空文字でなければ数値に変換する
+			var err error
+			maxSizeByEnvInt, err := strconv.Atoi(maxSizeByEnv) // 数値に変換
+			if err != nil {
+				return err
+			}
+			maxSize = int64(maxSizeByEnvInt) // int64に変換
+		}
+		if image.Size > maxSize {
+			return common.NewErr(common.ErrTypeFileSizeTooLarge)
+		}
+
 		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
 		mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
 		ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
@@ -127,16 +143,7 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		fileName := fileNameWithoutExt.String() + "." + fileExt // ファイルネームを生成
 		filePath := dst + "/" + fileName                        // ファイルパスを生成
 
-		// 確認
-		// fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
-		// fmt.Printf("mimeType: %v\n", mimeType)                 // リクエストヘッダからのContent-Type
-		// fmt.Printf("mimeTypeByBinary: %v\n", mimeTypeByBinary) // バイナリからのContent-Type
-		// fmt.Printf("validType: %v\n", validType)
-		// fmt.Printf("fileExt: %v\n", fileExt)
-		// fmt.Println("filePath: " + dst + "/" + fileName.String() + "." + fileExt)
-
-		// 保存
-		//uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
+		// 保存 //uploader.SaveUploadedFile(image, dst+"/"+fileName.String()+"."+fileExt) // c.SaveUploadedFile(image, dst+"/"+fileName.String()+".png")
 
 		// ファイルを開く
 		oFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644) // ファイルが存在しない場合に新規作成|O_CREATEと組み合わせることで同名ファイル存在時にエラーを発生|書き込み専用で開く

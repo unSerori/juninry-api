@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMjQxMjMsImlkIjoiY2VlZmFiYTktNjg2ZS00Zjk3LTllYzktMWRjNjY5NzhiNTBmIiwianRpIjoiMTE3MmVjYTQtNGExNy00NDRmLWEyZTgtYTJkNzQ0OGFiMjRkIn0.T5rXNR3A3A2uZGGVw-HiWRhpPfJdpV62cKHhDhkvAOc
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMzg1NzQsImlkIjoiMzk1ZDFjMmQtNTM0Zi00N2VhLTg0MjMtOTU3YzhjMDgwNTVmIiwianRpIjoiNDFiODkzN2QtMDE1Ny00OTc0LTliNDYtMmEwNTM2YzkwMTVjIn0.EwlxtBc8bCTGDEbR6VltaUB3h-DY8N6EooyWnjyR2Mw
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -45,4 +45,20 @@ Content-Disposition: form-data; name="images"; filename="colombia.PNG"
 Content-Type: image/png
 
 < ./asset/images/colombia.jpg
+--{{boundary}}--
+
+### 宿題提出 バリデーションチェック
+POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="homeworkUUID";
+
+a3579e71-3be5-4b4d-a0df-1f05859a7104
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="Crab_Nebula.jpg"
+Content-Type: image/jpeg
+
+< ./asset/images/Crab_Nebula.jpg
 --{{boundary}}--

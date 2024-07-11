@@ -108,15 +108,25 @@ func SubmitHomeworkHandler(c *gin.Context) {
 	// 提出記録処理と失敗レスポンス
 	err = homeworkService.SubmitHomework(bHW, form) // 依存性を渡す
 	if err != nil {                                 // エラーハンドル
+		logging.ErrorLog("Service Error.", err)
 		// カスタムエラーを仕分ける
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeInvalidFileFormat: // 画像形式が不正,
+			case common.ErrTypeFileSizeTooLarge: // 画像がでかすぎる
 				// エラーログ
-				logging.ErrorLog("Bad Request.", err)
+				logging.ErrorLog("Payload Too Large.", err)
 				// レスポンス
-				resStatusCode := http.StatusBadRequest
+				resStatusCode := http.StatusRequestEntityTooLarge
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			case common.ErrTypeInvalidFileFormat: // 画像形式が不正
+				// エラーログ
+				logging.ErrorLog("Unsupported Media Type.", err)
+				// レスポンス
+				resStatusCode := http.StatusUnsupportedMediaType
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},

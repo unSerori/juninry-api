@@ -28,6 +28,7 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypePermissionDenied           // 権限がない
 	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
 	ErrTypeInvalidFileFormat          // ファイル形式が無効
+	ErrTypeFileSizeTooLarge           // ファイルサイズがでか杉ます;~;
 )
 
 // エラーに対するデフォルトmsgを設定
@@ -38,7 +39,8 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypePassMismatch:       "password does not match",
 	ErrTypePermissionDenied:   "do not have the necessary permissions",
 	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
-	ErrTypeInvalidFileFormat:  "",
+	ErrTypeInvalidFileFormat:  "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
+	ErrTypeFileSizeTooLarge:   "the file size exceeds the allowed limit",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる
