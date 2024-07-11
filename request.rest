@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMzg1NzQsImlkIjoiMzk1ZDFjMmQtNTM0Zi00N2VhLTg0MjMtOTU3YzhjMDgwNTVmIiwianRpIjoiNDFiODkzN2QtMDE1Ny00OTc0LTliNDYtMmEwNTM2YzkwMTVjIn0.EwlxtBc8bCTGDEbR6VltaUB3h-DY8N6EooyWnjyR2Mw
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwNDAzOTgsImlkIjoiMDRmNjhkMTQtYzI5MS00OGYzLTgxMDItYWY1N2Y3YmIyOWI5IiwianRpIjoiOWRmOGRhMjYtZGE1OS00YjYwLWJjYmUtNWM2Y2U0MTUwMTRkIn0.GZM8_MF-1v84mNm0NrqAl5yflGarlfDGeThA81bW8gQ
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1

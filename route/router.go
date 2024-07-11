@@ -105,6 +105,9 @@ func SetupRouter() (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
 
+	// マルチパートフォームのメモリ使用制限を設定
+	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
+
 	// ルーティング
 	routing(engine)
 
