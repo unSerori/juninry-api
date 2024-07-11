@@ -1,10 +1,30 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzQ0Njc0MzYsImlkIjoiZmUyNzExMGYtOTBjMS00MDAxLWI1NmYtNDNmNWUzNjk3YjFiIiwianRpIjoiMzU3OTBjNWEtNzEwOC00YjE1LWE5YmYtZTc2MGI4YWIwMWVlIn0.jS9tO9hqqBnO93cEHrN_TqxQjNNu7a6OFl0z1Qr360M
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMjQxMjMsImlkIjoiY2VlZmFiYTktNjg2ZS00Zjk3LTllYzktMWRjNjY5NzhiNTBmIiwianRpIjoiMTE3MmVjYTQtNGExNy00NDRmLWEyZTgtYTJkNzQ0OGFiMjRkIn0.T5rXNR3A3A2uZGGVw-HiWRhpPfJdpV62cKHhDhkvAOc
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
+
+### ユーザー登録
+POST {{base_url}}{{api_v}}/users/register HTTP/1.1
+Content-Type: :application/json
+
+{
+    "userName": "hogeta hogenaka",
+    "userTypeId": 1,
+    "mailAddress": "hogeta@gmail.com",
+    "password": "C@h"
+}
+
+### ログイン
+POST {{base_url}}{{api_v}}/users/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "mailAddress": "hogeta@gmail.com",
+    "password": "C@h"
+}
 
 ### 宿題提出
 POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
