@@ -90,10 +90,13 @@ func routing(engine *gin.Engine) {
 				ouchies := users.Group("/ouchies")
 				{
 					// おうち作成
-					ouchies.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterOuchiHandler)	// /v1/auth/users/ouchies/register
+					ouchies.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterOuchiHandler) // /v1/auth/users/ouchies/register
 
 					// 招待コードの更新
 					ouchies.PUT("/refresh/:ouchi_uuid", controller.GenerateOuchiInviteCodeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+					// おうちに所属
+					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 				}
 			}
 		}

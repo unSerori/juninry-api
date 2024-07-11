@@ -6,8 +6,8 @@ import (
 
 // おうちテーブル
 type Ouchi struct {
-	OuchiUuid string `xorm:"varchar(36) pk" json:"ouchiUUID"`       // ユーザータイプID
-	OuchiName string `xorm:"varchar(15) not null" json:"ouchiName"` // ユーザータイプ  // teacher, pupil, parents
+	OuchiUuid  string    `xorm:"varchar(36) pk" json:"ouchiUUID"`       // ユーザータイプID
+	OuchiName  string    `xorm:"varchar(15) not null" json:"ouchiName"` // ユーザータイプ  // teacher, pupil, parents
 	InviteCode string    `xorm:"char(6) unique" json:"inviteCode"`      // 招待ID
 	ValidUntil time.Time `xorm:"datetime" json:"validUntil" `           // 有効期限
 }
@@ -59,4 +59,30 @@ func GetOuchi(ouchiUuid string) (Ouchi, error) {
 	}
 
 	return ouchi, nil
+}
+
+// おうち招待コード取得
+func GetOuchiInviteCode(inviteCode string) (Ouchi, error) {
+	// 結果格納用
+	var ouchi Ouchi
+
+	//inviteCodeで絞り込んで1件取得
+	_, err := db.Where("invite_code =?", inviteCode).Get(
+		&ouchi,
+	)
+
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Ouchi{}, err
+	}
+
+	return ouchi, nil
+}
+
+// 期限の切れたおうち招待コードと有効期限をnullにする
+func DeleteExpiredOuchiInviteCodes() {
+	_, err := db.Where("valid_until < ?", time.Now()).Nullable("invite_code", "valid_until").Update(&Ouchi{})
+	if err != nil {
+		panic(err)
+	}
 }
