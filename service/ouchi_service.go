@@ -20,7 +20,7 @@ type OuchiService struct{}
 func (s *OuchiService) generateOuchiInviteCode(bOuchi model.Ouchi) (model.Ouchi, error) {
 	// 有効な招待コードが無ければ新しい招待コードを作る
 	// 有効期限を1週間後に設定
-	validUntil := time.Now().AddDate(0, 0, 7)
+	validUntil := time.Now().AddDate(0, 0, 1)
 	bOuchi.ValidUntil = validUntil // バインド
 
 	// 10回エラー吐いたら終わり
