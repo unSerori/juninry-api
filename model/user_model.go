@@ -66,6 +66,15 @@ func CreateUserTestData() {
 		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
 	}
 	db.Insert(user5)
+	user6 := &User{
+		UserUuid:    "868c0804-cf1b-43e2-abef-08f7ef58fcd0",
+		UserName:    "test parent",
+		UserTypeId:  3,
+		MailAddress: "test-parent@gmail.com",
+		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
+		JtiUuid:     "0553853f-cbcf-49e2-81d6-a4c7e4b1b470",
+	}
+	db.Insert(user6)
 }
 
 // 新規ユーザ登録
@@ -118,19 +127,6 @@ func GetJtiById(userUuid string) (string, error) {
 	return user.JtiUuid, nil
 }
 
-// アカウントタイプが教師かどうか判定して真偽値を返す
-func IsTeacher(userUuid string) (bool, error) {
-	var user User // 取得したデータをマッピングする構造体
-	// TODO: 教員のみに制限する
-	// 該当ユーザの行を取得
-	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 1", userUuid).Exist(&user)
-	if err != nil {
-		return false, err // エラーが出てるのにfalse返すのきしょいかも
-	}
-
-	return isTeacher, nil
-}
-
 // メアドからユーザーが存在するか確認
 func CheckUserExists(mail string) (error, bool) {
 	var user User // 取得したデータをマッピングする構造体
@@ -180,16 +176,51 @@ func GetIdByMail(mail string) (string, error, bool) {
 	return user.UserUuid, nil, true
 }
 
-// アカウントタイプが親かどうか判定して真偽値を返す
-func IsParent(userUuid string) (bool, error) {
+// アカウントタイプが教師かどうか判定して真偽値を返す
+func IsTeacher(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
+	// TODO: 教員のみに制限する
 	// 該当ユーザの行を取得
-	isParent, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
+	isTeacher, err := db.Where("user_uuid = ? and user_type_id = 1", userUuid).Exist(&user)
 	if err != nil {
 		return false, err // エラーが出てるのにfalse返すのきしょいかも
 	}
 
-	return isParent, nil
+	return isTeacher, nil
+}
+
+// アカウントタイプが親かどうか判定して真偽値を返す
+func IsPatron(userUuid string) (bool, error) {
+	var user User // 取得したデータをマッピングする構造体
+	// 該当ユーザの行を取得
+	isPatron, err := db.Where("user_uuid = ? and user_type_id = 3", userUuid).Exist(&user)
+	if err != nil {
+		return false, err // エラーが出てるのにfalse返すのきしょいかも
+	}
+
+	return isPatron, nil
+}
+
+// アカウントタイプがガキかどうか判定して真偽値を返す
+func IsJunior(userUuid string) (bool, error) {
+	var user User // 取得したデータをマッピングする構造体
+	// TODO: ガキのみに制限する
+	// 該当ユーザの行を取得
+	isJunior, err := db.Where("user_uuid = ? and user_type_id = 2", userUuid).Exist(&user)
+	if err != nil {
+		return false, err // エラーが出てるのにfalse返すのきしょいかも
+	}
+
+	return isJunior, nil
+}
+
+// ユーザにouchiUuidを付与
+func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
+	// ouchiUuidフィールドにポインタを指定
+	user := User{OuchiUuid: &ouchiUuid}
+	// 付与処理（更新処理）
+	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
+	return affected, err
 }
 
 // // ouchiUuidとclassUuidからガキを取得
