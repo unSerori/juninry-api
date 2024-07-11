@@ -1,10 +1,9 @@
 package service
 
 import (
-	"errors"
+	"fmt"
 	"io"
 	"juninry-api/common"
-	"juninry-api/dip"
 	"juninry-api/model"
 	"mime/multipart"
 	"net/http"
@@ -19,7 +18,7 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUuid"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUuid"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
@@ -79,10 +78,11 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 }
 
 // 宿題登録処理
-// インターフェース型で依存性を受け取ることにより、具体的な実装(gin.Context, GinContextWrapper)ではなくインターフェースに依存し、依存性逆転が実現できる。
-func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.HomeworkSubmission, form *multipart.Form) error {
+// インターフェース型で依存性を受け取ることにより、具体的な実装(gin.Context, GinContextWrapper)ではなくインターフェースに依存し、依存性逆転が実現できる。uploader dip.FileUpLoader,
+func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *multipart.Form) error {
 	// 画像の保存
 	images := form.File["images"] // スライスからimages fieldを取得
+
 	// 保存先ディレクトリ
 	dst := "./upload/homework"
 	// ディレクトリが存在しない場合
@@ -91,6 +91,9 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 			return err
 		}
 	}
+
+	// 保存した画像リスト
+	var imageNameList []string
 
 	// それぞれのファイルを保存
 	for _, image := range images {
@@ -118,13 +121,12 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
 
 		// ファイル名をuuidで作成
-		fileName, err := uuid.NewRandom() // 新しいuuidの生成
+		fileNameWithoutExt, err := uuid.NewRandom() // 新しいuuidの生成
 		if err != nil {
 			return err
 		}
-
-		// ファイルパスを生成
-		filePath := dst + "/" + fileName.String() + "." + fileExt
+		fileName := fileNameWithoutExt.String() + "." + fileExt // ファイルネームを生成
+		filePath := dst + "/" + fileName                        // ファイルパスを生成
 
 		// 確認
 		// fmt.Printf("image.Filename: %v\n", image.Filename)     // ファイル名
@@ -154,16 +156,18 @@ func (s *HomeworkService) SubmitHomework(uploader dip.FileUpLoader, bHW model.Ho
 		if _, err := io.Copy(oFile, file); err != nil { // io.Copy()はimage<-*multipart.FileHeaderを解釈できないので、バイナリからファイルタイプを特定するために取得したFileオブジェクトを利用
 			return nil
 		}
+
+		// 保存した画像リストに追加
+		imageNameList = append(imageNameList, fileName)
 	}
 
 	// 画像名スライスを文字列に変換し、
-	// list :=
+	imageNameListString := strings.Join(imageNameList, ", ")
+	fmt.Printf("imageNameListString: %v\n", imageNameListString)
 	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
-	// bHW.list =
-	// テーブルに追加。
-	// ins
+	bHW.ImageNameListString = imageNameListString
 
-	return errors.New("hoge")
+	return nil
 }
 
 // 許可されたMIMEタイプかどうかを確認、許可されていた場合は一致したタイプを返す

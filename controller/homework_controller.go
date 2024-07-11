@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"juninry-api/dip"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -56,8 +55,23 @@ func FindHomeworkHandler(c *gin.Context) {
 
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
 	// form fields 構造体にマッピング
-	var bHW model.HomeworkSubmission     // 構造体のインスタンス
+	var bHW *model.HomeworkSubmission    // 構造体のインスタンス
 	if err := c.Bind(&bHW); err != nil { // フォームフィールドの直接取得  hwId := c.PostForm("homeworkUUID")
 		// エラーログ
 		logging.ErrorLog("Failure to bind request.", err)
@@ -69,6 +83,9 @@ func SubmitHomeworkHandler(c *gin.Context) {
 		})
 		return
 	}
+	// 構造体にidを追加
+	bHW.UserUuid = idAdjusted
+
 	// form files取得
 	form, err := c.MultipartForm() // フォームを取得
 	if err != nil {
@@ -84,11 +101,11 @@ func SubmitHomeworkHandler(c *gin.Context) {
 	}
 
 	// 依存性注入
-	fileUploader := &dip.GinContextWrapper{C: c} // サービス層で使えるように、依存性をラッパー構造体のインスタンスとして作成
+	// fileUploader := &dip.GinContextWrapper{C: c} // サービス層で使えるように、依存性をラッパー構造体のインスタンスとして作成
 
 	// 提出記録処理と失敗レスポンス
-	err = homeworkService.SubmitHomework(fileUploader, bHW, form) // 依存性を渡す
-	if err != nil {                                               // エラーハンドル
+	err = homeworkService.SubmitHomework(bHW, form) // 依存性を渡す
+	if err != nil {                                 // エラーハンドル
 		// カスタムエラーを仕分ける
 		return
 	}

@@ -2,8 +2,9 @@ package model
 
 // 宿題提出管理テーブル
 type HomeworkSubmission struct {
-	HomeworkUuid string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
-	UserUuid     string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
+	HomeworkUuid        string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
+	UserUuid            string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
+	ImageNameListString string `xorm:"TEXT" json:"imageNameListString"`                        // 画像ファイル名一覧 // TEXT型でUTF-8 21,845文字 // 一画像40文字と考えると最大546.125画像保存可能
 }
 
 // テーブル名
@@ -36,3 +37,5 @@ func CreateHomeworkSubmissionTestData() {
 	}
 	db.Insert(hs1)
 }
+
+//
