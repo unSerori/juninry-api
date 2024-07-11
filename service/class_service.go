@@ -100,19 +100,19 @@ func (s *ClassService) GetClassList(userUuid string) ([]ClassDetail, error) {
 	}
 
 	// 所属しているクラスのUUIDを取得
-	classes, err := model.GetClassList(userUuids)
+	classMemberships, err := model.GetClassList(userUuids)
 	if err != nil { // エラーハンドル
 		return nil, err
 	}
 
 	// クラスUuidのスライスに変換
-	classUuids := make([]string, len(classes))
-	for i, class := range classes {
+	classUuids := make([]string, len(classMemberships))
+	for i, class := range classMemberships {
 		classUuids[i] = class.ClassUuid
 	}
 
 	// クラスUUIDからクラス情報を取得
-	classes, err = model.GetClassesByUUIDs(classUuids)
+	classes, err := model.GetClassesByUUIDs(classUuids)
 	if err != nil { // エラーハンドル
 		return nil, err
 	}

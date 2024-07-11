@@ -87,7 +87,7 @@ func UpdateInviteCode(record Class) (int64, error) {
 
 func GetClassesByUUIDs(classUuids []string) ([]Class, error) {
 	var classes []Class
-	_, err := db.In("class_uuid", classUuids).Get(&classes)
+	err := db.In("class_uuid", classUuids).Find(&classes)
 	if err != nil {
 		return nil, err
 	}
