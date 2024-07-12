@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYxMjMxMDMsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiOTJiOGI2MGYtNGRhZC00MWFlLWI5YzAtNjMyOGRjNjg0NjI1In0.ywfdKwrl0evUA_pqRgpgp963Uzwf10KwNRLooABIy-g
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYxMjUxODYsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNTJmNTA5ZDktNzBiNy00MDI4LWI3ZGEtMDFmNjJkZTBlZDAwIn0.zSWM8C9E9mgtQbHEV-ApSS0j_ndKK7s-LpFpsUGS3NY
 
 @notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
 
@@ -11,7 +11,7 @@
 
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 
-@ouchi_invite_code = 224280
+@ouchi_invite_code = 006605
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
