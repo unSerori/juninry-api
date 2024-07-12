@@ -333,6 +333,43 @@ SSH URL:
     }
     ```
 
+### 所属クラス一覧を取得するエンドポイント
+
+- **URL:** `/v1/auth/users/classes/affiliations`
+- **メソッド:** GET
+- **説明:** 子供、教師は自身の所属するクラスを、親は子供たちの所属するクラスの一覧を取得
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+
+- **レスポンス:**
+  - ステータスコード: 200
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {
+        "classes": [
+          {
+            "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+            "className": "3-2 ふたば学級"
+          },,,
+        ]
+      },
+      "srvResMsg": "OK"
+    }
+    ```
+
+  - ステータスコード: 404
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Not Found"
+    }
+    ```
+
 #### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`

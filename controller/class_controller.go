@@ -37,8 +37,8 @@ func GetAllClassesHandler(c *gin.Context) {
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
-
-		if errors.As(err, &common.CustomErr{}) { // カスタムエラーの場合
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // カスタムエラーの場合
 			// レスポンス
 			resStatusCode := http.StatusNotFound
 			c.JSON(resStatusCode, gin.H{	// お家に子供いないよエラー
