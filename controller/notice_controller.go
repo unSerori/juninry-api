@@ -219,14 +219,8 @@ func NoticeReadHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	// 構造体にマッピング
-	bRead := model.NoticeReadStatus{
-		NoticeUuid: noticeUuid,
-		UserUuid:   idAdjusted,
-	}
-
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead)
+	err := noticeService.ReadNotice(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
@@ -287,6 +281,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 
 }
 
+// 特定のお知らせ既読一覧取得
 func GetNoticestatusHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
@@ -303,12 +298,11 @@ func GetNoticestatusHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	fmt.Println(idAdjusted)   //　アサーションの確認
 
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	fmt.Println(noticeUuid)
+	fmt.Println("noticeUuid："+noticeUuid)
 
 	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
 	if err != nil {

@@ -211,10 +211,10 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 }
 
 // noticeの既読登録
-func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
+func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 
-	// クラス作成権限を持っているか確認
-	isPatron, err := model.IsPatron(bRead.UserUuid)
+	// 既読権限を持っているか確認
+	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return err
 	}
@@ -223,8 +223,13 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 		return common.NewErr(common.ErrTypePermissionDenied)
 	}
 
+	user, err := model.GetUser(userUuid)
+	if err != nil {
+		return err
+	}
+
 	// 構造体をレコード登録処理に投げる
-	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
+	err = model.ReadNotice(noticeUuid, *user.OuchiUuid) // 第一返り血は登録成功したレコード数
 	if err != nil {
 		return err
 	}
@@ -233,7 +238,7 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 }
 
 
-// 特定のお知らせ既読済み一覧
+// 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
 type NoticeStatus struct {
 	UserName   string // ガキの名前
 	GenderCode string //性別コード
@@ -243,7 +248,7 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) (Not
 
 	//TODO:削除
 	fmt.Println("さーびすです")
-	fmt.Println(noticeUuid)
+	fmt.Println("noticeUuid："+noticeUuid)
 
 	//おしらせがどのクラスのものなのかを取ってくる
 	temp, err := model.GetNoticeDetail(noticeUuid)
@@ -252,7 +257,7 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) (Not
 	}
 	//わかりやすよう、tempのclassUuidだけ取ってきとく
 	classUuid := temp.ClassUuid
-	fmt.Println("classUuid:::" + classUuid)
+	fmt.Println("classUuid：" + classUuid)
 
 	//お知らせの既読済情報一覧を取ってくる
 	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
@@ -261,38 +266,23 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) (Not
 	}
 
 	//構造体からスライスに変換する(userUuidを持ってる配列を作る)
-	var userUuids []string
-	for _, statusList := range noticeReadStatus {
-		userUuid := statusList.UserUuid
-		userUuids = append(userUuids, userUuid)
-	}
-
-	// userUuidsはお知らせを既読しているユーザの一覧を保持
-	fmt.Println(userUuids)
-
-	// userUuidからouhciUuidの一覧を作る
 	var ouchiUuids []string
-	for _, usersList := range userUuids {
-		//usesrを一つ取って
-		userUuid := usersList
-		//getUserでユーザ情報取ってくる
-		userDetail, err := model.GetUser(userUuid) // user情報のすべてが返るのでdetailにしてる
-		if err != nil {
-			return NoticeStatus{}, err
-		}
-
-		// ouchiUuidがnullやった場合の処理
-		if userDetail.OuchiUuid == nil {
-			logging.ErrorLog("OuchiUuid is nil for user UUID %s", err)
-			return NoticeStatus{}, err
-		}
-
-		//取ってきた情報のouchiUuidを追加していく
-		ouchiUuids = append(ouchiUuids, *userDetail.OuchiUuid)
+	for _, statusList := range noticeReadStatus {
+		ouchiUuid := statusList.OuchiUuid
+		ouchiUuids = append(ouchiUuids, ouchiUuid)
 	}
 
 	// ouchiUuid 一覧を保持
+	fmt.Print("ouchiUuids：")
 	fmt.Println(ouchiUuids)
+
+
+
+
+
+
+
+
 
 	noticeStatus := NoticeStatus{
 		UserName:   userUuid,
