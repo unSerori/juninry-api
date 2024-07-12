@@ -77,7 +77,6 @@ func RegisterClassHandler(c *gin.Context) {
 }
 
 // ユーザーIDから参加しているクラスを取得し、生徒一覧を返す
-// TODO:ユーザータイプに合わせてリクエスト変わるんでは、、？となっているなう
 func GetClasssmaitesHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
@@ -93,12 +92,53 @@ func GetClasssmaitesHandler(c *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-
-	// 先生の場合と生徒の場合はidをそのまま使う
+	var idAdjusteds []string	// ユーザーのidを格納するスライス
+	// 保護者かチェック
+	isPatron,err := model.IsPatron(idAdjusted)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to get user.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
 	// 保護者の場合は子供のidを取得して使う
-	
+	if isPatron {
+		// 保護者のOUCHIUUIDを取得
+		patron,err := model.GetUser(idAdjusted)
+		if err != nil {
+			// エラーログ
+			logging.ErrorLog("Failure to get user.", err)
+			// レスポンス
+			resStatusCode := http.StatusBadRequest
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
+		// 保護者のOUCHIUUIDから子供のIDを取得
+		idAdjusteds,err = model.GetJuniorsByOuchiUuid(*patron.OuchiUuid)
+		if err != nil {
+			// エラーログ
+			logging.ErrorLog("Failure to get user.", err)
+			// レスポンス
+			resStatusCode := http.StatusBadRequest
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
+	}else{
+		idAdjusteds = append(idAdjusteds,idAdjusted)
+	}
 	// idからクラスメイトの情報を取得
-	classmates, err := ClassService.GetClassMates(idAdjusted)
+	classmates, err := ClassService.GetClassMates(idAdjusteds)
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failure to get user.", err)

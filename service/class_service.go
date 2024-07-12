@@ -119,7 +119,7 @@ type TransFormData struct {
 }
 
 // 自身が参加しているクラスに参加しているユーザ情報を全権取得
-func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
+func (s *ClassService) GetClassMates(useruuid []string) ([]TransFormData, error) {
 
 	// useridでユーザ情報を取得
 	myClass, err := model.FindClassMemberships(useruuid)

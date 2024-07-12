@@ -15,14 +15,14 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUuid"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
 	TeachingMaterialName      string `json:"teachingMaterialName"`      // 教材名
 	SubjectId                 int    `json:"subjectId"`                 // 教科ID
 	SubjectName               string `json:"subjectName"`               // 教科名
-	TeachingMaterialImageUuid string `json:"teachingMaterialImageUuid"` // 画像ID どういう扱いになるのかな
+	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
 	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
 }

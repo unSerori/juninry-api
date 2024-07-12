@@ -8,7 +8,7 @@ import (
 type User struct { // typeで型の定義, structは構造体
 	UserUuid    string  `xorm:"varchar(36) pk" json:"userUUID"`                  // ユーザのUUID
 	UserName    string  `xorm:"varchar(25) not null" json:"userName"`            // 名前
-	UserTypeId  int     `xorm:"not null" json:"userTypeId"`                      // ユーザータイプ
+	UserTypeId  int     `xorm:"not null" json:"userTypeId"`                      // ユーザータイプ	1:教師, 2:児童, 3:保護者
 	MailAddress string  `xorm:"varchar(256) not null unique" json:"mailAddress"` // メアド
 	GenderId	int    	`xorm:"not null" json:"genderId"`                    	 // 性別 1:男性, 2:女性, 3:その他
 	Password    string  `xorm:"varchar(60) not null" json:"password"`            // bcrypt化されたパスワード
@@ -221,6 +221,22 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	// 付与処理（更新処理）
 	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
 	return affected, err
+}
+
+// おうちに所属している児童のuuidを取得
+func GetJuniorsByOuchiUuid(ouchiUuid string) ([]string, error) {
+	// 結果格納用
+	var juniorUUIDs []string
+	var users []User
+	// 特定のおうちに所属している児童のuuidを取得
+	err := db.Where("ouchi_uuid = ?", ouchiUuid).And("user_type_id = 2").Find(&users)
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		juniorUUIDs = append(juniorUUIDs, user.UserUuid)
+	}
+	return juniorUUIDs, nil
 }
 
 
