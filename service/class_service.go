@@ -80,19 +80,16 @@ func (s *ClassService) GetClassList(userUuid string) ([]ClassDetail, error) {
 		if err != nil { // エラーハンドル
 			return nil, err
 		}
-		if user.OuchiUuid == nil {
-			// TODO: エラー:おうちないのになにしてんのエラー
-			return nil, common.NewErr(common.ErrTypePermissionDenied)
-		}
 
 		// 同じお家IDの子供のユーザーIDを取得
 		userUuids, err = model.GetChildren(*user.OuchiUuid)
 		if err != nil { // エラーハンドル
 			return nil, err
 		}
+
 		if len(userUuids) == 0 {
-			// TODO: エラー:おうちに子供はいないのになにしてんのエラー
-			return nil, common.NewErr(common.ErrTypePermissionDenied)
+			//  エラー:おうちに子供はいないのになにしてんのエラー
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 
 	} else {

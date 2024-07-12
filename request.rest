@@ -92,3 +92,9 @@ Authorization: {{jwt}}
 ### 所属しているクラス一覧取得
 GET {{base_url}}{{api_v}}/auth/users/classes/affiliations HTTP/1.1
 Authorization: {{jwt}}
+
+### おうち作成
+
+### おうち招待コード更新
+
+### おうち所属
