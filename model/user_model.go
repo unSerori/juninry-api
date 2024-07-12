@@ -214,6 +214,20 @@ func IsJunior(userUuid string) (bool, error) {
 	return isJunior, nil
 }
 
+// 子供のUUIDを取得
+func GetChildrenUuids(OuchiUuid string) ([]string, error) {
+
+	// 結果格納用変数
+	var userUuids []string
+
+	err := db.Table("users").Where("ouchi_uuid = ? and user_type_id = 2", OuchiUuid).Select("user_uuid").Find(&userUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	return userUuids, nil
+}
+
 // ユーザにouchiUuidを付与
 func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	// ouchiUuidフィールドにポインタを指定

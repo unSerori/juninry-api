@@ -56,6 +56,20 @@ func FindClassMemberships(userUuid []string) ([]ClassMembership, error) {
 	return classMemberships, nil
 }
 
+// user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
+func GetClassList(userUuids []string) ([]ClassMembership, error) {
+	//Class構造体のスライスを返すので定義
+	var classMemberships []ClassMembership
+
+	// uuidで絞り込み
+	err := db.In("user_uuid", userUuids).Find(&classMemberships)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+
+	return classMemberships, nil
+}
+
 // ユーザーをクラスに所属させるよ
 // 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、可否とerrorを返す
 func JoinClass(record ClassMembership) (bool, error) {
