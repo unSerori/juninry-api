@@ -2,8 +2,8 @@ package model
 
 // 宿題提出管理テーブル
 type HomeworkSubmission struct {
-	HomeworkUuid string `xorm:"varchar(36) pk" json:"homeworkUUID"` // ユーザーID
-	UserUuid     string `xorm:"varchar(36) pk" json:"userUUID"`     // クラスID
+	HomeworkUuid string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
+	UserUuid     string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
 }
 
 // テーブル名

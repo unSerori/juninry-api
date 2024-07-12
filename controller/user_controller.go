@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	common "juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -58,11 +59,11 @@ func RegisterUserHandler(c *gin.Context) {
 			}
 		}
 		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *service.CustomErr
+		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) {
 			// 本処理時のエラーごとに処理(:DBエラー以外)
 			switch serviceErr.Type {
-			case service.ErrTypeHashingPassFailed: // ハッシュ化に失敗
+			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
 				// エラーログ
 				logging.ErrorLog("Failure to hash passwords.", err)
 				// レスポンス
@@ -71,7 +72,7 @@ func RegisterUserHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case service.ErrTypeGenTokenFailed: // トークンの作成に失敗
+			case common.ErrTypeGenTokenFailed: // トークンの作成に失敗
 				// エラーログ
 				logging.ErrorLog("Failed to generate token.", err)
 				// レスポンス
@@ -98,7 +99,7 @@ func RegisterUserHandler(c *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful user registration.")
 	// レスポンス
-	resStatusCode := http.StatusBadRequest
+	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
@@ -150,6 +151,74 @@ func GetUserHandler(c *gin.Context) {
 		// "srvResMsg":  "Successful user get.",
 		"srvResData": gin.H{
 			"userData": bUser,
+		},
+	})
+}
+
+// login
+func LoginHandler(c *gin.Context) {
+	// 構造体にマッピング
+	var bUser model.User // 構造体のインスタンス
+	if err := c.ShouldBindJSON(&bUser); err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to bind request.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	// // 構造体の中身をチェック
+	// st := reflect.TypeOf(bUser)  // 型を取得
+	// sv := reflect.ValueOf(bUser) // 値を取得
+	// // 構造体のフィールド数だけループ
+	// for i := 0; i < st.NumField(); i++ {
+	// 	fieldName := st.Field(i).Name                             // フィールド名を取得
+	// 	fieldValue := sv.Field(i)                                 // フィールドの値を取得
+	// 	fmt.Printf("%s: %v\n", fieldName, fieldValue.Interface()) // フィールド名と値を出力
+	// }
+
+	// ログイン処理と失敗レスポンス
+	token, err := userService.LoginUser(bUser)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeNoResourceExist: // ユーザーが見つからなかった,
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // 500番
+				// エラーログ
+				logging.ErrorLog("Internal Server Error.", err)
+				// レスポンス
+				resStatusCode := http.StatusInternalServerError
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
+		return
+	}
+
+	// 成功レスポンス 200番
+	// 成功ログ
+	logging.SuccessLog("Successful user login.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"authenticationToken": token,
 		},
 	})
 }

@@ -50,8 +50,18 @@ func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
 	//uuidをWhere句で条件指定
 	err := db.Where("user_uuid = ?", userUuid).Find(&classMemberships)
 	if err != nil { //エラーハンドル
-			return nil, err
+		return nil, err
 	}
 
 	return classMemberships, nil
+}
+
+// ユーザーをクラスに所属させるよ
+// 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、可否とerrorを返す
+func JoinClass(record ClassMembership) (bool, error) {
+	affected, err := db.Insert(record)
+	if err != nil || affected == 0 { //エラーハンドル
+		return false, err // 受け取ったエラーを返す
+	}
+	return true, nil
 }

@@ -30,6 +30,9 @@ func routing(engine *gin.Engine) {
 		{
 			// ユーザー新規登録
 			users.POST("/register", controller.RegisterUserHandler) // /v1/users/register
+
+			// ユーザーログイン
+			users.POST("/login", controller.LoginHandler) // /v1/users/login
 		}
 
 		// authグループ 認証ミドルウェア適用
@@ -44,26 +47,60 @@ func routing(engine *gin.Engine) {
 				// ユーザー自身のプロフィールを取得
 				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
 
-				// homeworkグループ
-				homework := users.Group("/homework")
+				// homeworksグループ
+				homeworks := users.Group("/homeworks")
 				{
 					// 期限がある課題一覧を取得
-					homework.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homework/upcoming
+					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+
+					// 宿題の提出
+					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
 				}
 
 				// noticeグループ
-				notice := users.Group("/notice")
+				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notice.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notice/notices
+					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notice.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+
+					//　お知らせ新規登録
+					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
+
+					// お知らせ既読済み処理
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
+				}
+
+				// classesグループ
+				classes := users.Group("/classes")
+				{
+					// クラスを作成する
+					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
+
+					// 招待コードを更新する
+					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
+
+					// クラスに参加する
+					classes.POST("/join/:invite_code", controller.JoinClassHandler)
+				}
+
+				// ouchiesグループ
+				ouchies := users.Group("/ouchies")
+				{
+					// おうち作成
+					ouchies.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterOuchiHandler) // /v1/auth/users/ouchies/register
+
+					// 招待コードの更新
+					ouchies.PUT("/refresh/:ouchi_uuid", controller.GenerateOuchiInviteCodeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+					// おうちに所属
+					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 				}
 			}
 		}
 	}
-
 }
 
 // ファイルを設定

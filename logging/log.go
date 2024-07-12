@@ -21,5 +21,24 @@ func SuccessLog(successName string) {
 func ErrorLog(errName string, err error) {
 	log.Printf("ERROR LOG: %s\n", errName)
 	log.Printf("Time: %v\n", time.Now()) // 時刻
-	log.Printf("Error: %s\n\n", err)
+	if err != nil {
+		log.Printf("Error: %s\n\n", err)
+	} else {
+		log.Printf("Error: NIL")
+	}
+}
+
+// 情報の記録
+func InfoLog(title string, info string) {
+	log.Printf("INFO LOG: %s\n", title)
+	log.Printf("Time: %v\n", time.Now()) // 時刻
+	if info != "" {
+		log.Printf("Info: \n%s\n", info)
+		//log.Printf("Info: %s\n", info)
+	}
+}
+
+// 単純なprintf
+func SimpleLog(str string) {
+	log.Print(str)
 }

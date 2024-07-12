@@ -80,29 +80,43 @@ SSH URL:
 
 #### クラスの課題情報一覧を取得するエンドポイント
 
-- **URL:** `/v1/auth/users/homework/upcoming`
+- **URL:** `/v1/auth/users/homeworks/upcoming`
 - **メソッド:** GET
 - **説明:** 自分が所属するクラスの期限が先のものを取得
 - **リクエスト:**
   - ヘッダー:
-    - `Content-Type`: application/json
-    - `Authorization`: (string) 認証トークン
+    - Authorization: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
-      {
-        "srvResMsg":  "レスポンスステータスメッセージ",
-        "srvResData": {
-        
-        },
-      }
+        {
+          "srvResMsg": "OK",
+          "srvResData": [
+            {
+              "homeworkLimit": "0001-01-01T00:00:00Z",
+              "homeworkData": [
+                {
+                  "homeworkUUID": "a3579e71-3be5-4b4d-a0df-1f05859a7104",
+                  "startPage": 24,
+                  "pageCount": 2,
+                  "homeworkNote": "がんばってくださ～い＾＾",
+                  "teachingMaterialName": "漢字ドリル3",
+                  "subjectId": 1,
+                  "subjectName": "国語",
+                  "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
+                  "className": "3-2 ふたば学級",
+                  "submitFlag": 1  // 提出フラグ 1 提出 0 未提出
+                },,,
+              ]
+            },,,
+          ]
+        }
       ```
 
-#### クラスのおてがみ情報一覧を取得するエンドポイント
+#### おてがみ情報一覧を取得するエンドポイント
 
 - **URL:** `/v1/auth/users/notice/notices`
 - **メソッド:** GET
@@ -119,13 +133,17 @@ SSH URL:
       ```json
       {
         "srvResData": {
-          "notices": {
-            "NoticeTitle": "【持ち物】おべんと",
-            "NoticeDate": "2024-06-11T03:23:39Z",
+        "notices": [
+          {
+            "NoticeUuid": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
+            "NoticeTitle": "【持ち物】おべんとうとぞうきん",
+            "NoticeDate": "2024-07-11T00:42:57Z",
             "UserName": "test teacher",
+            "ClassUuid": "09eba495-fe09-4f54-a856-9bea9536b661",
             "ClassName": "3-2 ふたば学級",
             "ReadStatus": 0
-        }},
+          }
+        ]}      
       }
       ```
 
@@ -136,21 +154,21 @@ SSH URL:
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
   - ヘッダー:
-    - `Content-Type`: application/json
+    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+  - ボディ:
+    ＊さまざまな形式のボディ値＊
 
 - **レスポンス:**
-  - ステータスコード: 200 OK
+  - ステータスコード: ＊ステータスコード ステータス＊
     - ボディ:
+      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
+        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-          "NoticeTitle": "【持ち物】おべんとうとぞうきん",
-          "NoticeExplanatory": "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますのでよろしくお願いします。,1",
-          "NoticeDate": "2024-06-11T03:23:39Z",
-          "UserName": "test teacher",
-          "ClassName": "3-2 ふたば学級"
-        }
+        
+        },
       }
       ```
 
@@ -188,27 +206,310 @@ SSH URL:
 
 #### クラスを新規登録するエンドポイント
 
-- **URL:** `/v1/auth/class/register`
+- **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
-- **説明:** ＊○○＊
+- **説明:** ＊クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。＊
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
   - ボディ:
-    ＊さまざまな形式のボディ値＊
+
+    ```json
+    {
+      "className": "クラスを立てる"
+    }
+    ```
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータスメッセージ＊
+  - ステータスコード: 201 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
+      "srvResData": {
+        "ouchiUUID": "fe9462d6-bd7e-4b04-8b6a-785e9231b4d5",
+        "ouchiName": "テスト家",
+        "inviteCode": "009574",
+        "validUntil": "2024-07-16T13:44:02.603671112Z"
+      },
+      "srvResMsg": "Created"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+#### クラスの招待IDを更新するエンドポイント
+
+- **URL:** `v1/auth/users/classes/refresh/{class_uuid}`
+- **メソッド:** PUT
+- **説明:** ＊クラスの招待IDを更新する＊
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
         "srvResData": {
-        
+          "classUUID": "53faea61-ae69-45e9-8b66-73481f9ca879",
+          "className": "最新のクラス",
+          "inviteCode": "7895",
+          "validUntil": "2024-07-04T03:15:25Z"
+        },
+        "srvResMsg": "Created"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg": "Forbidden",
+        "srvResData": {}
+      }
+      ```
+
+  - ステータスコード: 404 Not Found
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {},
+          "srvResMsg": "Not Found"
+        }
+        ```
+
+#### クラスに所属するエンドポイント
+
+- **URL:** `/v1/auth/users/classes/join/:invite_code`
+- **メソッド:** POST
+- **説明:** クラスに生徒、職員を所属させる。
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {
+        "className": "ゆるふわ"
+      },
+      "srvResMsg": "OK"
+    }
+    ```
+
+  - ステータスコード: 409 Conflict
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Conflict"
+    }
+    ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Forbidden"
+    }
+    ```
+
+#### ログインするエンドポイント
+
+- **URL:** `/v1/users/login`
+- **メソッド:** POST
+- **説明:** メアドとパスワードでログインし、トークンを取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "mailAddress": "test-pupil@gmail.com",
+      "password": "C@tp"
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "authenticationToken": "token@hogeta"
         },
       }
+      ```
+
+#### 終了した宿題を提出するエンドポイント
+
+- **URL:** `/v1/auth/users/homeworks/submit`
+- **メソッド:** POST
+- **説明:** 宿題を提出する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: multipart/form-data
+    - `Authorization`: (string) 認証トークン
+  - ボディ: Form - 宿題のID
+    - Form Fields
+      - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
+    - Files - 提出する宿題の画像
+      - images: page_67.jpg
+      - images: page_68.png
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created",
+        "srvResData": {
+        },
+      }
+      ```
+
+#### お知らせの新規登録するエンドポイント
+
+- **URL:** `/v1/auth/users/notice/register`
+- **メソッド:** POST
+- **説明:** お知らせの新規登録をする
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+      {
+        "srvResData": {
+          "notices": {
+            "NoticeTitle": "【持ち物】習字道具必要です",
+            "NoticeDate": "2024-06-11T03:23:39Z",
+            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+        }},
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "authenticationToken": "トークン",
+          "srvResMsg": "OK"
+        },
+      }
+      ```
+
+#### お知らせ既読処理をするエンドポイント
+
+- **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
+- **メソッド:** POST
+- **説明:** notice_read_statusにデータを追加する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+  
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "OK" 
+      }
+      ```
+
+#### おうちを新規登録するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/register`
+- **メソッド:** POST
+- **説明:** ＊おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。＊
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "ouchiName": "おうちを立てる"
+    }
+    ```
+
+#### おうち招待コード更新するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/refresh/{ouchi_uuid}`
+- **メソッド:** PUT
+- **説明:** おうち招待コードの更新
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+  
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "ouchiUUID": "6fd7caf3-9ec9-4487-917e-f0fa75fb5ad2",
+          "ouchiName": "テスト3家",
+          "inviteCode": "007019",
+          "validUntil": "2024-07-17T05:31:39.384195368Z"
+        },
+        "srvResMsg": "Created"
+      }
+      ```
+
+#### おうちに所属するエンドポイント
+
+- **URL:** `/v1/auth/users/ouchies/join/{invite_code}`
+- **メソッド:** POST
+- **説明:** ユーザにouchiUuidを付与する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+        {
+          "srvResData": {
+            "className": "テスト3家"
+          },
+          "srvResMsg": "OK"
+        }      
       ```
 
 ### API仕様書てんぷれ
