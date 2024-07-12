@@ -205,12 +205,12 @@ func IsJunior(userUuid string) (bool, error) {
 }
 
 // 子供のUUIDを取得
-func GetChildren(OuchiUuid string) ([]string, error) {
+func GetChildrenUuids(OuchiUuid string) ([]string, error) {
 
 	// 結果格納用変数
 	var userUuids []string
 
-	err := db.Where("ouchi_uuid = ?", OuchiUuid).Select("user_uuid").Find(&userUuids)
+	err := db.Table("users").Where("ouchi_uuid = ? and user_type_id = 2", OuchiUuid).Select("user_uuid").Find(&userUuids)
 	if err != nil {
 		return nil, err
 	}

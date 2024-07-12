@@ -81,11 +81,15 @@ func (s *ClassService) GetClassList(userUuid string) ([]ClassDetail, error) {
 			return nil, err
 		}
 
+		fmt.Println("ouchi uuid", *user.OuchiUuid)
+
 		// 同じお家IDの子供のユーザーIDを取得
-		userUuids, err = model.GetChildren(*user.OuchiUuid)
+		userUuids, err = model.GetChildrenUuids(*user.OuchiUuid)
 		if err != nil { // エラーハンドル
 			return nil, err
 		}
+
+		fmt.Println("uuids", userUuids)
 
 		if len(userUuids) == 0 {
 			//  エラー:おうちに子供はいないのになにしてんのエラー

@@ -1,13 +1,17 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYwMjg2OTMsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiY2NiNTY2MWYtNGYyMS00MWQ2LWEzZGMtZTc5NTg4ZTIyMGE2In0.Z_ULXKSc_E2RCcdyh-ZX7HRRwAkOLDcqib1SEHDnxKg
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYxMjMxMDMsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiOTJiOGI2MGYtNGRhZC00MWFlLWI5YzAtNjMyOGRjNjg0NjI1In0.ywfdKwrl0evUA_pqRgpgp963Uzwf10KwNRLooABIy-g
 
 @notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
 
 @class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
 
-@class_invite_code = 3451
+@class_invite_code = 9946
+
+@ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
+
+@ouchi_invite_code = 224280
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -94,7 +98,18 @@ GET {{base_url}}{{api_v}}/auth/users/classes/affiliations HTTP/1.1
 Authorization: {{jwt}}
 
 ### おうち作成
+POST {{base_url}}{{api_v}}/auth/users/ouchies/register HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: application/json
+
+{
+  "ouchiName": "おうちを立てる"
+}
 
 ### おうち招待コード更新
+PUT {{base_url}}{{api_v}}/auth/users/ouchies/refresh/{{ouchi_uuid}} HTTP/1.1
+Authorization: {{jwt}}
 
 ### おうち所属
+POST {{base_url}}{{api_v}}/auth/users/ouchies/join/{{ouchi_invite_code}} HTTP/1.1
+Authorization: {{jwt}}
