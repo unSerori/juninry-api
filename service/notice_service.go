@@ -59,9 +59,11 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 
 // おしらせテーブル(全件取得用)
 type Notice struct { // typeで型の定義, structは構造体
+	NoticeUuid  string    // おしらせUUID
 	NoticeTitle string    //お知らせのタイトル
 	NoticeDate  time.Time //お知らせの作成日時
 	UserName    string    // おしらせ発行ユーザ
+	ClassUuid   string    // クラスUUID
 	ClassName   string    // どのクラスのお知らせか
 	ReadStatus  int       //お知らせを確認しているか
 }
@@ -95,11 +97,12 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
 
-		//TODO:キモイコードどうにかする(まじで解決しろ)
-		save := userUuid
+		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
+		userUuidSave := userUuid
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
+			NoticeUuid:  notice.NoticeUuid,  //おしらせUuid
 			NoticeTitle: notice.NoticeTitle, //お知らせのタイトル
 			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
 		}
@@ -121,10 +124,11 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 			return []Notice{}, err
 		}
 		//整形後formatに追加
+		notices.ClassUuid = classUuid       // おしらせUuid
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
 		//確認しているか取得
-		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, save)
+		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, userUuidSave)
 		if err != nil {
 			return []Notice{}, err
 		}
@@ -138,8 +142,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		}
 
 		//宣言したスライスに追加していく
-		// formattedAllNotices = append(formattedAllNotices, notices)
-		temp = append(temp, notices)		//並べ替えるために一時的にtempに保存する
+		temp = append(temp, notices) //並べ替えるために一時的にtempに保存する
 	}
 
 	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
