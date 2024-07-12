@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+	"juninry-api/common"
 	"juninry-api/dip"
 	"juninry-api/logging"
 	"juninry-api/model"
@@ -32,6 +34,19 @@ func FindHomeworkHandler(c *gin.Context) {
 	//問い合わせ処理と失敗レスポンス
 	homeworkList, err := homeworkService.FindHomework(idAdjusted)
 	if err != nil { //エラーハンドル
+
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) {
+			// エラーログ
+			logging.ErrorLog(customErr.Error(), nil)
+			// レスポンス
+			resStatusCode := http.StatusForbidden
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)
 		//レスポンス

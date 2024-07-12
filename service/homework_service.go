@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common"
 	"juninry-api/dip"
 	"juninry-api/model"
 	"mime/multipart"
@@ -15,7 +16,7 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUuid"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUuid"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
@@ -35,6 +36,15 @@ type TransformedData struct {
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
+
+	// 親には宿題一覧使えないよ
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
 
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
 	userHomeworkList, err := model.FindUserHomework(userUuid)
