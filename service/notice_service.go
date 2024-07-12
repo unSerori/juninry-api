@@ -90,9 +90,11 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 
 // おしらせテーブル(全件取得用)
 type Notice struct { // typeで型の定義, structは構造体
+	NoticeUuid  string    // おしらせUUID
 	NoticeTitle string    //お知らせのタイトル
 	NoticeDate  time.Time //お知らせの作成日時
 	UserName    string    // おしらせ発行ユーザ
+	ClassUuid   string    // クラスUUID
 	ClassName   string    // どのクラスのお知らせか
 	ReadStatus  int       //お知らせを確認しているか
 }
@@ -131,6 +133,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
+			NoticeUuid:  notice.NoticeUuid,  //おしらせUuid
 			NoticeTitle: notice.NoticeTitle, //お知らせのタイトル
 			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
 		}
@@ -152,6 +155,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 			return []Notice{}, err
 		}
 		//整形後formatに追加
+		notices.ClassUuid = classUuid       // おしらせUuid
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
 		//確認しているか取得
