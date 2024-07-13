@@ -44,11 +44,14 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
-	NoticeTitle       string    //お知らせのタイトル
-	NoticeExplanatory string    //お知らせの内容
-	NoticeDate        time.Time //お知らせの作成日時
-	UserName          string    // おしらせ発行ユーザ
-	ClassName         string    // どのクラスのお知らせか
+	NoticeUuid        string    `json:"noticeUUID"`        // お知らせUUID
+	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
+	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
+	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
+	UserName          string    `json:"userName"`          // おしらせ発行ユーザ
+	ClassName         string    `json:"className"`         // どのクラスのお知らせか
+	ClassUuid         string    `json:"classUUID"`         // クラスUUID
+	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
 }
 
 // お知らせ詳細取得
@@ -62,9 +65,11 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
+		NoticeUuid:        noticeDetail.NoticeUuid,        // お知らせUUID
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
+		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 	}
 
 	//userUuidをuserNameに整形
@@ -84,6 +89,19 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	}
 	//整形後formatに追加
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
+
+	//確認しているか取得
+	status, err := model.GetNoticeReadStatus(noticeDetail.NoticeUuid, userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	//確認していた場合、ReadStatusに1を保存する
+	if status {
+		formattedNotice.ReadStatus = 1
+	} else {
+		formattedNotice.ReadStatus = 0
+	}
 
 	return formattedNotice, err
 }

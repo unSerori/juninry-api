@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYxMjUxODYsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNTJmNTA5ZDktNzBiNy00MDI4LWI3ZGEtMDFmNjJkZTBlZDAwIn0.zSWM8C9E9mgtQbHEV-ApSS0j_ndKK7s-LpFpsUGS3NY
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyMjUxNTMsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiMDIwZDhkYTctNmYxZC00NjkwLTgxNzQtMzI5YTkzYzY0MGIwIn0.65ugJsZnaQ7Orq3iho6ASVjdYfNRD0VWnUcLEWRc-Qo
 
 @notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
 

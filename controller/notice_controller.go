@@ -136,8 +136,9 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful noticeDetail get.")
 	// レスポンス(StatusOK　成功200番)
-	ctx.JSON(http.StatusOK, gin.H{
-		"srvResMsg":  "Successful noticeDetail get.",
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": noticeDetail,
 	})
 
@@ -210,7 +211,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	}
 
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead) 
+	err := noticeService.ReadNotice(bRead)
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス

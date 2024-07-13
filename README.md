@@ -154,21 +154,25 @@ SSH URL:
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
-  - ボディ:
-    ＊さまざまな形式のボディ値＊
+    - `Authorization`: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-        
+          "noticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+          "noticeTitle": "【持ち物】おべんと",
+          "noticeExplanatory": "来週の6/4(火)の遠足にて、おべんとうが必要です。また、同日にぞうきんの回収を行いますので",
+          "noticeDate": "2024-07-12T06:14:15Z",
+          "userName": "test teacher",
+          "className": "3-2 ふたば学級",
+          "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+          "readStatus": 0
         },
+        "srvResMsg": "OK"
       }
       ```
 
@@ -333,7 +337,7 @@ SSH URL:
     }
     ```
 
-### 所属クラス一覧を取得するエンドポイント
+#### 所属クラス一覧を取得するエンドポイント
 
 - **URL:** `/v1/auth/users/classes/affiliations`
 - **メソッド:** GET
