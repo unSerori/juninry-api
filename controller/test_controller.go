@@ -13,7 +13,7 @@ func TestJson(c *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("JSON for testing.")
 	// レスポンス
-	resStatusCode := http.StatusBadRequest
+	resStatusCode := http.StatusOK
 	c.JSON(http.StatusOK, gin.H{ // bodyがJSON形式のレスポンスを返す
 		"srvResCode": http.StatusText(resStatusCode),       // メッセージ
 		"srvResData": gin.H{"message": "hello go server!"}, // データ
