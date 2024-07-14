@@ -13,73 +13,18 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-var ClassService = service.ClassService{}
+var OuchiService = service.OuchiService{}
 
-// クラス一覧取得
-func GetAllClassesHandler(c *gin.Context) {
+// おうち新規作成
+func RegisterOuchiHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
+	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。
 		// エラーログ
 		logging.ErrorLog("The id is not stored.", nil)
 		// レスポンス
 		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-	idAdjusted := id.(string) // アサーション
-
-	// サービスに投げるよ
-	classes, err := ClassService.GetClassList(idAdjusted)
-	if err != nil {
-		// エラーログ
-		logging.ErrorLog("Failed to get class list.", err)
-		var customErr *common.CustomErr
-		if errors.As(err, &customErr) { // カスタムエラーの場合
-			// レスポンス
-			resStatusCode := http.StatusNotFound
-			c.JSON(resStatusCode, gin.H{	// お家に子供いないよエラー
-				"srvResMsg":  http.StatusText(resStatusCode),
-				"srvResData": gin.H{},
-			})
-			return
-		}
-		// レスポンス
-		resStatusCode := http.StatusBadRequest
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-
-	// 処理後の成功
-	// 成功ログ
-	logging.SuccessLog("Successful get class list.")
-	// レスポンス
-	resStatusCode := http.StatusOK
-	c.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
-		"srvResData": gin.H{
-			"classes": classes,
-		},
-	})
-
-}
-
-// クラス作成
-func RegisterClassHandler(c *gin.Context) {
-	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
+		ctx.JSON(resStatusCode, gin.H{
 			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
@@ -88,15 +33,15 @@ func RegisterClassHandler(c *gin.Context) {
 	idAdjusted := id.(string) // アサーション
 
 	//構造体に値をバインド
-	var bClass model.Class
-	if err := c.ShouldBindJSON(&bClass); err != nil {
+	var bOuchi model.Ouchi
+	if err := ctx.ShouldBindJSON(&bOuchi); err != nil {
 		fmt.Print("バインド失敗")
 		// エラーログ
 		return
 	}
 
 	// 登録処理を投げてなんかいろいろもらう
-	class, err := ClassService.PermissionCheckedClassCreation(idAdjusted, bClass)
+	ouchi, err := OuchiService.PermissionCheckedOuchiCreation(idAdjusted, bOuchi)
 	if err != nil {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
@@ -104,7 +49,7 @@ func RegisterClassHandler(c *gin.Context) {
 			case common.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
-				c.JSON(resStatusCode, gin.H{
+				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
@@ -114,10 +59,10 @@ func RegisterClassHandler(c *gin.Context) {
 			}
 		} else {
 			// エラーログ
-			logging.ErrorLog("Class creation was not possible due to other problems.", err)
+			logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
 		}
 		resStatusCode := http.StatusBadRequest
-		c.JSON(resStatusCode, gin.H{
+		ctx.JSON(resStatusCode, gin.H{
 			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
@@ -126,21 +71,22 @@ func RegisterClassHandler(c *gin.Context) {
 
 	// レスポンス
 	resStatusCode := http.StatusCreated
-	c.JSON(resStatusCode, gin.H{
+	ctx.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
-		"srvResData": class,
+		"srvResData": ouchi,
 	})
 }
 
-func GenerateInviteCodeHandler(c *gin.Context) {
+// おうちの招待コード更新
+func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
+	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。
 		// エラーログ
 		logging.ErrorLog("The id is not stored.", nil)
 		// レスポンス
 		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
+		ctx.JSON(resStatusCode, gin.H{
 			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
@@ -149,11 +95,11 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 
 	idAdjusted := id.(string) // アサーション
 
-	// クラスUUIDを取得
-	classUuid := c.Param("class_uuid")
+	// おうちUUIDを取得
+	ouchiUuid := ctx.Param("ouchi_uuid")
 
 	// 招待コード登録します
-	class, err := ClassService.PermissionCheckedRefreshInviteCode(idAdjusted, classUuid)
+	ouchi, err := OuchiService.PermissionCheckedRefreshOuchiInviteCode(idAdjusted, ouchiUuid)
 	if err != nil {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
@@ -161,7 +107,7 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 			case common.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
-				c.JSON(resStatusCode, gin.H{
+				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
@@ -169,7 +115,7 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 			case common.ErrTypeNoResourceExist: // リソースがない
 				logging.ErrorLog("The resource does not exist", err)
 				resStatusCode := http.StatusNotFound
-				c.JSON(resStatusCode, gin.H{
+				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
@@ -179,10 +125,10 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 			}
 		} else {
 			// エラーログ
-			logging.ErrorLog("Class creation was not possible due to other problems.", err)
+			logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
 		}
 		resStatusCode := http.StatusBadRequest
-		c.JSON(resStatusCode, gin.H{
+		ctx.JSON(resStatusCode, gin.H{
 			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
@@ -191,13 +137,15 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 
 	// レスポンス
 	resStatusCode := http.StatusCreated
-	c.JSON(resStatusCode, gin.H{
+	ctx.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
-		"srvResData": class,
+		"srvResData": ouchi,
 	})
+
 }
 
-func JoinClassHandler(c *gin.Context) {
+// おうち参加処理
+func JoinOuchiHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
 	if !exists { // idがcに保存されていない。
@@ -213,16 +161,16 @@ func JoinClassHandler(c *gin.Context) {
 	}
 
 	idAdjusted := id.(string) // アサーション
-	// クラスUUIDを取得
+	// 招待コードを取得
 	inviteCode := c.Param("invite_code")
 
-	// クラスに参加
-	className, err := ClassService.PermissionCheckedJoinClass(idAdjusted, inviteCode)
+	// おうちに参加
+	ouchiName, err := OuchiService.PermissionCheckedJoinOuchi(idAdjusted, inviteCode)
 	if err != nil {
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
 		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
 			if mysqlErr.Number == 1062 { // 重複エラー
-				logging.ErrorLog("The class has already joined", err)
+				logging.ErrorLog("The ouchi has already joined", err)
 				resStatusCode := http.StatusConflict
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
@@ -232,6 +180,7 @@ func JoinClassHandler(c *gin.Context) {
 			}
 		}
 
+		// いろいろ長いからややこしいけど、swich文でエラー振り分けてるだけ
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
@@ -251,7 +200,7 @@ func JoinClassHandler(c *gin.Context) {
 					"srvResData": gin.H{},
 				})
 			default:
-				logging.ErrorLog("Class creation was not possible due to other problems.", err)
+				logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
 				resStatusCode := http.StatusBadRequest
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
@@ -268,7 +217,7 @@ func JoinClassHandler(c *gin.Context) {
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
-			"className": className,
+			"ouchiName": ouchiName,
 		},
 	})
 

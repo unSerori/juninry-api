@@ -68,7 +68,7 @@ func routing(engine *gin.Engine) {
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 
 					//　お知らせ新規登録
-					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
+					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
 					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
@@ -77,6 +77,9 @@ func routing(engine *gin.Engine) {
 				// classesグループ
 				classes := users.Group("/classes")
 				{
+					// 自分の所属するクラス一覧をとる
+					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
+
 					// クラスを作成する
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
 
@@ -85,6 +88,19 @@ func routing(engine *gin.Engine) {
 
 					// クラスに参加する
 					classes.POST("/join/:invite_code", controller.JoinClassHandler)
+				}
+
+				// ouchiesグループ
+				ouchies := users.Group("/ouchies")
+				{
+					// おうち作成
+					ouchies.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterOuchiHandler) // /v1/auth/users/ouchies/register
+
+					// 招待コードの更新
+					ouchies.PUT("/refresh/:ouchi_uuid", controller.GenerateOuchiInviteCodeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+					// おうちに所属
+					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 				}
 			}
 		}

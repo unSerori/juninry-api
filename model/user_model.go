@@ -190,3 +190,39 @@ func IsPatron(userUuid string) (bool, error) {
 
 	return isPatron, nil
 }
+
+// アカウントタイプがガキかどうか判定して真偽値を返す
+func IsJunior(userUuid string) (bool, error) {
+	var user User // 取得したデータをマッピングする構造体
+	// TODO: ガキのみに制限する
+	// 該当ユーザの行を取得
+	isJunior, err := db.Where("user_uuid = ? and user_type_id = 2", userUuid).Exist(&user)
+	if err != nil {
+		return false, err // エラーが出てるのにfalse返すのきしょいかも
+	}
+
+	return isJunior, nil
+}
+
+// 子供のUUIDを取得
+func GetChildrenUuids(OuchiUuid string) ([]string, error) {
+
+	// 結果格納用変数
+	var userUuids []string
+
+	err := db.Table("users").Where("ouchi_uuid = ? and user_type_id = 2", OuchiUuid).Select("user_uuid").Find(&userUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	return userUuids, nil
+}
+
+// ユーザにouchiUuidを付与
+func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
+	// ouchiUuidフィールドにポインタを指定
+	user := User{OuchiUuid: &ouchiUuid}
+	// 付与処理（更新処理）
+	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
+	return affected, err
+}

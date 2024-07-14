@@ -85,6 +85,15 @@ func UpdateInviteCode(record Class) (int64, error) {
 	return affected, err
 }
 
+func GetClassesByUUIDs(classUuids []string) ([]Class, error) {
+	var classes []Class
+	err := db.In("class_uuid", classUuids).Find(&classes)
+	if err != nil {
+		return nil, err
+	}
+	return classes, nil
+}
+
 // 期限の切れた招待コードと有効期限をnullにする
 func DeleteExpiredInviteCodes() {
 	_, err := db.Where("valid_until < ?", time.Now()).Nullable("invite_code", "valid_until").Update(&Class{})

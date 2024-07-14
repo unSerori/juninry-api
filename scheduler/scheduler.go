@@ -11,14 +11,23 @@ import (
 func StartScheduler() {
 	cron := cron.New()
 
-	// 処理する関数と時間を設定
+	// エラーが入る君
+	var err error
 
-	// 4時に期限切れ招待コードを破壊する
-	_, err := cron.AddFunc("0 4 * * *", batch.DeleteExpiredInviteCodes)
+	// 4時に期限切れクラス招待コードを破壊する
+	_, err = cron.AddFunc("0 4 * * *", batch.DeleteExpiredInviteCodes)
 	if err != nil { //エラーハンドル
 		logging.ErrorLog("Class creation was not possible due to other problems.", err)
 		panic(err)
 	}
+
+	// 4時に期限切れおうち招待コードを破壊
+	_, err = cron.AddFunc("0 4 * * *", batch.DeleteExpiredOuchiInviteCodes)
+	if err != nil { //エラーハンドル
+		logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
+		panic(err)
+	}
+
 
 	cron.Start()
 }
