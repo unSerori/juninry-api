@@ -440,8 +440,8 @@ SSH URL:
   - ヘッダー:
     - `Content-Type`: multipart/form-data
     - `Authorization`: (string) 認証トークン
-  - ボディ: Form - 宿題のID
-    - Form Fields
+  - ボディ: Form
+    - Form Fields - 宿題のID
       - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
     - Files - 提出する宿題の画像
       - images: page_67.jpg
@@ -628,6 +628,7 @@ MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
+MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
 
 ## 開発者

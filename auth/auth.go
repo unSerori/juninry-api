@@ -12,6 +12,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// ParseTokenの結果用の構造体
+type ParseTokenAnalysis struct {
+	Token *jwt.Token
+	Id    string
+}
+type Errs struct {
+	InputErr    error
+	InternalErr error
+}
+
 // ユーザーidで認証トークンを生成
 func GenerateToken(userUuid string) (string, error) {
 	// uuidを作成し、
@@ -41,7 +51,13 @@ func GenerateToken(userUuid string) (string, error) {
 }
 
 // トークン解析検証
-func ParseToken(tokenString string) (*jwt.Token, string, error) {
+// 成功時に得られる分析結果と複数のエラーが返るので、それぞれ構造体として扱い構造体で返す
+// エラーは入力値が不正な場合と処理エラーなどが考えられ、それぞれフィールドとして定義し、呼び出し側では構造体のフィールドを!=nilでチェックしハンドルする
+func ParseToken(tokenString string) (ParseTokenAnalysis, Errs) {
+	// 返り血用の構造体セット
+	var analysis ParseTokenAnalysis
+	var errs Errs
+
 	// .envから定数をプロセスの環境変数にロード
 	err := godotenv.Load(".env") // エラーを格納
 	if err != nil {              // エラーがあったら
@@ -50,7 +66,7 @@ func ParseToken(tokenString string) (*jwt.Token, string, error) {
 	}
 
 	// 署名が正しければ、解析用の鍵を使う。(無名関数内で署名方法がHMACであるか確認し、HMACであれば秘密鍵を渡し、jwtトークンを解析する。)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	analysis.Token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok { // 署名を確認
 			logging.ErrorLog(fmt.Sprintf("Unexpected signature method: %v.", token.Header["alg"]), nil)
 			return nil, fmt.Errorf("unexpected signature method: %v", token.Header["alg"])
@@ -58,53 +74,63 @@ func ParseToken(tokenString string) (*jwt.Token, string, error) {
 		return []byte(jwtSecretKey), nil // 署名が正しければJWT_SECRET_KEYをバイト配列にして返す
 	})
 	if err != nil {
-		return nil, "", err
+		errs.InternalErr = err
+		return analysis, errs
 	}
 
 	// 下のクレーム検証処理(:elseスコープ内)で持ち出したい値をあらかじめ宣言しておく。
-	var id string // id
+	//var id string // id
+	// 構造体で管理することで不要に！
 
 	// トークン自体が有効か秘密鍵を用いて確認。また、クレーム部分も取得。(トークンの署名が正しいか、有効期限内か、ブラックリストでないか。)
-	claims, ok := token.Claims.(jwt.MapClaims) // MapClaimsにアサーション
-	if !ok || !token.Valid {                   // 取得に失敗または検証が失敗
-		return nil, "", errors.New("invalid authentication token")
+	claims, ok := analysis.Token.Claims.(jwt.MapClaims) // MapClaimsにアサーション
+	if !ok || !analysis.Token.Valid {                   // 取得に失敗または検証が失敗
+		errs.InputErr = errors.New("invalid authentication token")
+		return analysis, errs
 	} else { // 有効な場合クレームの各要素を検証
 		// idを検証
 		idClaims, ok := claims["id"].(string) // goではJSONの数値は少数もカバーしたfloatで解釈される
 		if !ok {
-			return nil, "", errors.New("id could not be obtained from the token")
+			errs.InputErr = errors.New("id could not be obtained from the token")
+			return analysis, errs
 		}
-		id = idClaims                           // 調整してスコープ買いに持ち出す。
-		if err := model.CfmId(id); err != nil { // ユーザーに存在するか。int(id)
-			return nil, "", err
+		analysis.Id = idClaims                           // 調整してスコープ買いに持ち出す。
+		if err := model.CfmId(analysis.Id); err != nil { // ユーザーに存在するか。int(id)
+			errs.InputErr = err
+			return analysis, errs
 		}
 		// jtiを検証
 		jti, ok := claims["jti"].(string)
 		if !ok {
-			return nil, "", errors.New("jti could not be obtained from the token")
+			errs.InputErr = errors.New("jti could not be obtained from the token")
+			return analysis, errs
 		}
-		jtiDB, err := model.GetJtiById(id) // DBから取得
+		jtiDB, err := model.GetJtiById(analysis.Id) // DBから取得
 		if err != nil {
-			return nil, "", err
+			errs.InputErr = err
+			return analysis, errs
 		}
 		fmt.Println("jti in claim: " + jti)
 		fmt.Println("jti in db: " + jtiDB)
 		if jti != jtiDB { // クレームのjtiとusersテーブルのjtiを比較
-			return nil, "", errors.New("the jti in the CLAIMS does not match the jti in the user's DB")
+			errs.InputErr = errors.New("the jti in the CLAIMS does not match the jti in the user's DB")
+			return analysis, errs
 		}
-		fmt.Println("jtiが一致")
+		logging.SuccessLog("JTI matched.")
 		// expを検証
 		exp, ok := claims["exp"].(float64)
 		if !ok {
-			return nil, "", errors.New("exp could not be obtained from the token")
+			errs.InputErr = errors.New("exp could not be obtained from the token")
+			return analysis, errs
 		}
 		expTT := time.Unix(int64(exp), 0) // Unix 時刻を日時に変換
 		timeNow := time.Now()             // 現在時刻を取得
 		if timeNow.After(expTT) {         // エラーになるパターン  // 現在時刻timeNowが期限expTTより後ならエラーなのでtrueを出力
-			return nil, "", err
+			errs.InputErr = err
+			return analysis, errs
 		}
 	}
 
 	// 正常に終われば解析されたトークンとidを渡す。
-	return token, id, nil
+	return analysis, errs
 }
