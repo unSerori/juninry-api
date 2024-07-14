@@ -6,7 +6,7 @@
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 @ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyOTMxNDMsImlkIjoiOGIzMDJkMjctNzI5NS00M2E5LTkyMzktODMxODZmOThiOWI0IiwianRpIjoiOWFkYmZiYjYtZjAxNS00NWI2LTkxM2EtYjVjMjRjNmQ1ZTZlIn0.jpHoxH4v0jLi7GIJvZnlapxJ51Rbn1A8s5PhbTcwuU4
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYzMjMyODksImlkIjoiYzJlZGI2MDYtN2NhOS00MzFjLWE0MDQtMDM0Y2E1YmMxODY2IiwianRpIjoiZDM0ZjQ0NmUtZTk5NS00ODE3LTllOGUtNTQwMjc1YTcwMmQ3In0.dq2zzXTrV62TDUSvDUlyoTTo7lZYf4DFPkTQmdfYn2U
 
 ### /
 GET {{base_url}} HTTP/1.1
