@@ -6,13 +6,18 @@
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 @ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyODQ2OTEsImlkIjoiNjlkYjZjYWUtNzJlNC00YmFmLWFlYWQtMDg4MWEyYWFjNjZjIiwianRpIjoiYjg4MzVlYTgtMWNjNy00YzYxLWI4ZDEtNmFjZTFlZWI3YjJhIn0.QtOZ70ouJm4KSGnXrbDwV3gdlis5cviu40wOdollp0g
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyOTMxNDMsImlkIjoiOGIzMDJkMjctNzI5NS00M2E5LTkyMzktODMxODZmOThiOWI0IiwianRpIjoiOWFkYmZiYjYtZjAxNS00NWI2LTkxM2EtYjVjMjRjNmQ1ZTZlIn0.jpHoxH4v0jLi7GIJvZnlapxJ51Rbn1A8s5PhbTcwuU4
 
+### /
+GET {{base_url}} HTTP/1.1
+
+### jsonテスト
+GET {{base_url}}/test/json HTTP/1.1
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
-### ユーザー登録
+### ユーザー新規登録
 POST {{base_url}}{{api_v}}/users/register HTTP/1.1
 Content-Type: :application/json
 
@@ -32,48 +37,6 @@ Content-Type: application/json
     "password": "C@h"
 }
 
-### 認証ありのテスト
-GET {{base_url}}{{api_v}}/auth/test/cfmreq HTTP/1.1
-Authorization: {{jwt}}
-
-### 宿題提出
-POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
-Authorization: {{jwt}}
-Content-Type: multipart/form-data; boundary={{boundary}}
-
---{{boundary}}
-Content-Disposition: form-data; name="homeworkUUID";
-
-a3579e71-3be5-4b4d-a0df-1f05859a7104
---{{boundary}}
-Content-Disposition: form-data; name="images"; filename="pa.PNG"
-Content-Type: image/png
-
-< ./asset/images/pa.PNG
---{{boundary}}
-Content-Disposition: form-data; name="images"; filename="colombia.PNG"
-Content-Type: image/png
-
-< ./asset/images/colombia.jpg
---{{boundary}}--
-
-<<<<<<< HEAD
-### 宿題提出 バリデーションチェック
-POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
-Authorization: {{jwt}}
-Content-Type: multipart/form-data; boundary={{boundary}}
-
---{{boundary}}
-Content-Disposition: form-data; name="homeworkUUID";
-
-a3579e71-3be5-4b4d-a0df-1f05859a7104
---{{boundary}}
-Content-Disposition: form-data; name="images"; filename="Crab_Nebula.jpg"
-Content-Type: image/jpeg
-
-< ./asset/images/Crab_Nebula.jpg
---{{boundary}}--
-=======
 ### 教師ログインくん
 POST {{base_url}}{{api_v}}/users/login HTTP/1.1
 Content-Type: application/json
@@ -101,9 +64,50 @@ Content-Type: application/json
   "password": "C@tp"
 }
 
+### 認証ありのテスト
+GET {{base_url}}{{api_v}}/auth/test/cfmreq HTTP/1.1
+Authorization: {{jwt}}
+
 ### 課題一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
 Authorization: {{jwt}}
+
+### 宿題提出
+POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="homeworkUUID";
+
+a3579e71-3be5-4b4d-a0df-1f05859a7104
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="pa.PNG"
+Content-Type: image/png
+
+< ./asset/images/pa.PNG
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="colombia.PNG"
+Content-Type: image/png
+
+< ./asset/images/colombia.jpg
+--{{boundary}}--
+
+### 宿題提出 バリデーションチェック
+POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="homeworkUUID";
+
+a3579e71-3be5-4b4d-a0df-1f05859a7104
+--{{boundary}}
+Content-Disposition: form-data; name="images"; filename="Crab_Nebula.jpg"
+Content-Type: image/jpeg
+
+< ./asset/images/Crab_Nebula.jpg
+--{{boundary}}--
 
 ### お知らせ一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/notices/notices HTTP/1.1
@@ -111,6 +115,10 @@ Authorization: {{jwt}}
 
 ### お知らせの詳細取得
 GET {{base_url}}{{api_v}}/auth/users/notices/{{notice_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 所属しているクラス一覧取得
+GET {{base_url}}{{api_v}}/auth/users/classes/affiliations HTTP/1.1
 Authorization: {{jwt}}
 
 ### クラス作成
@@ -130,9 +138,6 @@ Authorization: {{jwt}}
 POST {{base_url}}{{api_v}}/auth/users/classes/join/{{class_invite_code}} HTTP/1.1
 Authorization: {{jwt}}
 
-### 所属しているクラス一覧取得
-GET {{base_url}}{{api_v}}/auth/users/classes/affiliations HTTP/1.1
-Authorization: {{jwt}}
 
 ### おうち作成
 POST {{base_url}}{{api_v}}/auth/users/ouchies/register HTTP/1.1
@@ -150,4 +155,3 @@ Authorization: {{jwt}}
 ### おうち所属
 POST {{base_url}}{{api_v}}/auth/users/ouchies/join/{{ouchi_invite_code}} HTTP/1.1
 Authorization: {{jwt}}
->>>>>>> d399041b84e80b5bc8e7639a4a8a64d7c7ba23cb
