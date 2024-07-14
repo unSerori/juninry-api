@@ -492,7 +492,7 @@ MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
-MULTIPART_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
+MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
 
 ## 開発者

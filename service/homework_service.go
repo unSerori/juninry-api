@@ -100,9 +100,9 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		// バリデーション
 
 		// ファイルサイズ
-		var maxSize int64                                                        // 上限設定値
-		maxSize = 5242880                                                        // default値10MB
-		if maxSizeByEnv := os.Getenv("MULTIPART_MAX_SIZE"); maxSizeByEnv != "" { // 空文字でなければ数値に変換する
+		var maxSize int64                                                              // 上限設定値
+		maxSize = 5242880                                                              // default値10MB
+		if maxSizeByEnv := os.Getenv("MULTIPART_IMAGE_MAX_SIZE"); maxSizeByEnv != "" { // 空文字でなければ数値に変換する
 			var err error
 			maxSizeByEnvInt, err := strconv.Atoi(maxSizeByEnv) // 数値に変換
 			if err != nil {
