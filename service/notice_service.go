@@ -192,10 +192,10 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 }
 
 // noticeの既読登録
-func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
+func (s *NoticeService) ReadNotice(userUuid string, noticeUuid string) error {
 
 	// クラス作成権限を持っているか確認
-	isPatron, err := model.IsPatron(bRead.UserUuid)
+	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return err
 	}
@@ -204,8 +204,22 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 		return common.NewErr(common.ErrTypePermissionDenied)
 	}
 
+	// ouchiUuidを持ってくる
+	user, err := model.GetUser(userUuid)
+	if err != nil { // エラーハンドル
+		return err
+	}
+
+	fmt.Println("NoticeUuid:"+ noticeUuid, "OuchiUuid:"+*user.OuchiUuid)
+
+	// 構造体の定義
+	bRead := &model.NoticeReadStatus{
+		NoticeUuid: noticeUuid,
+		OuchiUuid: *user.OuchiUuid,
+	}
+
 	// 構造体をレコード登録処理に投げる
-	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
+	_, err = model.ReadNotice(*bRead) // 第一返り血は登録成功したレコード数
 	if err != nil {
 		return err
 	}

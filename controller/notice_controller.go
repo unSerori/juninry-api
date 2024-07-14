@@ -203,14 +203,8 @@ func NoticeReadHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	// 構造体にマッピング
-	bRead := model.NoticeReadStatus{
-		NoticeUuid: noticeUuid,
-		UserUuid: idAdjusted,
-	}
-
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead) 
+	err := noticeService.ReadNotice(idAdjusted, noticeUuid) 
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
