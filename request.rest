@@ -1,7 +1,7 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYxMTM4MzksImlkIjoiMDFiNmZkZDEtMzQ0NS00Y2ZhLTliNjYtODc0MTE4MDY2MjMyIiwianRpIjoiMjFiOGNhMDAtZmJjOC00NThkLWI5ZDYtYjBlMTk4ZTg4YmM3In0.rSyHcpOx5YlTvcIaaDHY3NvS9mYAN3DVcxXP5LMFEpw
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyODQ2OTEsImlkIjoiNjlkYjZjYWUtNzJlNC00YmFmLWFlYWQtMDg4MWEyYWFjNjZjIiwianRpIjoiYjg4MzVlYTgtMWNjNy00YzYxLWI4ZDEtNmFjZTFlZWI3YjJhIn0.QtOZ70ouJm4KSGnXrbDwV3gdlis5cviu40wOdollp0g
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -25,6 +25,10 @@ Content-Type: application/json
     "mailAddress": "hogeta@gmail.com",
     "password": "C@h"
 }
+
+### 認証ありのテスト
+GET {{base_url}}{{api_v}}/auth/test/cfmreq HTTP/1.1
+Authorization: {{jwt}}
 
 ### 宿題提出
 POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
