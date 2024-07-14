@@ -409,8 +409,8 @@ SSH URL:
   - ヘッダー:
     - `Content-Type`: multipart/form-data
     - `Authorization`: (string) 認証トークン
-  - ボディ: Form - 宿題のID
-    - Form Fields
+  - ボディ: Form
+    - Form Fields - 宿題のID
       - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
     - Files - 提出する宿題の画像
       - images: page_67.jpg
