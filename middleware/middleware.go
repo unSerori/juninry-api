@@ -42,34 +42,46 @@ func MidAuthToken() gin.HandlerFunc {
 		headerAuthorization := ctx.GetHeader("Authorization")
 		if headerAuthorization == "" { // ヘッダーが存在しない場合
 			// エラーログ
-			logging.ErrorLog("Authentication unsuccessful.", nil)
+			logging.ErrorLog("Authentication unsuccessful. Header information does not contain authentication information.", nil)
 			// レスポンス
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"srvResCode": 7001,                           // コード
-				"srvResMsg":  "Authentication unsuccessful.", // メッセージ
-				"srvResData": gin.H{},                        // データ
+			resStatusCode := http.StatusUnauthorized
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
 			})
 			ctx.Abort() // 次のルーティングに進まないよう処理を止める。
 			return      // 早期リターンで終了
 		}
 
 		// トークンの解析を行う。
-		token, id, err := auth.ParseToken(headerAuthorization)
-		if err != nil {
+		analysis, errs := auth.ParseToken(headerAuthorization)
+		if errs.InputErr != nil { // 不正入力系エラーの確認
 			// エラーログ
-			logging.ErrorLog("Authentication unsuccessful. Maybe that user does not exist. Failed to parse token.", err)
+			logging.ErrorLog("Authentication unsuccessful. Invalid token format or content.", nil)
 			// レスポンス
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"srvResCode": 7008,                                                                                  // コード
-				"srvResMsg":  "Authentication unsuccessful. Maybe that user does not exist. Failed to parse token.", // メッセージ
-				"srvResData": gin.H{},                                                                               // データ
+			resStatusCode := http.StatusBadRequest
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			ctx.Abort() // 次のルーティングに進まないよう処理を止める。
+			return      // 早期リターンで終了
+		}
+		if errs.InternalErr != nil { // 処理系エラーの確認
+			// エラーログ
+			logging.ErrorLog("Authentication unsuccessful. Failed to parse token.", nil)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
 			})
 			ctx.Abort() // 次のルーティングに進まないよう処理を止める。
 			return      // 早期リターンで終了
 		}
 
-		ctx.Set("token", token) // トークンをコンテキストにセットする。  // _ = token // トークンを破棄。
-		ctx.Set("id", id)       // 送信元クライアントのtokenのidを保持
+		ctx.Set("token", analysis.Token) // トークンをコンテキストにセットする。  // _ = token // トークンを破棄。
+		ctx.Set("id", analysis.Id)       // 送信元クライアントのtokenのidを保持
 
 		ctx.Next() // エンドポイントの処理に移行
 	}
