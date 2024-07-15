@@ -161,6 +161,8 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
+	fmt.Println("userUuid："+ idAdjusted)
+
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
 	notices, err := noticeService.FindAllNotices(idAdjusted)
 	// 取得できなかった時のエラーを判断
