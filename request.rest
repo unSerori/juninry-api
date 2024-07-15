@@ -2,11 +2,11 @@
 @api_v = /v1
 @boundary = ----MyBoundary
 @notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
-@class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
-@class_invite_code = 9946
-@ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
-@ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYzMjMyODksImlkIjoiYzJlZGI2MDYtN2NhOS00MzFjLWE0MDQtMDM0Y2E1YmMxODY2IiwianRpIjoiZDM0ZjQ0NmUtZTk5NS00ODE3LTllOGUtNTQwMjc1YTcwMmQ3In0.dq2zzXTrV62TDUSvDUlyoTTo7lZYf4DFPkTQmdfYn2U
+@class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
+@class_invite_code = 4504
+@ouchi_uuid = a861b4a8-97a8-4160-835d-80ae02ef7819
+@ouchi_invite_code = 002770
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYzNzI4NjUsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiZGJhNWQ2M2ItY2Y2Ni00OTg1LTkxNDgtODUwZTZmMmYwZDRmIn0.hnkAGKgg7LS6CCDzP7bq2k7Sq43wwNDzZhpApS59YSE
 
 ### /
 GET {{base_url}} HTTP/1.1

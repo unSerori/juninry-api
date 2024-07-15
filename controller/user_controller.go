@@ -37,11 +37,11 @@ func RegisterUserHandler(c *gin.Context) {
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: //
+			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
-				logging.ErrorLog("Bad Request.", err)
+				logging.ErrorLog("Conflict.", err)
 				// レスポンス
-				resStatusCode := http.StatusBadRequest
+				resStatusCode := http.StatusConflict
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
@@ -102,7 +102,7 @@ func GetUserHandler(c *gin.Context) {
 	// 構造体にマッピング
 	var bUser model.User // 構造体のインスタンス
 
-	// ユーザー情報の取得
+	// ユーザー情報の取得とエラーハンドル
 	// bUser, err := userService.GetUser(userData.UserUuid);
 	bUser, err := userService.GetUser(idAdjusted)
 	if err != nil {
