@@ -2,8 +2,7 @@ package controller
 
 import (
 	"errors"
-	"fmt"
-	common "juninry-api/common"
+	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -46,7 +45,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	fmt.Println(idAdjusted)		//　アサーションの確認
+	bNotice.UserUuid = idAdjusted
 
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
@@ -110,7 +109,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{},
 	})
 
@@ -207,7 +206,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 構造体にマッピング
 	bRead := model.NoticeReadStatus{
 		NoticeUuid: noticeUuid,
-		UserUuid: idAdjusted,
+		UserUuid:   idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
@@ -264,7 +263,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},

@@ -444,16 +444,12 @@ SSH URL:
   - ボディ:
 
     ```json
-      {
-        "srvResData": {
-          "notices": {
-            "NoticeTitle": "【持ち物】習字道具必要です",
-            "NoticeDate": "2024-06-11T03:23:39Z",
-            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
-            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
-        }},
-      }
+    {
+        "noticeTitle": "【持ち物】習字道具必要です",
+        "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+        "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+        "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
+    }
     ```
 
 - **レスポンス:**
@@ -463,7 +459,7 @@ SSH URL:
       ```json
       {
         "srvResData": {
-          "authenticationToken": "トークン",
+          "srvResData": {},
           "srvResMsg": "OK"
         },
       }

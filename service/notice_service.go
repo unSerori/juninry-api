@@ -14,7 +14,6 @@ type NoticeService struct{} // コントローラ側からサービスを実体�
 
 // noticeの新規登録
 func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
-
 	//先生かのタイプチェック
 	isTeacher, err := model.IsTeacher(bNotice.UserUuid)
 	if err != nil { // エラーハンドル
@@ -32,6 +31,9 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	}
 	bNotice.NoticeUuid = noticeId.String() //設定
 
+	// 投稿時刻を設定
+	bNotice.NoticeDate = time.Now()
+
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
 	if err != nil {
@@ -44,13 +46,13 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
-	NoticeUuid        string    `json:"noticeUUID"`        // お知らせUUID
 	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
 	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
 	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
 	UserName          string    `json:"userName"`          // おしらせ発行ユーザ
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
+	QuotedNoticeUuid  *string    `json:"quotedNoticeUUID"`  // 親お知らせUUID
 	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
 }
 
@@ -65,11 +67,11 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
-		NoticeUuid:        noticeDetail.NoticeUuid,        // お知らせUUID
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
 		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
+		QuotedNoticeUuid:  noticeDetail.QuotedNoticeUuid,  // 親お知らせUUID
 	}
 
 	//userUuidをuserNameに整形

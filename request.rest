@@ -1,9 +1,9 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYyMjUxNTMsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiMDIwZDhkYTctNmYxZC00NjkwLTgxNzQtMzI5YTkzYzY0MGIwIn0.65ugJsZnaQ7Orq3iho6ASVjdYfNRD0VWnUcLEWRc-Qo
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzYzNzE3NTgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiYWE4Mzc1MWItOTk4Yi00OWRiLWE1ZWYtYTQyNTE5NzQ5ZDU0In0.YV0bYU_GOhN8SiGeWpoEDf9Z3lzc7EUfBhiqXAFpzU0
 
-@notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
+@notice_uuid = f9746973-2d18-4bfe-9b51-97214dd168d1
 
 @class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
 
@@ -67,6 +67,18 @@ Content-Type: application/json
 ### 課題一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
 Authorization: {{jwt}}
+
+### お知らせ投稿
+POST {{base_url}}{{api_v}}/auth/users/notices/register HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: application/json
+
+{
+    "noticeTitle": "【持ち物】習字道具必要です",
+    "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+    "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+    "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
+}
 
 ### お知らせ一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/notices/notices HTTP/1.1
