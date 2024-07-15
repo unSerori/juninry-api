@@ -1,6 +1,7 @@
 package route
 
 import (
+	"juninry-api/common"
 	"juninry-api/controller"
 	"juninry-api/logging"
 	"juninry-api/middleware"
@@ -54,7 +55,7 @@ func routing(engine *gin.Engine) {
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
 					// 宿題の提出
-					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
+					homeworks.POST("/submit", middleware.LimitReqBodySize(common.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
 
 				// noticeグループ
@@ -67,7 +68,7 @@ func routing(engine *gin.Engine) {
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 
 					//　お知らせ新規登録
-					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
+					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
 					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
@@ -79,6 +80,9 @@ func routing(engine *gin.Engine) {
 				// classesグループ
 				classes := users.Group("/classes")
 				{
+					// 自分の所属するクラス一覧をとる
+					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
+
 					// クラスを作成する
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
 
@@ -120,6 +124,9 @@ func loadingStaticFile(engine *gin.Engine) {
 func SetupRouter() (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
+
+	// マルチパートフォームのメモリ使用制限を設定
+	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
 	routing(engine)

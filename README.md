@@ -333,6 +333,43 @@ SSH URL:
     }
     ```
 
+### 所属クラス一覧を取得するエンドポイント
+
+- **URL:** `/v1/auth/users/classes/affiliations`
+- **メソッド:** GET
+- **説明:** 子供、教師は自身の所属するクラスを、親は子供たちの所属するクラスの一覧を取得
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+
+- **レスポンス:**
+  - ステータスコード: 200
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {
+        "classes": [
+          {
+            "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+            "className": "3-2 ふたば学級"
+          },,,
+        ]
+      },
+      "srvResMsg": "OK"
+    }
+    ```
+
+  - ステータスコード: 404
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Not Found"
+    }
+    ```
+
 #### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`
@@ -372,8 +409,8 @@ SSH URL:
   - ヘッダー:
     - `Content-Type`: multipart/form-data
     - `Authorization`: (string) 認証トークン
-  - ボディ: Form - 宿題のID
-    - Form Fields
+  - ボディ: Form
+    - Form Fields - 宿題のID
       - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
     - Files - 提出する宿題の画像
       - images: page_67.jpg
@@ -560,6 +597,7 @@ MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
+MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
 
 ## 開発者
