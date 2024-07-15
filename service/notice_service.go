@@ -102,6 +102,16 @@ type Notice struct { // typeで型の定義, structは構造体
 // ユーザの所属するクラスのお知らせ全件取得
 func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
+	//先生かのタイプチェック
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
+
 	//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
 	userUuidSave := userUuid
 
@@ -159,7 +169,7 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
 		//既読状況を取ってくる(トークン主)
-		user, err := model.GetUser(userUuidSave) 
+		user, err := model.GetUser(userUuidSave)
 		if err != nil {
 			return []Notice{}, err
 		}
