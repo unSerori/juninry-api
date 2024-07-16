@@ -420,7 +420,7 @@ SSH URL:
 </details>
 
 <details>
-  <summary>クラスを作成するエンドポイント</summary>
+  <summary>クラスを新規作成するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
