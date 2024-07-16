@@ -9,7 +9,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 )
 
 // ParseTokenの結果用の構造体
@@ -57,13 +56,8 @@ func ParseToken(tokenString string) (ParseTokenAnalysis, Errs) {
 	// 返り血用の構造体セット
 	var analysis ParseTokenAnalysis
 	var errs Errs
-
-	// .envから定数をプロセスの環境変数にロード
-	err := godotenv.Load(".env") // エラーを格納
-	if err != nil {              // エラーがあったら
-		logging.ErrorLog("Error loading .env file", err)
-		panic("Error loading .env file.")
-	}
+	// あらかじめanalysisを宣言したため、analysis, err := ができないことへの対策
+	var err error
 
 	// 署名が正しければ、解析用の鍵を使う。(無名関数内で署名方法がHMACであるか確認し、HMACであれば秘密鍵を渡し、jwtトークンを解析する。)
 	analysis.Token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

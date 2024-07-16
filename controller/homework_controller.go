@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
@@ -173,16 +174,25 @@ func SubmitHomeworkHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			default: // 500番
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
-				logging.ErrorLog("Internal Server Error.", err)
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
 				// レスポンス
-				resStatusCode := http.StatusInternalServerError
+				resStatusCode := http.StatusBadRequest
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
 		return
 	}

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	common "juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-sql-driver/mysql"
 )
 
 var userService = service.UserService{} // サービスの実体を作る。
@@ -33,57 +33,22 @@ func RegisterUserHandler(c *gin.Context) {
 	// 登録処理と失敗レスポンス
 	token, err := userService.RegisterUser(bUser)
 	if err != nil { // エラーハンドル
-		// 処理で発生したエラーのうちDB関連のエラーのみ
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
-			// 本処理時のエラーごとに処理(:DBエラー)
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
-				logging.ErrorLog("There is already a user with the same primary key. Uniqueness constraint violation.", err)
+				logging.ErrorLog("Conflict.", err)
 				// レスポンス
-				resStatusCode := http.StatusBadRequest
+				resStatusCode := http.StatusConflict
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			default:
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
-				logging.ErrorLog("New user registration was not possible due to other DB problems.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				c.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			}
-		}
-		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *common.CustomErr
-		if errors.As(err, &serviceErr) {
-			// 本処理時のエラーごとに処理(:DBエラー以外)
-			switch serviceErr.Type {
-			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
-				// エラーログ
-				logging.ErrorLog("Failure to hash passwords.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				c.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			case common.ErrTypeGenTokenFailed: // トークンの作成に失敗
-				// エラーログ
-				logging.ErrorLog("Failed to generate token.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				c.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			default:
-				// エラーログ
-				logging.ErrorLog("New user registration was not possible due to other problems.", err)
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
 				// レスポンス
 				resStatusCode := http.StatusBadRequest
 				c.JSON(resStatusCode, gin.H{
@@ -91,8 +56,17 @@ func RegisterUserHandler(c *gin.Context) {
 					"srvResData": gin.H{},
 				})
 			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
-		return // エラーレスポンス後に終了
+		return
 	}
 
 	// 処理後の成功
@@ -128,7 +102,7 @@ func GetUserHandler(c *gin.Context) {
 	// 構造体にマッピング
 	var bUser model.User // 構造体のインスタンス
 
-	// ユーザー情報の取得
+	// ユーザー情報の取得とエラーハンドル
 	// bUser, err := userService.GetUser(userData.UserUuid);
 	bUser, err := userService.GetUser(idAdjusted)
 	if err != nil {
@@ -187,7 +161,7 @@ func LoginHandler(c *gin.Context) {
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // ユーザーが見つからなかった,
+			case common.ErrTypeNoResourceExist, common.ErrTypePassMismatch: // ユーザーが見つからなかった, パスワードが不一致
 				// エラーログ
 				logging.ErrorLog("Bad Request.", err)
 				// レスポンス
@@ -196,16 +170,25 @@ func LoginHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			default: // 500番
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
-				logging.ErrorLog("Internal Server Error.", err)
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
 				// レスポンス
-				resStatusCode := http.StatusInternalServerError
+				resStatusCode := http.StatusBadRequest
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
 		return
 	}

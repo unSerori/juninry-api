@@ -62,8 +62,8 @@ func CreateNoticeTestData() {
 }
 
 // 新規お知らせ登録
-func CreateNotice(record Notice) (int64, error){
-	
+func CreateNotice(record Notice) (int64, error) {
+
 	affected, err := db.Insert(record)
 	return affected, err
 }
@@ -88,21 +88,24 @@ func FindNotices(classUuids []string) ([]Notice, error) {
 }
 
 // noticeUuidで絞り込んだnoticeの詳細を返す
-func GetNoticeDetail(noticeUuid string) (Notice, error) {
+func GetNoticeDetail(noticeUuid string) (*Notice, error) {
 
 	//結果格納用変数
 	var noticeDetail Notice
 
 	//noticeuuidで絞り込んで1件取得
 	//.Getの返り値は存在の真偽値とエラー
-	_, err := db.Where("notice_uuid =? ", noticeUuid).Get(
+	found, err := db.Where("notice_uuid = ? ", noticeUuid).Get(
 		&noticeDetail,
 	)
-	// データが取得できなかったらerrを返す
+	// エラーが発生した
 	if err != nil {
-		return Notice{}, err
+		return nil, err
+	}
+	// データが取得できなかったら
+	if !found {
+		return nil, nil
 	}
 
-	return noticeDetail, nil
+	return &noticeDetail, nil
 }
-

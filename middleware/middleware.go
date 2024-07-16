@@ -55,7 +55,8 @@ func MidAuthToken() gin.HandlerFunc {
 
 		// トークンの解析を行う。
 		analysis, errs := auth.ParseToken(headerAuthorization)
-		if errs.InputErr != nil { // 不正入力系エラーの確認
+		switch { // エラーハンドリング
+		case errs.InputErr != nil: // 不正入力系エラーの確認
 			// エラーログ
 			logging.ErrorLog("Authentication unsuccessful. Invalid token format or content.", nil)
 			// レスポンス
@@ -66,8 +67,7 @@ func MidAuthToken() gin.HandlerFunc {
 			})
 			ctx.Abort() // 次のルーティングに進まないよう処理を止める。
 			return      // 早期リターンで終了
-		}
-		if errs.InternalErr != nil { // 処理系エラーの確認
+		case errs.InternalErr != nil: // 処理系エラーの確認
 			// エラーログ
 			logging.ErrorLog("Authentication unsuccessful. Failed to parse token.", nil)
 			// レスポンス

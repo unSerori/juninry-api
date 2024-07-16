@@ -29,6 +29,10 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
 	ErrTypeInvalidFileFormat          // ファイル形式が無効
 	ErrTypeFileSizeTooLarge           // ファイルサイズがでか杉ます;~;
+	ErrTypeAlreadyExists              // すでに存在するので登録する必要がない&できない
+
+	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
+	ErrTypeUniqueConstraintViolation // 一意性制約違反
 )
 
 // エラーに対するデフォルトmsgを設定
@@ -41,6 +45,10 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
 	ErrTypeInvalidFileFormat:  "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
 	ErrTypeFileSizeTooLarge:   "the file size exceeds the allowed limit",
+	ErrTypeAlreadyExists:      "no need to register as it already exists & cannot be done",
+
+	ErrTypeOtherErrorsInTheORM:       "",
+	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる

@@ -34,7 +34,7 @@ TODO*
 memo.*
 
 # .vscode
-/.vscode/
+.vscode/
 
 # envファイル
 .env

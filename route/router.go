@@ -24,7 +24,7 @@ func routing(engine *gin.Engine) {
 	v1 := engine.Group("/v1")
 	{
 		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test
+		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
 
 		// usersグループ
 		users := v1.Group("/users")
@@ -83,6 +83,7 @@ func routing(engine *gin.Engine) {
 
 					// クラスに所属する人間たちを返す
 					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
+					
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 
