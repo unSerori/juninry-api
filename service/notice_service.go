@@ -1,12 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -36,7 +38,18 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
-	if err != nil {
+	if err != nil {                      // エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return err
 	}
 
@@ -62,7 +75,12 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
 	if err != nil {
-		return NoticeDetail{}, err //nilで返せない!不思議!!
+		fmt.Printf("err: %v\n", err)
+		return NoticeDetail{}, err //nilで返せない!不思議!!  // A. 返り血の方がNoticeDetailになっていてNoticeDetail型で返さなければいけないから。*NoticeDetailのようにポインタで返せばポインタの指定先が空の状態≒nilを返すことができるよ。
+	}
+	if noticeDetail == nil { // 取得できなかった
+		fmt.Println("noticeDetail is nil")
+		return NoticeDetail{}, common.NewErr(common.ErrTypeNoResourceExist)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -226,7 +244,18 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 
 	// 構造体をレコード登録処理に投げる
 	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
-	if err != nil {
+	if err != nil {               // エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return err
 	}
 

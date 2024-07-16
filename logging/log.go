@@ -38,6 +38,15 @@ func InfoLog(title string, info string) {
 	}
 }
 
+// 警告
+func WarningLog(title string, warning string) {
+	log.Printf("WARNING LOG: %s\n", title)
+	log.Printf("Time: %v\n", time.Now()) // 時刻
+	if warning != "" {
+		log.Printf("Warning: %s\n\n", warning)
+	}
+}
+
 // 単純なprintf
 func SimpleLog(str string) {
 	log.Print(str)

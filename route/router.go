@@ -1,6 +1,7 @@
 package route
 
 import (
+	"juninry-api/common"
 	"juninry-api/controller"
 	"juninry-api/logging"
 	"juninry-api/middleware"
@@ -54,7 +55,7 @@ func routing(engine *gin.Engine) {
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
 					// 宿題の提出
-					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
+					homeworks.POST("/submit", middleware.LimitReqBodySize(common.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
 
 				// noticeグループ
@@ -120,6 +121,9 @@ func loadingStaticFile(engine *gin.Engine) {
 func SetupRouter() (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
+
+	// マルチパートフォームのメモリ使用制限を設定
+	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
 	routing(engine)
