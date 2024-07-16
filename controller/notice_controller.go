@@ -50,19 +50,10 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
-		// カスタムエラーを仕分ける
+		// エラータイプを定義
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
-				// エラーログ
-				logging.ErrorLog("Conflict.", err)
-				// レスポンス
-				resStatusCode := http.StatusConflict
-				ctx.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
 			case common.ErrTypePermissionDenied: // 非管理者ユーザーの場合
 				// エラーログ
 				logging.ErrorLog("Forbidden.", err)

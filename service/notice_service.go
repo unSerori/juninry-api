@@ -39,17 +39,6 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
 	if err != nil {                      // エラーハンドル
-		// XormのORMエラーを仕分ける
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
-			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
-			}
-		}
-		// 通常の処理エラー
 		return err
 	}
 
@@ -65,7 +54,7 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 	UserName          string    `json:"userName"`          // おしらせ発行ユーザ
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
-	QuotedNoticeUuid  *string    `json:"quotedNoticeUUID"`  // 親お知らせUUID
+	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 親お知らせUUID
 	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
 }
 

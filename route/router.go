@@ -24,7 +24,7 @@ func routing(engine *gin.Engine) {
 	v1 := engine.Group("/v1")
 	{
 		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test
+		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
 
 		// usersグループ
 		users := v1.Group("/users")
@@ -68,7 +68,7 @@ func routing(engine *gin.Engine) {
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 
 					//　お知らせ新規登録
-					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
+					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
 					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
