@@ -194,10 +194,42 @@ type TransFormData struct {
 }
 
 // 自身が参加しているクラスに参加しているユーザ情報を全権取得
-func (s *ClassService) GetClassMates(useruuid []string) ([]TransFormData, error) {
+func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
+	var idAdjusteds []string	// ユーザーのidを格納するスライス
+	// userが保護者かチェック errの場合とかなくない？のきもち どっちにしろfalseが返ってくるので仕事は果たしてくれるのでは？
+	isPatron,_ := model.IsPatron(useruuid)
+	// 保護者の場合は子供のidを取得して使う
+	if isPatron {
+		// 保護者のOUCHIUUIDを取得するため、useruuidからユーザ情報を取得
+		patron,err := model.GetUser(useruuid)
+		if patron.OuchiUuid == nil {
+			// 保護者さんおうちに所属してないよエラー
+			logging.ErrorLog("Failure to get user.", err)
+			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		if err != nil {
+			// ユーザーがいないよエラー
+			logging.ErrorLog("Failure to get user.", err)
+			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		// 保護者のOUCHIUUIDから子供のIDを取得
+		idAdjusteds,err = model.GetChildrenUuids(*patron.OuchiUuid)
+		if err != nil {
+			// とれなかったよエラー
+			logging.ErrorLog("Failure to get user.", err)
+			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		if len(idAdjusteds) == 0 {
+			// あなたのおうちにこどもはいないよ
+			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+		}
+	}else{
+		// 保護者でない場合は自分のIDを使う
+		idAdjusteds = append(idAdjusteds,useruuid)
+	}
 
-	// useridでユーザ情報を取得
-	myClass, err := model.FindClassMemberships(useruuid)
+	// スライスに格納したuseridでユーザ情報を取得
+	myClass, err := model.FindClassMemberships(idAdjusteds)
 	if err != nil {
 		return nil, err
 	}

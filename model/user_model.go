@@ -237,21 +237,5 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	return affected, err
 }
 
-// おうちに所属している児童のuuidを取得
-func GetJuniorsByOuchiUuid(ouchiUuid string) ([]string, error) {
-	// 結果格納用
-	var juniorUUIDs []string
-	var users []User
-	// 特定のおうちに所属している児童のuuidを取得
-	err := db.Where("ouchi_uuid = ?", ouchiUuid).And("user_type_id = 2").Find(&users)
-	if err != nil {
-		return nil, err
-	}
-	for _, user := range users {
-		juniorUUIDs = append(juniorUUIDs, user.UserUuid)
-	}
-	return juniorUUIDs, nil
-}
-
 
 

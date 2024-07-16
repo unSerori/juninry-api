@@ -180,62 +180,46 @@ func GetClasssmaitesHandler(c *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	var idAdjusteds []string	// ユーザーのidを格納するスライス
-	// 保護者かチェック
-	isPatron,err := model.IsPatron(idAdjusted)
-	if err != nil {
-		// エラーログ
-		logging.ErrorLog("Failure to get user.", err)
-		// レスポンス
-		resStatusCode := http.StatusBadRequest
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-	// 保護者の場合は子供のidを取得して使う
-	if isPatron {
-		// 保護者のOUCHIUUIDを取得
-		patron,err := model.GetUser(idAdjusted)
-		if err != nil {
-			// エラーログ
-			logging.ErrorLog("Failure to get user.", err)
-			// レスポンス
-			resStatusCode := http.StatusBadRequest
-			c.JSON(resStatusCode, gin.H{
-				"srvResMsg":  http.StatusText(resStatusCode),
-				"srvResData": gin.H{},
-			})
-			return
-		}
-		// 保護者のOUCHIUUIDから子供のIDを取得
-		idAdjusteds,err = model.GetJuniorsByOuchiUuid(*patron.OuchiUuid)
-		if err != nil {
-			// エラーログ
-			logging.ErrorLog("Failure to get user.", err)
-			// レスポンス
-			resStatusCode := http.StatusBadRequest
-			c.JSON(resStatusCode, gin.H{
-				"srvResMsg":  http.StatusText(resStatusCode),
-				"srvResData": gin.H{},
-			})
-			return
-		}
-	}else{
-		idAdjusteds = append(idAdjusteds,idAdjusted)
-	}
+
 	// idからクラスメイトの情報を取得
-	classmates, err := ClassService.GetClassMates(idAdjusteds)
+	classmates, err := ClassService.GetClassMates(idAdjusted)
+	// エラーハンドル
 	if err != nil {
-		// エラーログ
-		logging.ErrorLog("Failure to get user.", err)
-		// レスポンス
-		resStatusCode := http.StatusBadRequest
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
+		//カスタムエラーを分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeNoResourceExist, common.ErrTypePassMismatch: // ユーザーが見つからなかった, パスワードが不一致
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else {
+			// エラーログ
+			logging.ErrorLog("Failure to get user.", err)
+			// レスポンス
+			resStatusCode := http.StatusBadRequest
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+
+		}
+
 		return
 	}
 	// 成功ログ
@@ -245,7 +229,6 @@ func GetClasssmaitesHandler(c *gin.Context) {
 	c.JSON(resStatusCode, gin.H{
 		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": classmates,
-		
 	})
 }
 
