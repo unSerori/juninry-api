@@ -193,7 +193,7 @@ type TransFormData struct {
 	JuniorData []JuniorData `json:"juniorData"`
 }
 
-// 自身が参加しているクラスに参加しているユーザ情報を全権取得
+// クラスメイト取得
 func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 	var idAdjusteds []string	// ユーザーのidを格納するスライス
 	// userが保護者かチェック errの場合とかなくない？のきもち どっちにしろfalseが返ってくるので仕事は果たしてくれるのでは？
@@ -245,12 +245,12 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		// uuid
 		class,err := model.GetClass(uuid)
 		if err != nil {
-			return nil, err
+			return nil,common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		// 参加しているユーザーを全取得
 		memberships,err := model.FindClassMembers(uuid)
 		if err != nil {
-			return nil, err
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		// ユーザーIDの配列に格納
 		var membershipsUUIDs []string
@@ -260,7 +260,7 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		// 配列からユーザー情報を取得
 		classmates,err := model.GetUsers(membershipsUUIDs)
 		if err != nil {
-			return nil, err
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		for _, classmate := range classmates {
 			juniorData := JuniorData{

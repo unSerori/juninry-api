@@ -189,11 +189,11 @@ func GetClasssmaitesHandler(c *gin.Context) {
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist, common.ErrTypePassMismatch: // ユーザーが見つからなかった, パスワードが不一致
+			case common.ErrTypeNoResourceExist: // ユーザーが見つからなかった, パスワードが不一致
 				// エラーログ
-				logging.ErrorLog("Bad Request.", err)
+				logging.ErrorLog("Not Found.", err)
 				// レスポンス
-				resStatusCode := http.StatusBadRequest
+				resStatusCode := http.StatusNotFound
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
@@ -222,6 +222,7 @@ func GetClasssmaitesHandler(c *gin.Context) {
 
 		return
 	}
+
 	// 成功ログ
 	logging.SuccessLog("Successful users get.")
 	// レスポンス
