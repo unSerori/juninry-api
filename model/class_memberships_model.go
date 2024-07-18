@@ -48,7 +48,7 @@ func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
 	var classMemberships []ClassMembership
 
 	//uuidをWhere句で条件指定
-	err := db.Where("user_uuid = ?", userUuid).Find(&classMemberships)
+	err := db.In("user_uuid = ?", userUuid).Find(&classMemberships)
 	if err != nil { //エラーハンドル
 		return nil, err
 	}
