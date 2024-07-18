@@ -256,19 +256,27 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 
 // 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
 type NoticeStatus struct {
-	StudentNo  int    // 出席番号
-	UserName   string // ガキの名前
-	GenderCode string // 性別コード
-	ReadStatus int    // お知らせを確認しているか
+	StudentNo  int     // 出席番号
+	UserName   string  // ガキの名前
+	GenderCode *string // 性別コード(定義がないためnullにしてる)
+	ReadStatus int     // お知らせを確認しているか
 }
 
 // 特定のお知らせ既読済み一覧取得
 func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]NoticeStatus, error) {
 
-	//TODO:削除
-	fmt.Println("さーびすです")
-	fmt.Println("noticeUuid：" + noticeUuid)
-	fmt.Println("userUuid：" + userUuid)
+	// 取得権限を持っているか確認
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	//確認用です
+	fmt.Println("noticeUuid:"+noticeUuid, "userUuid:"+userUuid)
 
 	//おしらせがどのクラスのものなのかを取ってくる
 	notice, err := model.GetNoticeDetail(noticeUuid)
@@ -282,10 +290,6 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
 	if err != nil {
 		return []NoticeStatus{}, err
-	}
-	// 結果をfmtで出力する
-	for _, status := range noticeReadStatus {
-		fmt.Printf("ouchiUuid: %s", status.OuchiUuid)
 	}
 
 	// noticeReadStatusから既読済みガキ一覧を作る

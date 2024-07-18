@@ -196,7 +196,7 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 						})
 						return
 					default: 
-					// エラーログ(権限無し)
+					// エラーログ
 					logging.ErrorLog("aiueos", err)
 					// レスポンス
 					resStatusCode := http.StatusBadRequest
@@ -330,13 +330,40 @@ func GetNoticestatusHandler(ctx *gin.Context) {
 	fmt.Println("noticeUuid："+noticeUuid)
 
 	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
+	// 取得できなかった時のエラーを判断
 	if err != nil {
+		// 処理で発生したエラーのうちカスタムエラーのみ
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) {
+				switch serviceErr.Type {
+				case common.ErrTypePermissionDenied :
+						// エラーログ(権限無し)
+						logging.ErrorLog("Do not have the necessary permissions", err)
+						// レスポンス
+						resStatusCode := http.StatusForbidden
+						ctx.JSON(resStatusCode, gin.H{
+							"srvResMsg":  http.StatusText(resStatusCode),
+							"srvResData": gin.H{},
+						})
+						return
+					default: 
+					// エラーログ(権限無し)
+					logging.ErrorLog("StatusBadRequest", err)
+					// レスポンス
+					resStatusCode := http.StatusBadRequest
+					ctx.JSON(resStatusCode, gin.H{
+						"srvResMsg":  http.StatusText(resStatusCode),
+						"srvResData": gin.H{},
+					})
+				}
+			}
 		// エラーログ
 		logging.ErrorLog("notice find error", err)
-		// レスポンス
-		ctx.JSON(http.StatusBadRequest, gin.H{})
-
-		return
+		// レスポンス(StatusInternalServerError サーバーエラー500番)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"srvResData": gin.H{},
+		})
+		return //　<-返すよって型指定してないから切り上げるだけ
 	}
 
 	// 成功ログ

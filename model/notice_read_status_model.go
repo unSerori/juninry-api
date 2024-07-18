@@ -1,5 +1,9 @@
 package model
 
+import (
+	"fmt"
+)
+
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
