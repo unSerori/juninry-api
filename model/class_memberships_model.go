@@ -79,3 +79,17 @@ func JoinClass(record ClassMembership) (bool, error) {
 	}
 	return true, nil
 }
+
+//クラスに所属しているgakiだけを全件取得(先生は除外するためuserUuidでnot in)
+func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembership, error) {
+	//ClassMembership型で返す(あってるのかは知らん「)
+	var user []ClassMembership
+	//classuuidで絞り込み
+	err := db.Where("class_uuid = ?", classUuid).
+				Where("user_uuid NOT IN (?)", userUuid).Find(&user)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+
+	return user, nil
+}

@@ -237,8 +237,10 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	return affected, err
 }
 
-// // ouchiUuidとclassUuidからガキを取得
-// func GetPupil(ouchiUuid string, classUuid string)(string, error) {
-
-
-// }
+// ouchiUuidとclassUuidからガキを取得
+func GetJunior(ouchiUuid string)(User, error) {
+	//junior
+	var junior User
+	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
+	return junior, err
+}

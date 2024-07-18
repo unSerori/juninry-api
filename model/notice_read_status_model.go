@@ -35,8 +35,7 @@ func CreateNoticeReadStatusTestData() {
 		NoticeUuid: "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
 		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
-	fmt.Println(nrs1)
-	// db.Insert(nrs1)
+	db.Insert(nrs1)
 }
 
 // notice_read_statusにデータがあるか調べる(確認済みの場合、データが存在する)

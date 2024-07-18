@@ -71,7 +71,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
 		NoticeUuid:        noticeDetail.NoticeUuid,        //おしらせ引用UUID
 		ClassUuid:         noticeDetail.ClassUuid,         //おしらせ引用UUID
-		RefUuid:           noticeDetail.RefUuid,           //おしらせ引用UUID
 	}
 
 	//確認しているか取得
@@ -237,58 +236,105 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 	return nil
 }
 
-
 // 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
 type NoticeStatus struct {
+	StudentNo  int    // 出席番号
 	UserName   string // ガキの名前
-	GenderCode string //性別コード
+	GenderCode string // 性別コード
+	ReadStatus int    // お知らせを確認しているか
 }
 
-func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) (NoticeStatus, error) {
+// 特定のお知らせ既読済み一覧取得
+func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]NoticeStatus, error) {
 
 	//TODO:削除
 	fmt.Println("さーびすです")
-	fmt.Println("noticeUuid："+noticeUuid)
+	fmt.Println("noticeUuid：" + noticeUuid)
+	fmt.Println("userUuid：" + userUuid)
 
 	//おしらせがどのクラスのものなのかを取ってくる
-	temp, err := model.GetNoticeDetail(noticeUuid)
+	notice, err := model.GetNoticeDetail(noticeUuid)
 	if err != nil {
-		return NoticeStatus{}, err
+		return []NoticeStatus{}, err
 	}
-	//わかりやすよう、tempのclassUuidだけ取ってきとく
-	classUuid := temp.ClassUuid
-	fmt.Println("classUuid：" + classUuid)
+	//わかりやすよう、noticeのclassUuidだけ取ってきとく
+	classUuid := notice.ClassUuid
 
-	//お知らせの既読済情報一覧を取ってくる
+	//お知らせの既読済おうち一覧を取ってくる(noticeReadStatus=ouchiuuidみたいなもん)
 	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
 	if err != nil {
-		return NoticeStatus{}, err
+		return []NoticeStatus{}, err
+	}
+	// 結果をfmtで出力する
+	for _, status := range noticeReadStatus {
+		fmt.Printf("ouchiUuid: %s", status.OuchiUuid)
 	}
 
-	//構造体からスライスに変換する(userUuidを持ってる配列を作る)
-	var ouchiUuids []string
-	for _, statusList := range noticeReadStatus {
-		ouchiUuid := statusList.OuchiUuid
-		ouchiUuids = append(ouchiUuids, ouchiUuid)
+	// noticeReadStatusから既読済みガキ一覧を作る
+	var readList []model.User
+	for _, ouchi := range noticeReadStatus {
+		// ouchi.OuchiUuid としてフィールド名を大文字で始める
+		gaki, err := model.GetJunior(ouchi.OuchiUuid)
+		if err != nil {
+			return []NoticeStatus{}, err
+		}
+		// リストに追加していく
+		readList = append(readList, gaki)
 	}
 
-	// ouchiUuid 一覧を保持
-	fmt.Print("ouchiUuids：")
-	fmt.Println(ouchiUuids)
-
-
-
-
-
-
-
-
-
-	noticeStatus := NoticeStatus{
-		UserName:   userUuid,
-		GenderCode: "0",
+	//classUuidからクラス全員を取ってくる(先生は除外するためuserUuidでnotin)
+	classMemberships, err := model.FindUserByClassMemberships(classUuid, userUuid)
+	if err != nil {
+		return []NoticeStatus{}, err
 	}
+
+	// もはや、レシピみたいに書いた方がわかりやすいのでわ(脳死)
+	// classMembershipsからガキ一覧を作る(ついでに返す奴にデータを突っ込む)
+	var juniorList []model.User
+	for _, junior := range classMemberships {
+		gaki, err := model.GetUser(junior.UserUuid)
+		if err != nil {
+			return []NoticeStatus{}, err
+		}
+
+		// リストに追加していく
+		juniorList = append(juniorList, gaki)
+	}
+
+	//既読済みガキ一覧でマップを作成
+	readMap := make(map[string]bool)
+	for _, junior := range readList {
+		readMap[junior.UserUuid] = true
+	}
+
+	var temp []NoticeStatus
+
+	//juniorlistをループしてマップ検索と整形
+	for _, junior := range juniorList {
+
+		// 整形用
+		noticeStatus := NoticeStatus{}
+
+		if readMap[junior.UserUuid] {
+			noticeStatus.ReadStatus = 1 //　既読済みフラグ
+		} else {
+			noticeStatus.ReadStatus = 0 //　未読
+		}
+
+		noticeStatus.UserName = junior.UserName
+
+		temp = append(temp, noticeStatus)
+	}
+
+	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
+	var noticeStatus []NoticeStatus
+
+	// tempを逆順にしてformattedAllNoticesに追加する
+	for i := len(temp) - 1; i >= 0; i-- {
+		noticeStatus = append(noticeStatus, temp[i])
+	}
+
+	fmt.Println(noticeStatus)
 
 	return noticeStatus, err
 }
-
