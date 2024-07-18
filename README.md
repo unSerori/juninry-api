@@ -291,7 +291,7 @@ SSH URL:
         }
         ```
 
-#### クラスに所属するエンドポイント
+### クラスに所属するエンドポイント
 
 - **URL:** `/v1/auth/users/classes/join/:invite_code`
 - **メソッド:** POST
@@ -370,7 +370,7 @@ SSH URL:
     }
     ```
 
-#### ログインするエンドポイント
+### ログインするエンドポイント
 
 - **URL:** `/v1/users/login`
 - **メソッド:** POST
@@ -400,7 +400,7 @@ SSH URL:
       }
       ```
 
-#### 終了した宿題を提出するエンドポイント
+### 終了した宿題を提出するエンドポイント
 
 - **URL:** `/v1/auth/users/homeworks/submit`
 - **メソッド:** POST
@@ -428,7 +428,7 @@ SSH URL:
       }
       ```
 
-#### お知らせの新規登録するエンドポイント
+### お知らせの新規登録するエンドポイント
 
 - **URL:** `/v1/auth/users/notice/register`
 - **メソッド:** POST
@@ -465,7 +465,7 @@ SSH URL:
       }
       ```
 
-#### お知らせ既読処理をするエンドポイント
+### お知らせ既読処理をするエンドポイント
 
 - **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
 - **メソッド:** POST
@@ -485,7 +485,7 @@ SSH URL:
       }
       ```
 
-#### おうちを新規登録するエンドポイント
+### おうちを新規登録するエンドポイント
 
 - **URL:** `/v1/auth/users/ouchies/register`
 - **メソッド:** POST
@@ -502,7 +502,7 @@ SSH URL:
     }
     ```
 
-#### おうち招待コード更新するエンドポイント
+### おうち招待コード更新するエンドポイント
 
 - **URL:** `/v1/auth/users/ouchies/refresh/{ouchi_uuid}`
 - **メソッド:** PUT
@@ -547,6 +547,33 @@ SSH URL:
           },
           "srvResMsg": "OK"
         }      
+      ```
+
+#### 特定のお知らせ既読一覧取得するエンドポイント
+
+- **URL:** `/v1/auth/users/notices/status/{notice_uuid}`
+- **メソッド:** GET
+- **説明:** 先生が特定のお知らせの生徒の既読情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200　OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+        {
+          "StudentNo": 0,   //定義がないので0デス
+          "UserName": "test oooo",
+          "GenderCode": null, //定義がないのでnullです 
+          "ReadStatus": 0
+        }
+        ],
+        "srvResMsg": "Successful noticeStatus get."
+      }
       ```
 
 ### API仕様書てんぷれ
