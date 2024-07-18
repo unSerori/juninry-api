@@ -121,6 +121,19 @@ type Notice struct { // typeで型の定義, structは構造体
 // ユーザの所属するクラスのお知らせ全件取得
 func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
+	//先生かのタイプチェック
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
+	userUuidSave := userUuid
+
 	// userUuidを条件にしてclassUuidを取ってくる
 	// 1 - userUuidからclass_membershipの構造体を取ってくる
 	classMemberships, err := model.FindClassMemberships(userUuid)
@@ -147,9 +160,6 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
 
-		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
-		userUuidSave := userUuid
-
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
 			NoticeUuid:  notice.NoticeUuid,  //おしらせUuid
@@ -157,15 +167,15 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
 		}
 
-		//userUuidをuserNameに整形
+		//userUuidをuserNameに整形(お知らせの作成者を取ってくる)
 		userUuid := notice.UserUuid
-		user, nil := model.GetUser(userUuid) //ユーザ取得
+		creatorUser, err := model.GetUser(userUuid) //ユーザ取得
 		if err != nil {
 			return []Notice{}, err
 		}
 
 		//整形後formatに追加
-		notices.UserName = user.UserName // おしらせ発行ユーザ
+		notices.UserName = creatorUser.UserName // おしらせ発行ユーザ
 
 		//classUuidをclassNameに整形
 		classUuid := notice.ClassUuid
@@ -177,8 +187,16 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		notices.ClassUuid = classUuid       // おしらせUuid
 		notices.ClassName = class.ClassName // おしらせ発行ユーザ
 
-		//確認しているか取得
-		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, userUuidSave)
+		//既読状況を取ってくる(トークン主)
+		user, err := model.GetUser(userUuidSave)
+		if err != nil {
+			return []Notice{}, err
+		}
+
+		fmt.Println("user:", *user.OuchiUuid)
+
+		// 確認しているか取得
+		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, *user.OuchiUuid)
 		if err != nil {
 			return []Notice{}, err
 		}

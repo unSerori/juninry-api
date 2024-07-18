@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
@@ -39,10 +37,10 @@ func CreateNoticeReadStatusTestData() {
 }
 
 // notice_read_statusにデータがあるか調べる(確認済みの場合、データが存在する)
-func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
+func GetNoticeReadStatus(noticeUuid string, ouchiUuid string) (bool, error) {
 
 	//noticeUuidとuserUuidから一致するデータがあるか取得
-	has, err := db.Where("notice_uuid = ? AND user_uuid = ?", noticeUuid, userUuid).Get(&NoticeReadStatus{})
+	has, err := db.Where("notice_uuid = ? AND ouchi_uuid = ?", noticeUuid, ouchiUuid).Get(&NoticeReadStatus{})
 	if err != nil {
 		return false, err
 	}
