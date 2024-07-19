@@ -6,12 +6,13 @@ import (
 
 // おしらせテーブル
 type Notice struct { // typeで型の定義, structは構造体
-	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`        // おしらせの一意ID
-	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle"` // おしらせのタイトル
-	NoticeExplanatory string    `xorm:"text" json:"noticeExplanatory"`           // おしらせ内容
-	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`     // おしらせの時刻
-	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`    // おしらせ発行ユーザ
-	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID"`   // どのクラスのお知らせか
+	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`                           // おしらせの一意ID
+	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle" binding:"required"` // おしらせのタイトル
+	NoticeExplanatory string    `xorm:"text" json:"noticeExplanatory" binding:"required"`                              // おしらせ内容
+	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`                        // おしらせの時刻
+	QuotedNoticeUuid  *string   `xorm:"varchar(36)" json:"quotedNoticeUUID"`                        // お知らせUUID
+	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`                       // おしらせ発行ユーザ
+	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID" binding:"required"`                      // どのクラスのお知らせか
 }
 
 // テーブル名

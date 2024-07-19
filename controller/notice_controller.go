@@ -3,7 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
-	common "juninry-api/common"
+	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
@@ -45,24 +45,15 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	fmt.Println(idAdjusted)   //　アサーションの確認
+	bNotice.UserUuid = idAdjusted
 
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
-		// カスタムエラーを仕分ける
+		// エラータイプを定義
 		var customErr *common.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
-				// エラーログ
-				logging.ErrorLog("Conflict.", err)
-				// レスポンス
-				resStatusCode := http.StatusConflict
-				ctx.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
 			case common.ErrTypePermissionDenied: // 非管理者ユーザーの場合
 				// エラーログ
 				logging.ErrorLog("Forbidden.", err)
@@ -155,8 +146,9 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	// 成功ログ
 	logging.SuccessLog("Successful noticeDetail get.")
 	// レスポンス(StatusOK　成功200番)
-	ctx.JSON(http.StatusOK, gin.H{
-		"srvResMsg":  "Successful noticeDetail get.",
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": noticeDetail,
 	})
 
