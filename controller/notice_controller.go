@@ -46,7 +46,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	fmt.Println(idAdjusted)		//　アサーションの確認
+	fmt.Println(idAdjusted)   //　アサーションの確認
 
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
@@ -110,7 +110,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{},
 	})
 
@@ -161,17 +161,46 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
+	var classUuids []string
+	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
+		for _, idStr := range idsStr {
+			classUuids = append(classUuids, idStr)
+		}
+	}
+
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
-		// エラーログ
-		logging.ErrorLog("notice find error", err)
-		// レスポンス(StatusInternalServerError サーバーエラー500番)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) { // カスタムエラーの場合
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied: // 権限を持っていない
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
+				logging.ErrorLog("Max attempts reached", err)
+			}
+		} else {
+			// エラーログ
+			logging.ErrorLog("notice find error", err)
+			// レスポンス(StatusInternalServerError サーバーエラー500番)
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"srvResData": gin.H{},
+			})
+			return //　<-返すよって型指定してないから切り上げるだけ
+		}
+		resStatusCode := http.StatusBadRequest
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
-		return //　<-返すよって型指定してないから切り上げるだけ
+		return
 	}
 
 	// レスポンス(StatusOK　成功200番)
@@ -206,11 +235,11 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 構造体にマッピング
 	bRead := model.NoticeReadStatus{
 		NoticeUuid: noticeUuid,
-		UserUuid: idAdjusted,
+		UserUuid:   idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead) 
+	err := noticeService.ReadNotice(bRead)
 	if err != nil { // エラーハンドル
 		// 処理で発生したエラーのうちDB関連のエラーのみ
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
@@ -263,7 +292,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
-		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},
