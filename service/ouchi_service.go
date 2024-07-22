@@ -2,6 +2,7 @@ package service
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"juninry-api/common"
 	"juninry-api/logging"
@@ -77,7 +78,7 @@ func (s *OuchiService) PermissionCheckedOuchiCreation(userUuid string, bOuchi mo
 	// null確認
 	if user.OuchiUuid != nil {
 		logging.ErrorLog("You are already assigned to an Ouchi", nil)
-		return model.Ouchi{}, err
+		return model.Ouchi{}, common.NewErr(common.ErrTypeAlreadyExists)
 	}
 
 	// おうちUUIDの生成
@@ -165,6 +166,17 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 	// ユーザにouchiUuidを付与
 	_, err = model.AssignOuchi(userUuid, targetOuchi.OuchiUuid)
 	if err != nil { // エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return "", common.NewErr(common.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return "", common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return "", err
 	}
 

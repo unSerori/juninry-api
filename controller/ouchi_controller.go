@@ -10,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-sql-driver/mysql"
 )
 
 var OuchiService = service.OuchiService{}
@@ -46,6 +45,13 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
+			case common.ErrTypeAlreadyExists: // すでに存在するので登録する必要がない&できない
+				logging.ErrorLog("Forbidden.", err)
+				resStatusCode := http.StatusConflict
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			case common.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
@@ -53,19 +59,26 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-				return
-			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
-				logging.ErrorLog("Max attempts reached", err)
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", serviceErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			}
-		} else {
+		} else { // カスタムエラー以外の処理エラー
 			// エラーログ
-			logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
-		resStatusCode := http.StatusBadRequest
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
 		return
 	}
 
@@ -111,7 +124,6 @@ func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-				return
 			case common.ErrTypeNoResourceExist: // リソースがない
 				logging.ErrorLog("The resource does not exist", err)
 				resStatusCode := http.StatusNotFound
@@ -119,19 +131,26 @@ func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-				return
-			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
-				logging.ErrorLog("Max attempts reached", err)
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", serviceErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			}
-		} else {
+		} else { // カスタムエラー以外の処理エラー
 			// エラーログ
-			logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
-		resStatusCode := http.StatusBadRequest
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
 		return
 	}
 
@@ -166,50 +185,51 @@ func JoinOuchiHandler(c *gin.Context) {
 
 	// おうちに参加
 	ouchiName, err := OuchiService.PermissionCheckedJoinOuchi(idAdjusted, inviteCode)
-	if err != nil {
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
-			if mysqlErr.Number == 1062 { // 重複エラー
-				logging.ErrorLog("The ouchi has already joined", err)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+				// エラーログ
+				logging.ErrorLog("Conflict.", err)
+				// レスポンス
 				resStatusCode := http.StatusConflict
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-				return
-			}
-		}
-
-		// いろいろ長いからややこしいけど、swich文でエラー振り分けてるだけ
-		var serviceErr *common.CustomErr
-		if errors.As(err, &serviceErr) { // カスタムエラーの場合
-			switch serviceErr.Type {
 			case common.ErrTypePermissionDenied: // 権限を持っていない
-				logging.ErrorLog("Do not have the necessary permissions", err)
-				resStatusCode := http.StatusForbidden
-				c.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-				return
-			case common.ErrTypeNoResourceExist: // 招待コード違います
-				logging.ErrorLog("The resource does not exist", err)
-				resStatusCode := http.StatusNotFound
-				c.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			default:
-				logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
 				resStatusCode := http.StatusBadRequest
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-				return
-			}
 
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
+		return
 	}
 
 	// レスポンス

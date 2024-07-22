@@ -1,12 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -14,7 +16,6 @@ type NoticeService struct{} // コントローラ側からサービスを実体�
 
 // noticeの新規登録
 func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
-
 	//先生かのタイプチェック
 	isTeacher, err := model.IsTeacher(bNotice.UserUuid)
 	if err != nil { // エラーハンドル
@@ -32,9 +33,12 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	}
 	bNotice.NoticeUuid = noticeId.String() //設定
 
+	// 投稿時刻を設定
+	bNotice.NoticeDate = time.Now()
+
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
-	if err != nil {
+	if err != nil {                      // エラーハンドル
 		return err
 	}
 
@@ -44,11 +48,14 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
-	NoticeTitle       string    //お知らせのタイトル
-	NoticeExplanatory string    //お知らせの内容
-	NoticeDate        time.Time //お知らせの作成日時
-	UserName          string    // おしらせ発行ユーザ
-	ClassName         string    // どのクラスのお知らせか
+	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
+	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
+	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
+	UserName          string    `json:"userName"`          // おしらせ発行ユーザ
+	ClassName         string    `json:"className"`         // どのクラスのお知らせか
+	ClassUuid         string    `json:"classUUID"`         // クラスUUID
+	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 親お知らせUUID
+	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
 }
 
 // お知らせ詳細取得
@@ -57,7 +64,12 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
 	if err != nil {
-		return NoticeDetail{}, err //nilで返せない!不思議!!
+		fmt.Printf("err: %v\n", err)
+		return NoticeDetail{}, err //nilで返せない!不思議!!  // A. 返り血の方がNoticeDetailになっていてNoticeDetail型で返さなければいけないから。*NoticeDetailのようにポインタで返せばポインタの指定先が空の状態≒nilを返すことができるよ。
+	}
+	if noticeDetail == nil { // 取得できなかった
+		fmt.Println("noticeDetail is nil")
+		return NoticeDetail{}, common.NewErr(common.ErrTypeNoResourceExist)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -65,6 +77,8 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
+		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
+		QuotedNoticeUuid:  noticeDetail.QuotedNoticeUuid,  // 親お知らせUUID
 	}
 
 	//userUuidをuserNameに整形
@@ -84,6 +98,19 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	}
 	//整形後formatに追加
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
+
+	//確認しているか取得
+	status, err := model.GetNoticeReadStatus(noticeDetail.NoticeUuid, userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	//確認していた場合、ReadStatusに1を保存する
+	if status {
+		formattedNotice.ReadStatus = 1
+	} else {
+		formattedNotice.ReadStatus = 0
+	}
 
 	return formattedNotice, err
 }
@@ -237,9 +264,20 @@ func (s *NoticeService) ReadNotice(userUuid string, noticeUuid string) error {
 	}
 
 	// 構造体をレコード登録処理に投げる
-	_, err = model.ReadNotice(*bRead) // 第一返り血は登録成功したレコード数
-	if err != nil {
-		return err
+	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
+	if err != nil {               // エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
+    return err
 	}
 
 	return nil

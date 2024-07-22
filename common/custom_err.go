@@ -27,16 +27,28 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypePassMismatch               // パスワードが一致しない
 	ErrTypePermissionDenied           // 権限がない
 	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
+	ErrTypeInvalidFileFormat          // ファイル形式が無効
+	ErrTypeFileSizeTooLarge           // ファイルサイズがでか杉ます;~;
+	ErrTypeAlreadyExists              // すでに存在するので登録する必要がない&できない
+
+	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
+	ErrTypeUniqueConstraintViolation // 一意性制約違反
 )
 
 // エラーに対するデフォルトmsgを設定
 var errTypeMsg = map[ErrType]string{
-	ErrTypeHashingPassFailed: "",
-	ErrTypeGenTokenFailed:    "",
-	ErrTypeNoResourceExist:   "could not find the relevant ID",
-	ErrTypePassMismatch:      "password does not match",
-	ErrTypePermissionDenied:  "do not have the necessary permissions",
+	ErrTypeHashingPassFailed:  "",
+	ErrTypeGenTokenFailed:     "",
+	ErrTypeNoResourceExist:    "could not find the relevant ID",
+	ErrTypePassMismatch:       "password does not match",
+	ErrTypePermissionDenied:   "do not have the necessary permissions",
 	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
+	ErrTypeInvalidFileFormat:  "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
+	ErrTypeFileSizeTooLarge:   "the file size exceeds the allowed limit",
+	ErrTypeAlreadyExists:      "no need to register as it already exists & cannot be done",
+
+	ErrTypeOtherErrorsInTheORM:       "",
+	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる
@@ -58,9 +70,13 @@ func defaultNewErrParams(errType ErrType) *NewErrParams {
 }
 
 // デフォルト引数msgのオプション関数、オプション関数はデフォルト引数を仕様とする関数の呼び出し側で使うのでパブリック
-func WithMsg(msg string) NewErrParam {
+func WithMsg(msg interface{}) NewErrParam {
 	return func(nep *NewErrParams) { // デフォルト引数管理構造体を受け取り、その構造体にオプション関数が受け取った値を設定する無名関数を返す
-		nep.msg = msg
+		msgAdjusted, ok := msg.(string)
+		if !ok {
+			nep.msg = "NIL"
+		}
+		nep.msg = msgAdjusted
 	}
 }
 

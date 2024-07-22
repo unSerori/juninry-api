@@ -6,12 +6,13 @@ import (
 
 // おしらせテーブル
 type Notice struct { // typeで型の定義, structは構造体
-	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`        // おしらせの一意ID
-	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle"` // おしらせのタイトル
-	NoticeExplanatory string    `xorm:"text" json:"noticeExplanatory"`           // おしらせ内容
-	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`     // おしらせの時刻
-	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`    // おしらせ発行ユーザ
-	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID"`   // どのクラスのお知らせか
+	NoticeUuid        string    `xorm:"varchar(36) pk" json:"noticeUUID"`                           // おしらせの一意ID
+	NoticeTitle       string    `xorm:"varchar(15) not null" json:"noticeTitle" binding:"required"` // おしらせのタイトル
+	NoticeExplanatory string    `xorm:"text" json:"noticeExplanatory" binding:"required"`                              // おしらせ内容
+	NoticeDate        time.Time `xorm:"DATETIME not null" json:"noticeDate"`                        // おしらせの時刻
+	QuotedNoticeUuid  *string   `xorm:"varchar(36)" json:"quotedNoticeUUID"`                        // お知らせUUID
+	UserUuid          string    `xorm:"varchar(36) not null" json:"userUUID"`                       // おしらせ発行ユーザ
+	ClassUuid         string    `xorm:"varchar(36) not null" json:"classUUID" binding:"required"`                      // どのクラスのお知らせか
 }
 
 // テーブル名
@@ -62,8 +63,8 @@ func CreateNoticeTestData() {
 }
 
 // 新規お知らせ登録
-func CreateNotice(record Notice) (int64, error){
-	
+func CreateNotice(record Notice) (int64, error) {
+
 	affected, err := db.Insert(record)
 	return affected, err
 }
@@ -88,21 +89,24 @@ func FindNotices(classUuids []string) ([]Notice, error) {
 }
 
 // noticeUuidで絞り込んだnoticeの詳細を返す
-func GetNoticeDetail(noticeUuid string) (Notice, error) {
+func GetNoticeDetail(noticeUuid string) (*Notice, error) {
 
 	//結果格納用変数
 	var noticeDetail Notice
 
 	//noticeuuidで絞り込んで1件取得
 	//.Getの返り値は存在の真偽値とエラー
-	_, err := db.Where("notice_uuid =? ", noticeUuid).Get(
+	found, err := db.Where("notice_uuid = ? ", noticeUuid).Get(
 		&noticeDetail,
 	)
-	// データが取得できなかったらerrを返す
+	// エラーが発生した
 	if err != nil {
-		return Notice{}, err
+		return nil, err
+	}
+	// データが取得できなかったら
+	if !found {
+		return nil, nil
 	}
 
-	return noticeDetail, nil
+	return &noticeDetail, nil
 }
-
