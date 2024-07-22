@@ -94,14 +94,14 @@ func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUuid"`              // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
 	TeachingMaterialName      string `json:"teachingMaterialName"`      // 教材名
 	SubjectId                 int    `json:"subjectId"`                 // 教科ID
 	SubjectName               string `json:"subjectName"`               // 教科名
-	TeachingMaterialImageUuid string `json:"teachingMaterialImageUuid"` // 画像ID どういう扱いになるのかな
+	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
 	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
 }
@@ -114,6 +114,15 @@ type TransformedData struct {
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
+
+	// 親には宿題一覧使えないよ
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
 
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
 	userHomeworkList, err := model.FindUserHomework(userUuid)
