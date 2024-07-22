@@ -184,48 +184,50 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 // 児童の構造体
 type JuniorData struct {
 	// ここに出席番号を追加
+	UserUUID string `json:"userUUID"`
 	UserName string `json:"userName"`
 	GenderId int    `json:"genderId"`
 }
+
 // クラスごとに児童のデータをまとめた構造体
 type TransFormData struct {
-	ClassName string       `json:"className"`
+	ClassName  string       `json:"className"`
 	JuniorData []JuniorData `json:"juniorData"`
 }
 
 // クラスメイト取得
 func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
-	var idAdjusteds []string	// ユーザーのidを格納するスライス
+	var idAdjusteds []string // ユーザーのidを格納するスライス
 	// userが保護者かチェック errの場合とかなくない？のきもち どっちにしろfalseが返ってくるので仕事は果たしてくれるのでは？
-	isPatron,_ := model.IsPatron(useruuid)
+	isPatron, _ := model.IsPatron(useruuid)
 	// 保護者の場合は子供のidを取得して使う
 	if isPatron {
 		// 保護者のOUCHIUUIDを取得するため、useruuidからユーザ情報を取得
-		patron,err := model.GetUser(useruuid)
+		patron, err := model.GetUser(useruuid)
 		if patron.OuchiUuid == nil {
 			// 保護者さんおうちに所属してないよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		if err != nil {
 			// ユーザーがいないよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		// 保護者のOUCHIUUIDから子供のIDを取得
-		idAdjusteds,err = model.GetChildrenUuids(*patron.OuchiUuid)
+		idAdjusteds, err = model.GetChildrenUuids(*patron.OuchiUuid)
 		if err != nil {
 			// とれなかったよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		if len(idAdjusteds) == 0 {
 			// あなたのおうちにこどもはいないよ
-			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
-	}else{
+	} else {
 		// 保護者でない場合は自分のIDを使う
-		idAdjusteds = append(idAdjusteds,useruuid)
+		idAdjusteds = append(idAdjusteds, useruuid)
 	}
 
 	// スライスに格納したuseridでユーザ情報を取得
@@ -235,35 +237,36 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 	}
 	// for文でクラスのIDを配列に格納
 	var classUUIDs []string
-	for _,i := range myClass {
+	for _, i := range myClass {
 		classUUIDs = append(classUUIDs, i.ClassUuid)
 	}
 	// UUIDにあわせてクラス名を取得
 	// クラス名をキー、バリューをデータのマップにする
 	transformedDataMap := make(map[string][]JuniorData)
-	for _,uuid := range classUUIDs {
+	for _, uuid := range classUUIDs {
 		// uuid
-		class,err := model.GetClass(uuid)
+		class, err := model.GetClass(uuid)
 		if err != nil {
-			return nil,common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		// 参加しているユーザーを全取得
-		memberships,err := model.FindClassMembers(uuid)
+		memberships, err := model.FindClassMembers(uuid)
 		if err != nil {
 			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		// ユーザーIDの配列に格納
 		var membershipsUUIDs []string
-		for _,i := range memberships {
+		for _, i := range memberships {
 			membershipsUUIDs = append(membershipsUUIDs, i.UserUuid)
 		}
 		// 配列からユーザー情報を取得
-		classmates,err := model.GetUsers(membershipsUUIDs)
+		classmates, err := model.GetUsers(membershipsUUIDs)
 		if err != nil {
 			return nil, common.NewErr(common.ErrTypeNoResourceExist)
 		}
 		for _, classmate := range classmates {
 			juniorData := JuniorData{
+				UserUUID: classmate.UserUuid,
 				UserName: classmate.UserName,
 				GenderId: classmate.GenderId,
 			}
@@ -274,7 +277,7 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 	var transformedDataList []TransFormData
 	for className, juniorData := range transformedDataMap {
 		transformedData := TransFormData{
-			ClassName: className,
+			ClassName:  className,
 			JuniorData: juniorData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
