@@ -124,7 +124,7 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	noticeUuid := ctx.Param("notice_uuid")
 
 	//お知らせのレコードを取ってくる
-	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid)
+	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
 		var customErr *common.CustomErr
@@ -264,14 +264,8 @@ func NoticeReadHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	// 構造体にマッピング
-	bRead := model.NoticeReadStatus{
-		NoticeUuid: noticeUuid,
-		UserUuid:   idAdjusted,
-	}
-
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(bRead)
+	err := noticeService.ReadNotice(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
 		var customErr *common.CustomErr

@@ -178,8 +178,6 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		userUuids = append(userUuids, userUuid)
 	}
 
-	fmt.Println(classUuids)
-
 	// classUuidsが空の場合の処理(絞り込みなしの全件取得)
 	if len(classUuids) == 0 {
 
@@ -195,10 +193,11 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 			classUuid := classMembership.ClassUuid
 			classUuids = append(classUuids, classUuid)
 		}
+
 	} else { // classUuidで絞り込まれた取得(絞り込み条件がなかったらエラーだよネ)
 		// ユーザーがクラスに所属しているかを確認する
 		classMemberships, err := model.CheckClassMemberships(userUuids, classUuids)
-		
+
 		if err != nil || classMemberships == nil {
 			logging.ErrorLog("Do not have the necessary permissions", nil)
 			return []Notice{}, common.NewErr(common.ErrTypePermissionDenied)
@@ -209,7 +208,6 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 			classUuid := classMembership.ClassUuid
 			classUuids = append(classUuids, classUuid)
 		}
-
 	}
 
 	// classUuidを条件にしてnoticeの構造体を取ってくる
@@ -223,6 +221,9 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
+
+		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
+		userUuidSave := userUuid
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
