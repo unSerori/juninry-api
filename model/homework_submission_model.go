@@ -1,10 +1,16 @@
 package model
 
+import (
+	"fmt"
+	"time"
+)
+
 // 宿題提出管理テーブル
 type HomeworkSubmission struct {
 	HomeworkUuid        string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
 	UserUuid            string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
 	ImageNameListString string `xorm:"TEXT" json:"imageNameListString"`                        // 画像ファイル名一覧 // TEXT型でUTF-8 21,845文字 // 一画像40文字と考えると最大546.125画像保存可能
+	SubmissionDate      time.Time `xorm:"DATETIME not null" json:"submissionDate"`              // 提出日時
 }
 
 // テーブル名
@@ -45,4 +51,35 @@ func StoreHomework(hwS *HomeworkSubmission) (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+// 提出状況の取得
+// 古いやつ
+func GetSubmissionStatus(userUuid string, targetMonth time.Time) ([]struct{SubmissionDate time.Time; Count int}, error) {
+	var submissionRecord [] struct {
+		SubmissionDate time.Time
+		Count          int
+	}
+
+	err := db.Table("homework_submissions").
+    Select("DATE(submission_date) AS submission_date,COUNT(*) AS count").
+    Where("user_uuid = ? and submission_date between ? and ?", userUuid, targetMonth, targetMonth.AddDate(0, 1, 0)).
+    GroupBy("submission_date").
+    Find(&submissionRecord)
+	if err != nil {
+		fmt.Println("err: ", err)
+		return nil, err
+	}
+	fmt.Println("submissionRecord: ", submissionRecord)
+	return submissionRecord, nil
+}
+
+// 課題提出状況の確認
+func CheckHomeworkSubmission(homeworkUuids []string) (int64, error) {
+	count,err := db.In("homework_uuid", homeworkUuids).Count(&HomeworkSubmission{})
+
+	if err != nil {
+		return -1, err
+	}
+	return count, nil
 }

@@ -48,6 +48,7 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
+	NoticeUuid        string    `json:"noticeUUID"`        // お知らせUUID
 	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
 	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
 	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
@@ -74,6 +75,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
+		NoticeUuid:        noticeDetail.NoticeUuid,        // お知らせUUID
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時

@@ -51,6 +51,9 @@ func routing(engine *gin.Engine) {
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
 				{
+					// 課題の提出状況を雑に取得する
+					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
+
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 

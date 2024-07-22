@@ -56,3 +56,13 @@ func CreateTeachingMaterialTestData() {
 	}
 	db.Insert(tm3)
 }
+
+// クラスIDから教材一覧を取得
+func FindTeachingMaterials(classUuids []string) ([]TeachingMaterial, error) {
+	var teachingMaterials []TeachingMaterial
+	err := db.In("class_uuid", classUuids).Find(&teachingMaterials)
+	if err != nil {
+		return nil, err
+	}
+	return teachingMaterials, nil
+}
