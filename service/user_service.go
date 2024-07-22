@@ -116,3 +116,5 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 
 	return token, nil
 }
+
+// ポイントをアップデート

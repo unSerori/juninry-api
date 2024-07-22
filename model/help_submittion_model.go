@@ -6,10 +6,10 @@ import (
 
 // ごほうび交換記録テーブル
 type HelpSubmittion struct {
-	HelpSubmittionId int       `xorm:"pk autoincr" json:"helpSubmittionId"` // おてつだいID
-	UserUuid         string    `xorm:"varchar(36) pk" json:"userUUID"`      // ユーザーID
-	HelpUuid         string    `xorm:"varchar(36) pk" json:"helpUUID"`      // おてつだいID
-	SubmittionAt     time.Time `xorm:"TEXT" json:"submittionAt"`            // 提出日時
+	HelpSubmittionId int       `xorm:"pk autoincr pk" json:"helpSubmittionId"` // おてつだいID
+	UserUuid         string    `xorm:"varchar(36)" json:"userUUID"`      // ユーザーID
+	HelpUuid         string    `xorm:"varchar(36)" json:"helpUUID"`      // おてつだいID
+	SubmittionAt     time.Time `xorm:"DATETIME not null" json:"submittionAt"`            // 提出日時
 }
 
 // テーブル名
@@ -41,7 +41,7 @@ func GetHelpSubmittions(userUuid string) ([]HelpSubmittion, error) {
 }
 
 // おてつだいの記録を登録
-func StoreHelpSubmittion(help *HelpSubmittion) (bool, error) {
+func StoreHelpSubmittion(help HelpSubmittion) (bool, error) {
 	affected, err := db.Insert(help)
 	if err != nil || affected == 0 {
 		return false, err

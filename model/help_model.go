@@ -2,12 +2,12 @@ package model
 
 // 課題テーブル
 type Help struct { // typeで型の定義, structは構造体
-	HelpUuid    string `xorm:"varchar(36) pk" json:"helpUUID"`  // タスクのID
-	OuchiUuid   string `xorm:"varchar(36) pk" json:"ouchiUUID"` // タスクのID
-	RewardPoint int    `xorm:"not null" json:"rewardPoint"`     // 教材ID
-	HelpNote    string `json:"helpNote"`                        // 開始ページ
-	HelpTitle   string `xorm:"not null" json:"helpTitle"`       // ページ数
-	IconId      int    `xorm:"not null" json:"iconId"`          // 投稿者ID
+	HelpUuid    string `xorm:"varchar(36) pk" json:"helpUUID"` // タスクのID
+	OuchiUuid   string `xorm:"varchar(36)" json:"ouchiUUID"`   // タスクのID
+	RewardPoint int    `xorm:"not null" json:"rewardPoint"`    // 教材ID
+	HelpNote    string `json:"helpNote"`                       // 開始ページ
+	HelpTitle   string `xorm:"not null" json:"helpTitle"`      // ページ数
+	IconId      int    `xorm:"not null" json:"iconId"`         // 投稿者ID
 }
 
 // テーブル名
@@ -52,6 +52,21 @@ func CreateHelpTestData() {
 func CreateHelp(record Help) (int64, error) {
 	affected, err := db.Nullable("invite_code", "valid_until").Insert(record)
 	return affected, err
+}
+
+// おてつだいを取得
+func GetHelp(ouchiUuid string) (Help, error) {
+	//結果格納用変数
+	var help Help
+	//ouchiUuidで絞り込んで全取得
+	_, err := db.Where("ouchi_uuid =?", ouchiUuid).Get(
+		&help,
+	)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return Help{}, err
+	}
+	return help, nil
 }
 
 // 複数のおてつだいを取得
