@@ -74,10 +74,10 @@ func routing(engine *gin.Engine) {
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
 
 					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
-					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler) // /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ
@@ -86,7 +86,7 @@ func routing(engine *gin.Engine) {
 
 					// クラスに所属する人間たちを返す
 					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
-					
+
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 
@@ -111,7 +111,38 @@ func routing(engine *gin.Engine) {
 
 					// おうちに所属
 					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+					helps := ouchies.Group("/helps")
+					{
+
+						//おてつだいを取得
+						helps.GET("/helps", controller.GetHelpsHandler) // /v1/auth/users/ouchies/register
+
+						// おてつだいを追加
+						helps.POST("/register", middleware.SingleExecutionMiddleware(), controller.CreateHelpHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+						// おてつだいを消化
+						helps.POST("/submittion", controller.HelpSubmittionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+					}
+
+					rewards := ouchies.Group("/rewards")
+					{
+
+						// ご褒美を取得
+						rewards.GET("/rewards", controller.RegisterOuchiHandler) // /v1/auth/users/ouchies/register
+
+						// ごほうびを追加
+						rewards.POST("/register", middleware.SingleExecutionMiddleware(), controller.CreateRewardHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+						// ごほうびを交換
+						rewards.POST("/exchange", controller.RewardsExchangeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+						// 交換されたご褒美を消化
+						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+					}
+
 				}
+
 			}
 		}
 	}
