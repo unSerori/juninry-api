@@ -28,7 +28,7 @@ func (s *OuchiService) generateOuchiInviteCode(bOuchi model.Ouchi) (model.Ouchi,
 	maxAttempts := 10
 	for i := 0; i < maxAttempts; i++ {
 		// 招待コードを作る
-		inviteCode, err := rand.Int(rand.Reader, big.NewInt(10000))
+		inviteCode, err := rand.Int(rand.Reader, big.NewInt(1000000))
 		if err != nil {
 			continue // breakみたいなもん？
 		}

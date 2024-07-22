@@ -414,6 +414,36 @@ SSH URL:
 </details>
 
 <details>
+  <summary>特定のお知らせ既読一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/notices/status/{notice_uuid}`
+- **メソッド:** GET
+- **説明:** 先生が特定のお知らせの生徒の既読情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200　OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+        {
+          "StudentNo": 0,   //定義がないので0デス
+          "UserName": "test oooo",
+          "GenderCode": null, //定義がないのでnullです 
+          "ReadStatus": 0
+        }
+        ],
+        "srvResMsg": "Successful noticeStatus get."
+      }
+      ```
+
+</details>
+
+<details>
   <summary>所属クラス一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/classes/affiliations`
@@ -592,7 +622,7 @@ SSH URL:
 </details>
 
 <details>
-  <summary>おうちを新規作成するエンドポイント</summary>
+  <summary>おうちを新規登録するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/register`
 - **メソッド:** POST

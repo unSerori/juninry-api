@@ -39,6 +39,16 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+	user3 := &User{
+		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		UserName:    "test teacher",
+		UserTypeId:  1,
+		MailAddress: "test-teacher@gmail.com",
+		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
+		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
+	}
+	db.Insert(user3)
+
 	user4 := &User{
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
@@ -201,7 +211,7 @@ func IsPatron(userUuid string) (bool, error) {
 	return isPatron, nil
 }
 
-// アカウントタイプがガキかどうか判定して真偽値を返す
+// アカウントタイプがおこさまかどうか判定して真偽値を返す
 func IsJunior(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
 	// TODO: ガキのみに制限する
@@ -237,5 +247,10 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	return affected, err
 }
 
-
-
+// ouchiUuidとclassUuidからおこさまを取得
+func GetJunior(ouchiUuid string)(User, error) {
+	//junior
+	var junior User
+	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
+	return junior, err
+}
