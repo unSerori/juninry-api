@@ -1,6 +1,7 @@
 package route
 
 import (
+	"juninry-api/common"
 	"juninry-api/controller"
 	"juninry-api/logging"
 	"juninry-api/middleware"
@@ -23,7 +24,7 @@ func routing(engine *gin.Engine) {
 	v1 := engine.Group("/v1")
 	{
 		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test
+		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
 
 		// usersグループ
 		users := v1.Group("/users")
@@ -53,8 +54,11 @@ func routing(engine *gin.Engine) {
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
+					// 次の日が期限の課題一覧を取得
+					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+
 					// 宿題の提出
-					homeworks.POST("/submit", controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit
+					homeworks.POST("/submit", middleware.LimitReqBodySize(common.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
 
 				// noticeグループ
@@ -67,15 +71,22 @@ func routing(engine *gin.Engine) {
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
 
 					//　お知らせ新規登録
-					notices.POST("/register", controller.RegisterNoticeHandler)	// /v1/auth/users/notices/register
+					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+
+					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ
 				classes := users.Group("/classes")
 				{
+
+					// クラスに所属する人間たちを返す
+					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
+					
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 
@@ -120,6 +131,9 @@ func loadingStaticFile(engine *gin.Engine) {
 func SetupRouter() (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
+
+	// マルチパートフォームのメモリ使用制限を設定
+	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
 	routing(engine)

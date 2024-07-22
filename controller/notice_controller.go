@@ -3,14 +3,13 @@ package controller
 import (
 	"errors"
 	"fmt"
-	common "juninry-api/common"
+	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-sql-driver/mysql"
 )
 
 var noticeService = service.NoticeService{} // サービスの実体を作る。
@@ -48,26 +47,28 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	idAdjusted := id.(string) // アサーション
 	fmt.Println(idAdjusted)   //　アサーションの確認
 
+	// 構造体にidを設定
+	bNotice.UserUuid = idAdjusted
+
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
-		// 処理で発生したエラーのうちDB関連のエラーのみ
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
-			// 本処理時のエラーごとに処理(:DBエラー)
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
-				// エラーログ(同じお知らせが存在してる)
-				logging.ErrorLog("There is already a notice with the same primary key. Uniqueness constraint violation.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				ctx.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			default:
+		// エラータイプを定義
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypePermissionDenied: // 非管理者ユーザーの場合
 				// エラーログ
-				logging.ErrorLog("New user registration was not possible due to other DB problems.", err)
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
 				// レスポンス
 				resStatusCode := http.StatusBadRequest
 				ctx.JSON(resStatusCode, gin.H{
@@ -75,33 +76,17 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 					"srvResData": gin.H{},
 				})
 			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
-		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *common.CustomErr
-		if errors.As(err, &serviceErr) {
-			// 本処理時のエラーごとに処理(:DBエラー以外)
-			switch serviceErr.Type {
-			case common.ErrTypeGenTokenFailed: // トークンの作成に失敗
-				// エラーログ(トークンの生成に失敗)
-				logging.ErrorLog("Failed to generate token.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				ctx.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			default:
-				// エラーログ(新規ユーザー登録が他の問題によりできない)
-				logging.ErrorLog("New user registration was not possible due to other problems.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
-				ctx.JSON(resStatusCode, gin.H{
-					"srvResMsg":  http.StatusText(resStatusCode),
-					"srvResData": gin.H{},
-				})
-			}
-		}
-		return // エラーレスポンス後に終了
+		return
 	}
 
 	// 処理後の成功
@@ -119,28 +104,72 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 // お知らせ1件取得
 func GetNoticeDetailHandler(ctx *gin.Context) {
 
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	fmt.Println(idAdjusted)   //　アサーションの確認
+
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
 	//お知らせのレコードを取ってくる
 	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid)
-	if err != nil {
-		// エラーログ
-		logging.ErrorLog("notice find error", err)
-		// レスポンス
-		ctx.JSON(http.StatusBadRequest, gin.H{})
-
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeNoResourceExist: // リソースがなく見つからない
+				// エラーログ
+				logging.ErrorLog("Not Found.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+		}
 		return
 	}
 
 	// 成功ログ
 	logging.SuccessLog("Successful noticeDetail get.")
 	// レスポンス(StatusOK　成功200番)
-	ctx.JSON(http.StatusOK, gin.H{
-		"srvResMsg":  "Successful noticeDetail get.",
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
 		"srvResData": noticeDetail,
 	})
-
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
@@ -172,35 +201,38 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
+		// 処理で発生したエラーのうちカスタムエラーのみ
 		var serviceErr *common.CustomErr
-		if errors.As(err, &serviceErr) { // カスタムエラーの場合
+		if errors.As(err, &serviceErr) {
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case common.ErrTypePermissionDenied:
+				// エラーログ(権限無し)
 				logging.ErrorLog("Do not have the necessary permissions", err)
+				// レスポンス
 				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
 				return
-			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
-				logging.ErrorLog("Max attempts reached", err)
+			default:
+				// エラーログ
+				logging.ErrorLog("aiueos", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			}
-		} else {
-			// エラーログ
-			logging.ErrorLog("notice find error", err)
-			// レスポンス(StatusInternalServerError サーバーエラー500番)
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"srvResData": gin.H{},
-			})
-			return //　<-返すよって型指定してないから切り上げるだけ
 		}
-		resStatusCode := http.StatusBadRequest
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
+		// エラーログ
+		logging.ErrorLog("notice find error", err)
+		// レスポンス(StatusInternalServerError サーバーエラー500番)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"srvResData": gin.H{},
 		})
-		return
+		return //　<-返すよって型指定してないから切り上げるだけ
 	}
 
 	// レスポンス(StatusOK　成功200番)
@@ -241,40 +273,29 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 登録処理と失敗レスポンス
 	err := noticeService.ReadNotice(bRead)
 	if err != nil { // エラーハンドル
-		// 処理で発生したエラーのうちDB関連のエラーのみ
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // 第一引数のerrが第二引数の型にキャスト可能ならキャストしてtrue
-			// 本処理時のエラーごとに処理(:DBエラー)
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
+		// カスタムエラーを仕分ける
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
-				logging.ErrorLog("It has already been processed as read.", err)
+				logging.ErrorLog("Conflict.", err)
 				// レスポンス
-				resStatusCode := http.StatusBadRequest
+				resStatusCode := http.StatusConflict
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			default:
-				// エラーログ
-				logging.ErrorLog("New user registration was not possible due to other DB problems.", err)
-				// レスポンス
-				resStatusCode := http.StatusBadRequest
+			case common.ErrTypePermissionDenied: // 権限なし
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			}
-		}
-
-		// 処理で発生したエラーのうちDB関連でないもの
-		var serviceErr *common.CustomErr
-		if errors.As(err, &serviceErr) {
-			// 本処理時のエラーごとに処理(:DBエラー以外)
-			switch serviceErr.Type {
-			case common.ErrTypeHashingPassFailed: // ハッシュ化に失敗
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
-				logging.ErrorLog("New user registration was not possible due to other problems.", err)
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
 				// レスポンス
 				resStatusCode := http.StatusBadRequest
 				ctx.JSON(resStatusCode, gin.H{
@@ -282,8 +303,17 @@ func NoticeReadHandler(ctx *gin.Context) {
 					"srvResData": gin.H{},
 				})
 			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
 		}
-		return // エラーレスポンス後に終了
+		return
 	}
 
 	// 処理後の成功
@@ -296,6 +326,76 @@ func NoticeReadHandler(ctx *gin.Context) {
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},
+	})
+
+}
+
+// 特定のお知らせ既読一覧取得
+func GetNoticestatusHandler(ctx *gin.Context) {
+
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	//notice_uuidの取得
+	noticeUuid := ctx.Param("notice_uuid")
+
+	fmt.Println("noticeUuid：" + noticeUuid)
+
+	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
+	// 取得できなかった時のエラーを判断
+	if err != nil {
+		// 処理で発生したエラーのうちカスタムエラーのみ
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) {
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied:
+				// エラーログ(権限無し)
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			default:
+				// エラーログ(権限無し)
+				logging.ErrorLog("StatusBadRequest", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
+		// エラーログ
+		logging.ErrorLog("notice find error", err)
+		// レスポンス(StatusInternalServerError サーバーエラー500番)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"srvResData": gin.H{},
+		})
+		return //　<-返すよって型指定してないから切り上げるだけ
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful noticeStatus get.")
+	// レスポンス(StatusOK　成功200番)
+	ctx.JSON(http.StatusOK, gin.H{
+		"srvResMsg":  "Successful noticeStatus get.",
+		"srvResData": noticeStatus,
 	})
 
 }

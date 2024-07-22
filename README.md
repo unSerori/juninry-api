@@ -46,7 +46,35 @@ SSH URL:
 
 ### エンドポインツ
 
-#### ユーザを作成するエンドポイント
+<details>
+  <summary>サーバー側で疎通確認するエンドポイント</summary>
+
+- **URL:** `/v1/test/cfmreq`
+- **メソッド:** GET
+- **説明:** 鯖側でリクエストが受け取れたか確認できる。グループを作ったときの疎通を確かめたりする野に使う。
+- **リクエスト:**
+  - ヘッダー:
+  - ボディ:
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResCode": "OK",
+        "srvResData": {
+          "message": "hello go server!"
+        }
+      }      
+      ```
+
+</details>
+
+</details>
+
+<details>
+  <summary>ユーザを作成するエンドポイント</summary>
 
 - **URL:** `/v1/users/register`
 - **メソッド:** POST
@@ -78,7 +106,78 @@ SSH URL:
       }
       ```
 
-#### クラスの課題情報一覧を取得するエンドポイント
+</details>
+
+<details>
+  <summary>ログインするエンドポイント</summary>
+
+- **URL:** `/v1/users/login`
+- **メソッド:** POST
+- **説明:** メアドとパスワードでログインし、トークンを取得する
+- **リクエスト:**
+- ヘッダー:
+  - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "mailAddress": "test-pupil@gmail.com",
+      "password": "C@tp"
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+  - ボディ:
+
+    ```json
+    {
+      "srvResMsg":  "OK",
+      "srvResData": {
+        "authenticationToken": "token@hogeta"
+      },
+    }
+    ```
+
+</details>
+
+<details>
+  <summary>ユーザー情報を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/auth/users/user`
+- **メソッド:** GET
+- **説明:** jwtから取得したidからユーザーを検索して情報を返す
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: ＊ステータスコード ステータス＊
+    - ボディ:
+      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
+
+      ```json
+      {
+        "srvResMsg":  "Successful user get.",
+        "srvResData": {
+          "userData": {
+            "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+            "userName": "test pupil",
+            "userTypeId": 2,
+            "mailAddress": "test-pupil@gmail.com",
+            "password": "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW",
+            "jwtUUID": "14dea318-8581-4cab-b233-995ce8e1a948",
+            "ouchiUUID": null
+          }
+        }
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>クラスの課題情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/homeworks/upcoming`
 - **メソッド:** GET
@@ -116,7 +215,41 @@ SSH URL:
         }
       ```
 
-#### おてがみ情報一覧を取得するエンドポイント
+</details>
+
+<details>
+  <summary>終了した宿題を提出するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/submit`
+- **メソッド:** POST
+- **説明:** 宿題を提出する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: multipart/form-data
+    - `Authorization`: (string) 認証トークン
+  - ボディ: Form
+    - Form Fields - 宿題のID
+      - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
+    - Files - 提出する宿題の画像
+      - images: page_67.jpg
+      - images: page_68.png
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>おてがみ情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/notice/notices`
 - **メソッド:** GET
@@ -132,83 +265,230 @@ SSH URL:
 
       ```json
       {
-        "srvResData": {
-        "notices": [
-          {
-            "NoticeUuid": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
-            "NoticeTitle": "【持ち物】おべんとうとぞうきん",
-            "NoticeDate": "2024-07-11T00:42:57Z",
-            "UserName": "test teacher",
-            "ClassUuid": "09eba495-fe09-4f54-a856-9bea9536b661",
-            "ClassName": "3-2 ふたば学級",
-            "ReadStatus": 0
-          }
-        ]}      
+          "noticeTitle": "【持ち物】習字道具必要です",
+          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+          "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
       }
       ```
 
-#### おてがみの詳細情報を取得するエンドポイント
+</details>
+
+<details>
+  <summary>おてがみの詳細情報を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/notice/{notice_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
-  - ボディ:
-    ＊さまざまな形式のボディ値＊
+    - `Authorization`: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-        
+          "noticeTitle": "【持ち物】習字道具必要です",
+          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+          "noticeDate": "2024-07-16T00:45:47Z",
+          "userName": "test teacher",
+          "className": "3-2 ふたば学級",
+          "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+          "readStatus": 0
         },
+        "srvResMsg": "OK"
       }
       ```
 
-#### ユーザー情報を取得するエンドポイント
+</details>
 
-- **URL:** `/v1/auth/auth/users/user`
-- **メソッド:** GET
-- **説明:** jwtから取得したidからユーザーを検索して情報を返す
+<details>
+  <summary>お知らせの新規登録するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/notice/register`
+- **メソッド:** POST
+- **説明:** お知らせの新規登録をする
 - **リクエスト:**
   - ヘッダー:
     - `Content-Type`: application/json
     - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+      {
+        "srvResData": {
+          "notices": {
+            "NoticeTitle": "【持ち物】習字道具必要です",
+            "NoticeDate": "2024-06-11T03:23:39Z",
+            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+        }},
+      }
+    ```
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 Created
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "Successful user get.",
         "srvResData": {
-          "userData": {
-            "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
-            "userName": "test pupil",
-            "userTypeId": 2,
-            "mailAddress": "test-pupil@gmail.com",
-            "password": "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW",
-            "jwtUUID": "14dea318-8581-4cab-b233-995ce8e1a948",
-            "ouchiUUID": null
-          }
-        }
+          "authenticationToken": "トークン",
+          "srvResMsg": "OK"
+        },
       }
       ```
 
-#### クラスを新規登録するエンドポイント
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>お知らせ既読処理をするエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
+- **メソッド:** POST
+- **説明:** notice_read_statusにデータを追加する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+  
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "OK" 
+      }
+      ```
+
+<details>
+  <summary>クラスメイトを取得するエンドポイント</summary>
+
+- **URL:** `/＊エンドポイントパス＊`
+- **メソッド:** GET
+- **説明:** 自分のクラスのクラスメイトを取得
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+
+- **レスポンス:**
+  - ステータスコード: ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+            {
+              "className": "3-2 ふたば学級",
+              "juniorData": [
+                {
+                  "userName": "test pupil",
+                  "genderId": 1
+                }
+              ]
+            }
+        ],
+        "srvResMsg": "OK"
+      }
+      ```
+
+</details>
+
+</details>
+
+<details>
+  <summary>特定のお知らせ既読一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/notices/status/{notice_uuid}`
+- **メソッド:** GET
+- **説明:** 先生が特定のお知らせの生徒の既読情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200　OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+        {
+          "StudentNo": 0,   //定義がないので0デス
+          "UserName": "test oooo",
+          "GenderCode": null, //定義がないのでnullです 
+          "ReadStatus": 0
+        }
+        ],
+        "srvResMsg": "Successful noticeStatus get."
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所属クラス一覧を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/classes/affiliations`
+- **メソッド:** GET
+- **説明:** 子供、教師は自身の所属するクラスを、親は子供たちの所属するクラスの一覧を取得
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+
+- **レスポンス:**
+  - ステータスコード: 200
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {
+        "classes": [
+          {
+            "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+            "className": "3-2 ふたば学級"
+          },,,
+        ]
+      },
+      "srvResMsg": "OK"
+    }
+    ```
+
+  - ステータスコード: 404
+    - ボディ:
+
+    ```json
+    {
+      "srvResData": {},
+      "srvResMsg": "Not Found"
+    }
+    ```
+
+</details>
+
+<details>
+  <summary>クラスを新規作成するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
-- **説明:** ＊クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。＊
+- **説明:** クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
@@ -247,11 +527,14 @@ SSH URL:
       }
       ```
 
-#### クラスの招待IDを更新するエンドポイント
+</details>
+
+<details>
+  <summary>クラスの招待IDを更新するエンドポイント</summary>
 
 - **URL:** `v1/auth/users/classes/refresh/{class_uuid}`
 - **メソッド:** PUT
-- **説明:** ＊クラスの招待IDを更新する＊
+- **説明:** クラスの招待IDを更新する
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
@@ -291,7 +574,10 @@ SSH URL:
         }
         ```
 
-#### クラスに所属するエンドポイント
+</details>
+
+<details>
+  <summary>クラスに所属するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/classes/join/:invite_code`
 - **メソッド:** POST
@@ -333,163 +619,14 @@ SSH URL:
     }
     ```
 
-### 所属クラス一覧を取得するエンドポイント
+</details>
 
-- **URL:** `/v1/auth/users/classes/affiliations`
-- **メソッド:** GET
-- **説明:** 子供、教師は自身の所属するクラスを、親は子供たちの所属するクラスの一覧を取得
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: application/json
-
-- **レスポンス:**
-  - ステータスコード: 200
-    - ボディ:
-
-    ```json
-    {
-      "srvResData": {
-        "classes": [
-          {
-            "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
-            "className": "3-2 ふたば学級"
-          },,,
-        ]
-      },
-      "srvResMsg": "OK"
-    }
-    ```
-
-  - ステータスコード: 404
-    - ボディ:
-
-    ```json
-    {
-      "srvResData": {},
-      "srvResMsg": "Not Found"
-    }
-    ```
-
-#### ログインするエンドポイント
-
-- **URL:** `/v1/users/login`
-- **メソッド:** POST
-- **説明:** メアドとパスワードでログインし、トークンを取得する
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: application/json
-  - ボディ:
-
-    ```json
-    {
-      "mailAddress": "test-pupil@gmail.com",
-      "password": "C@tp"
-    }
-    ```
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "OK",
-        "srvResData": {
-          "authenticationToken": "token@hogeta"
-        },
-      }
-      ```
-
-#### 終了した宿題を提出するエンドポイント
-
-- **URL:** `/v1/auth/users/homeworks/submit`
-- **メソッド:** POST
-- **説明:** 宿題を提出する
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: multipart/form-data
-    - `Authorization`: (string) 認証トークン
-  - ボディ: Form - 宿題のID
-    - Form Fields
-      - homeworkUUID: a3579e71-3be5-4b4d-a0df-1f05859a7104,
-    - Files - 提出する宿題の画像
-      - images: page_67.jpg
-      - images: page_68.png
-
-- **レスポンス:**
-  - ステータスコード: 201 Created
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "Created",
-        "srvResData": {
-        },
-      }
-      ```
-
-#### お知らせの新規登録するエンドポイント
-
-- **URL:** `/v1/auth/users/notice/register`
-- **メソッド:** POST
-- **説明:** お知らせの新規登録をする
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: application/json
-    - `Authorization`: (string) 認証トークン
-  - ボディ:
-
-    ```json
-      {
-        "srvResData": {
-          "notices": {
-            "NoticeTitle": "【持ち物】習字道具必要です",
-            "NoticeDate": "2024-06-11T03:23:39Z",
-            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
-            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
-        }},
-      }
-    ```
-
-- **レスポンス:**
-  - ステータスコード: 200 Created
-    - ボディ:
-
-      ```json
-      {
-        "srvResData": {
-          "authenticationToken": "トークン",
-          "srvResMsg": "OK"
-        },
-      }
-      ```
-
-#### お知らせ既読処理をするエンドポイント
-
-- **URL:** `/v1/auth/users/notices/read/{notice_uuid}`
-- **メソッド:** POST
-- **説明:** notice_read_statusにデータを追加する
-- **リクエスト:**
-  - ヘッダー:
-    - `Authorization`: (string) 認証トークン
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-  
-      ```json
-      {
-        "srvResData": {},
-        "srvResMsg": "OK" 
-      }
-      ```
-
-#### おうちを新規登録するエンドポイント
+<details>
+  <summary>おうちを新規登録するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/register`
 - **メソッド:** POST
-- **説明:** ＊おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。＊
+- **説明:** おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
@@ -502,7 +639,10 @@ SSH URL:
     }
     ```
 
-#### おうち招待コード更新するエンドポイント
+</details>
+
+<details>
+  <summary>おうち招待コード更新するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/refresh/{ouchi_uuid}`
 - **メソッド:** PUT
@@ -527,7 +667,10 @@ SSH URL:
       }
       ```
 
-#### おうちに所属するエンドポイント
+</details>
+
+<details>
+  <summary>おうちに所属するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/join/{invite_code}`
 - **メソッド:** POST
@@ -549,9 +692,12 @@ SSH URL:
         }      
       ```
 
+</details>
+
 ### API仕様書てんぷれ
 
-#### ＊○○＊するエンドポイント
+<details>
+  <summary>＊○○＊するエンドポイント</summary>
 
 - **URL:** `/＊エンドポイントパス＊`
 - **メソッド:** ＊HTTPメソッド名＊
@@ -576,6 +722,8 @@ SSH URL:
       }
       ```
 
+</details>
+
 ## エラー処理
 
 APIがエラーを返す場合、詳細なエラーメッセージが含まれます。~~エラーに関する情報は[サーバーエラー]を参照してください。~~
@@ -597,6 +745,7 @@ MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
 MYSQL_DATABASE=使用するdatabase名
 JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
+MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
 
 ## 開発者

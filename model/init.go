@@ -34,7 +34,6 @@ func MigrationTable() error {
 			logging.ErrorLog("Failed to sync database.", err)
 			return err
 		}
-
 	}
 
 	// FK
