@@ -124,6 +124,10 @@ Authorization: {{jwt}}
 GET {{base_url}}{{api_v}}/auth/users/notices/{{notice_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
+### クラスメイト取得
+GET {{base_url}}{{api_v}}/auth/users/classes/users HTTP/1.1
+Authorization: {{jwt}}
+
 ### 所属しているクラス一覧取得
 GET {{base_url}}{{api_v}}/auth/users/classes/affiliations HTTP/1.1
 Authorization: {{jwt}}

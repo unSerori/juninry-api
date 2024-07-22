@@ -18,14 +18,14 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUuid"`              // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
 	TeachingMaterialName      string `json:"teachingMaterialName"`      // 教材名
 	SubjectId                 int    `json:"subjectId"`                 // 教科ID
 	SubjectName               string `json:"subjectName"`               // 教科名
-	TeachingMaterialImageUuid string `json:"teachingMaterialImageUuid"` // 画像ID どういう扱いになるのかな
+	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
 	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
 }
@@ -35,6 +35,14 @@ type TransformedData struct {
 	HomeworkLimit time.Time      `json:"homeworkLimit"` //提出期限
 	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
 }
+
+// クラスごとに課題データをまとめた構造体
+type ClassHomeworkSummary struct {
+	ClassName string      `json:"className"` //提出期限
+	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+}
+
+
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
@@ -68,6 +76,48 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	for limit, homeworkData := range transformedDataMap {
 		transformedData := TransformedData{
 			HomeworkLimit: limit,
+			HomeworkData:  homeworkData,
+		}
+		transformedDataList = append(transformedDataList, transformedData)
+	}
+
+	//できたら返す
+	return transformedDataList, nil
+}
+
+
+// userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
+func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
+
+	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
+	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	if err != nil { //エラーハンドル エラーを上に投げるだけ
+		return nil, err
+	}
+
+	// クラス名をキー、バリューを課題データのマップにする
+	transformedDataMap := make(map[string][]HomeworkData)
+	for _, userHomework := range userHomeworkList {
+		homeworkData := HomeworkData{
+			HomeworkUuid:              userHomework.HomeworkUuid,
+			StartPage:                 userHomework.StartPage,
+			PageCount:                 userHomework.PageCount,
+			HomeworkNote:              userHomework.HomeworkNote,
+			TeachingMaterialName:      userHomework.TeachingMaterialName,
+			SubjectId:                 userHomework.SubjectId,
+			SubjectName:               userHomework.SubjectName,
+			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
+			ClassName:                 userHomework.ClassName,
+			SubmitFlag:                userHomework.SubmitFlag,
+		}
+		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
+	}
+
+	//作ったマップをさらに整形
+	var transformedDataList []ClassHomeworkSummary
+	for className, homeworkData := range transformedDataMap {
+		transformedData := ClassHomeworkSummary{
+			ClassName: className,
 			HomeworkData:  homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)

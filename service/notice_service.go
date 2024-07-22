@@ -157,7 +157,8 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 
 	// userUuidを条件にしてclassUuidを取ってくる
 	// 1 - userUuidからclass_membershipの構造体を取ってくる
-	classMemberships, err := model.FindClassMemberships(userUuid)
+	userUUIDs := []string{userUuid}
+	classMemberships, err := model.FindClassMemberships(userUUIDs)
 	if err != nil {
 		return nil, err
 	}
