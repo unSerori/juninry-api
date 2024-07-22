@@ -45,6 +45,9 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
+	fmt.Println(idAdjusted)   //　アサーションの確認
+
+	// 構造体にidを設定
 	bNotice.UserUuid = idAdjusted
 
 	// 登録処理と失敗レスポンス
@@ -100,6 +103,22 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 
 // お知らせ1件取得
 func GetNoticeDetailHandler(ctx *gin.Context) {
+
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	fmt.Println(idAdjusted)   //　アサーションの確認
 
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
@@ -170,7 +189,6 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
 	notices, err := noticeService.FindAllNotices(idAdjusted)
@@ -179,28 +197,28 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		// 処理で発生したエラーのうちカスタムエラーのみ
 		var serviceErr *common.CustomErr
 		if errors.As(err, &serviceErr) {
-				switch serviceErr.Type {
-				case common.ErrTypePermissionDenied :
-						// エラーログ(権限無し)
-						logging.ErrorLog("Do not have the necessary permissions", err)
-						// レスポンス
-						resStatusCode := http.StatusForbidden
-						ctx.JSON(resStatusCode, gin.H{
-							"srvResMsg":  http.StatusText(resStatusCode),
-							"srvResData": gin.H{},
-						})
-						return
-					default: 
-					// エラーログ(権限無し)
-					logging.ErrorLog("aiueos", err)
-					// レスポンス
-					resStatusCode := http.StatusBadRequest
-					ctx.JSON(resStatusCode, gin.H{
-						"srvResMsg":  http.StatusText(resStatusCode),
-						"srvResData": gin.H{},
-					})
-				}
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied:
+				// エラーログ(権限無し)
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			default:
+				// エラーログ
+				logging.ErrorLog("aiueos", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			}
+		}
 		// エラーログ
 		logging.ErrorLog("notice find error", err)
 		// レスポンス(StatusInternalServerError サーバーエラー500番)
@@ -301,6 +319,76 @@ func NoticeReadHandler(ctx *gin.Context) {
 		"srvResData": gin.H{
 			//TODO:返すものがあるなら入れる
 		},
+	})
+
+}
+
+// 特定のお知らせ既読一覧取得
+func GetNoticestatusHandler(ctx *gin.Context) {
+
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	//notice_uuidの取得
+	noticeUuid := ctx.Param("notice_uuid")
+
+	fmt.Println("noticeUuid：" + noticeUuid)
+
+	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
+	// 取得できなかった時のエラーを判断
+	if err != nil {
+		// 処理で発生したエラーのうちカスタムエラーのみ
+		var serviceErr *common.CustomErr
+		if errors.As(err, &serviceErr) {
+			switch serviceErr.Type {
+			case common.ErrTypePermissionDenied:
+				// エラーログ(権限無し)
+				logging.ErrorLog("Do not have the necessary permissions", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			default:
+				// エラーログ(権限無し)
+				logging.ErrorLog("StatusBadRequest", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		}
+		// エラーログ
+		logging.ErrorLog("notice find error", err)
+		// レスポンス(StatusInternalServerError サーバーエラー500番)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"srvResData": gin.H{},
+		})
+		return //　<-返すよって型指定してないから切り上げるだけ
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful noticeStatus get.")
+	// レスポンス(StatusOK　成功200番)
+	ctx.JSON(http.StatusOK, gin.H{
+		"srvResMsg":  "Successful noticeStatus get.",
+		"srvResData": noticeStatus,
 	})
 
 }

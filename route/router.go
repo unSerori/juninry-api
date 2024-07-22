@@ -71,7 +71,10 @@ func routing(engine *gin.Engine) {
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+
+					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ

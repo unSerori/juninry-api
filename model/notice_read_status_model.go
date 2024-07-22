@@ -1,9 +1,13 @@
 package model
 
+import (
+	"fmt"
+)
+
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
-	OuchiUuid  string `xorm:"varchar(36) pk" json:"ouchiUUID"`  // ユーザーID
+	OuchiUuid   string `xorm:"varchar(36) pk" json:"ouchiUUID"`   // おうちID
 }
 
 // テーブル名
@@ -31,7 +35,7 @@ func InitNoticeReadStatus() error {
 func CreateNoticeReadStatusTestData() {
 	nrs1 := &NoticeReadStatus{
 		NoticeUuid: "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
-		OuchiUuid:  "2e17a448-985b-421d-9b9f-62e5a4f28c49",
+		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
 	db.Insert(nrs1)
 }
@@ -48,10 +52,28 @@ func GetNoticeReadStatus(noticeUuid string, ouchiUuid string) (bool, error) {
 	return has, nil
 }
 
-// お知らせ確認登録
-// 新しい構造体をレコードとして受け取り、NoticeReadStatusテーブルにinsertし、成功した列数とerrorを返す
-func ReadNotice(bRead NoticeReadStatus) (int64, error) {
+// noticeUuidで絞った結果を返す
+func GetNoticeStatusList(noticeUuid string) ([]NoticeReadStatus, error) {
 
-	affected, err := db.Insert(bRead)
-	return affected, err
+	// 結果を格納する変数宣言(findの結果)
+	var noticeReadStatus []NoticeReadStatus
+
+	// noticeUuidで条件指定
+	err := db.Where("notice_uuid = ?", noticeUuid).Find(&noticeReadStatus)
+	// データが取得できなかったらerrを返す
+	if err != nil {
+		return nil, err
+	}
+
+	// エラーが出なければ取得結果を返す
+	return noticeReadStatus, nil
 }
+
+// お知らせ確認登録
+func ReadNotice(noticeUuid string, ouchiUuid string) error {
+
+	affected, err := db.Insert("notice_uuid = ?, ouchi_uuid = ?", noticeUuid, ouchiUuid)
+	fmt.Println(affected)
+	return err
+}
+

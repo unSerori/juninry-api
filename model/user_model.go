@@ -38,6 +38,16 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+	user3 := &User{
+		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		UserName:    "test teacher",
+		UserTypeId:  1,
+		MailAddress: "test-teacher@gmail.com",
+		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
+		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
+	}
+	db.Insert(user3)
+
 	user4 := &User{
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
@@ -225,4 +235,12 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	// 付与処理（更新処理）
 	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
 	return affected, err
+}
+
+// ouchiUuidとclassUuidからガキを取得
+func GetJunior(ouchiUuid string)(User, error) {
+	//junior
+	var junior User
+	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
+	return junior, err
 }

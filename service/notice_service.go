@@ -1,14 +1,12 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"juninry-api/common"
 	"juninry-api/logging"
 	"juninry-api/model"
 	"time"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -48,6 +46,7 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
+	NoticeUuid        string
 	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
 	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
 	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
@@ -59,7 +58,7 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 }
 
 // お知らせ詳細取得
-func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error) {
+func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (NoticeDetail, error) {
 
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
@@ -77,18 +76,32 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
 		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
 		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
-		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 		QuotedNoticeUuid:  noticeDetail.QuotedNoticeUuid,  // 親お知らせUUID
+		NoticeUuid:        noticeDetail.NoticeUuid,        //おしらせ引用UUID
+		ClassUuid:         noticeDetail.ClassUuid,         //おしらせ引用UUID
+	}
+
+	//確認しているか取得
+	status, err := model.GetNoticeReadStatus(noticeUuid, userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	fmt.Println(status)
+	//確認していた場合、ReadStatusに1を保存する
+	formattedNotice.ReadStatus = 0
+	if status {
+		formattedNotice.ReadStatus = 1
 	}
 
 	//userUuidをuserNameに整形
-	userUuid := noticeDetail.UserUuid
-	user, nil := model.GetUser(userUuid)
+	teacherUuid := noticeDetail.UserUuid
+	teacher, nil := model.GetUser(teacherUuid)
 	if err != nil {
 		return NoticeDetail{}, err
 	}
 	//整形後formatに追加
-	formattedNotice.UserName = user.UserName // おしらせ発行ユーザ
+	formattedNotice.UserName = teacher.UserName // おしらせ発行ユーザ
 
 	//classUuidをclassNameに整形
 	classUuid := noticeDetail.ClassUuid
@@ -100,7 +113,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
 
 	//確認しているか取得
-	status, err := model.GetNoticeReadStatus(noticeDetail.NoticeUuid, userUuid)
+	status, err = model.GetNoticeReadStatus(noticeUuid, userUuid)
 	if err != nil {
 		return NoticeDetail{}, err
 	}
@@ -218,7 +231,6 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		}
 
 		//宣言したスライスに追加していく
-		// formattedAllNotices = append(formattedAllNotices, notices)
 		temp = append(temp, notices) //並べ替えるために一時的にtempに保存する
 	}
 
@@ -237,9 +249,9 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 }
 
 // noticeの既読登録
-func (s *NoticeService) ReadNotice(userUuid string, noticeUuid string) error {
+func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 
-	// クラス作成権限を持っているか確認
+	// 既読権限を持っているか確認
 	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return err
@@ -249,36 +261,123 @@ func (s *NoticeService) ReadNotice(userUuid string, noticeUuid string) error {
 		return common.NewErr(common.ErrTypePermissionDenied)
 	}
 
-	// ouchiUuidを持ってくる
 	user, err := model.GetUser(userUuid)
-	if err != nil { // エラーハンドル
+	if err != nil {
 		return err
 	}
 
-	fmt.Println("NoticeUuid:"+noticeUuid, "OuchiUuid:"+*user.OuchiUuid)
-
-	// 構造体の定義
-	bRead := &model.NoticeReadStatus{
-		NoticeUuid: noticeUuid,
-		OuchiUuid:  *user.OuchiUuid,
-	}
-
 	// 構造体をレコード登録処理に投げる
-	err = model.ReadNotice(bRead) // 第一返り血は登録成功したレコード数
-	if err != nil {               // エラーハンドル
-		// XormのORMエラーを仕分ける
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
-			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
-			}
-		}
-		// 通常の処理エラー
-    return err
+	err = model.ReadNotice(noticeUuid, *user.OuchiUuid) // 第一返り血は登録成功したレコード数
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+// 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
+type NoticeStatus struct {
+	StudentNo  int     // 出席番号
+	UserName   string  // ガキの名前
+	GenderCode *string // 性別コード(定義がないためnullにしてる)
+	ReadStatus int     // お知らせを確認しているか
+}
+
+// 特定のお知らせ既読済み一覧取得
+func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]NoticeStatus, error) {
+
+	// 取得権限を持っているか確認
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return nil, common.NewErr(common.ErrTypePermissionDenied)
+	}
+
+	//確認用です
+	fmt.Println("noticeUuid:"+noticeUuid, "userUuid:"+userUuid)
+
+	//おしらせがどのクラスのものなのかを取ってくる
+	notice, err := model.GetNoticeDetail(noticeUuid)
+	if err != nil {
+		return []NoticeStatus{}, err
+	}
+	//わかりやすよう、noticeのclassUuidだけ取ってきとく
+	classUuid := notice.ClassUuid
+
+	//お知らせの既読済おうち一覧を取ってくる(noticeReadStatus=ouchiuuidみたいなもん)
+	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
+	if err != nil {
+		return []NoticeStatus{}, err
+	}
+
+	// noticeReadStatusから既読済みガキ一覧を作る
+	var readList []model.User
+	for _, ouchi := range noticeReadStatus {
+		// ouchi.OuchiUuid としてフィールド名を大文字で始める
+		gaki, err := model.GetJunior(ouchi.OuchiUuid)
+		if err != nil {
+			return []NoticeStatus{}, err
+		}
+		// リストに追加していく
+		readList = append(readList, gaki)
+	}
+
+	//classUuidからクラス全員を取ってくる(先生は除外するためuserUuidでnotin)
+	classMemberships, err := model.FindUserByClassMemberships(classUuid, userUuid)
+	if err != nil {
+		return []NoticeStatus{}, err
+	}
+
+	// もはや、レシピみたいに書いた方がわかりやすいのでわ(脳死)
+	// classMembershipsからガキ一覧を作る(ついでに返す奴にデータを突っ込む)
+	var juniorList []model.User
+	for _, junior := range classMemberships {
+		gaki, err := model.GetUser(junior.UserUuid)
+		if err != nil {
+			return []NoticeStatus{}, err
+		}
+
+		// リストに追加していく
+		juniorList = append(juniorList, gaki)
+	}
+
+	//既読済みガキ一覧でマップを作成
+	readMap := make(map[string]bool)
+	for _, junior := range readList {
+		readMap[junior.UserUuid] = true
+	}
+
+	var temp []NoticeStatus
+
+	//juniorlistをループしてマップ検索と整形
+	for _, junior := range juniorList {
+
+		// 整形用
+		noticeStatus := NoticeStatus{}
+
+		if readMap[junior.UserUuid] {
+			noticeStatus.ReadStatus = 1 //　既読済みフラグ
+		} else {
+			noticeStatus.ReadStatus = 0 //　未読
+		}
+
+		noticeStatus.UserName = junior.UserName
+
+		temp = append(temp, noticeStatus)
+	}
+
+	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
+	var noticeStatus []NoticeStatus
+
+	// tempを逆順にしてformattedAllNoticesに追加する
+	for i := len(temp) - 1; i >= 0; i-- {
+		noticeStatus = append(noticeStatus, temp[i])
+	}
+
+	fmt.Println(noticeStatus)
+
+	return noticeStatus, err
 }
