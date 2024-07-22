@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -51,27 +50,6 @@ func StoreHomework(hwS *HomeworkSubmission) (bool, error) {
 		return false, err
 	}
 	return true, err
-}
-
-// 提出状況の取得
-// 古いやつ
-func GetSubmissionStatus(userUuid string, targetMonth time.Time) ([]struct{SubmissionDate time.Time; Count int}, error) {
-	var submissionRecord [] struct {
-		SubmissionDate time.Time
-		Count          int
-	}
-
-	err := db.Table("homework_submissions").
-    Select("DATE(submission_date) AS submission_date,COUNT(*) AS count").
-    Where("user_uuid = ? and submission_date between ? and ?", userUuid, targetMonth, targetMonth.AddDate(0, 1, 0)).
-    GroupBy("submission_date").
-    Find(&submissionRecord)
-	if err != nil {
-		fmt.Println("err: ", err)
-		return nil, err
-	}
-	fmt.Println("submissionRecord: ", submissionRecord)
-	return submissionRecord, nil
 }
 
 // 課題提出状況の確認
