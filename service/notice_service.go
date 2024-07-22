@@ -157,20 +157,19 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		}
 	} else { // classUuidで絞り込まれた取得(絞り込み条件がなかったらエラーだよネ)
 		// ユーザーがクラスに所属しているかを確認する
-		fmt.Println(userUuids)
-		fmt.Println(classUuids)
 		classMemberships, err := model.CheckClassMemberships(userUuids, classUuids)
+		
+		if err != nil || classMemberships == nil {
+			logging.ErrorLog("Do not have the necessary permissions", nil)
+			return []Notice{}, common.NewErr(common.ErrTypePermissionDenied)
+		}
+
 		// 2 - 構造体からclassUuidのスライス(配列)を作る
 		for _, classMembership := range classMemberships {
 			classUuid := classMembership.ClassUuid
 			classUuids = append(classUuids, classUuid)
 		}
-		fmt.Println("CheckClassMemberships", classUuids)
 
-		if err != nil  {
-			logging.ErrorLog("Do not have the necessary permissions", nil)
-			return []Notice{}, common.NewErr(common.ErrTypePermissionDenied)
-		}
 	}
 
 	// classUuidを条件にしてnoticeの構造体を取ってくる
