@@ -1,11 +1,9 @@
 package model
 
-import "fmt"
-
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
-	UserUuid   string `xorm:"varchar(36) pk" json:"userUUID"`   // ユーザーID
+	OuchiUuid  string `xorm:"varchar(36) pk" json:"ouchiUUID"`  // ユーザーID
 }
 
 // テーブル名
@@ -21,7 +19,7 @@ func InitNoticeReadStatus() error {
 		return err
 	}
 	// UserUuid
-	_, err = db.Exec("ALTER TABLE notice_read_statuses ADD FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
+	_, err = db.Exec("ALTER TABLE notice_read_statuses ADD FOREIGN KEY (ouchi_uuid) REFERENCES ouchies(ouchi_uuid) ON DELETE CASCADE ON UPDATE CASCADE")
 	if err != nil {
 		return err
 	}
@@ -33,16 +31,16 @@ func InitNoticeReadStatus() error {
 func CreateNoticeReadStatusTestData() {
 	nrs1 := &NoticeReadStatus{
 		NoticeUuid: "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
-		UserUuid:   "3cac1684-c1e0-47ae-92fd-6d7959759224",
+		OuchiUuid:  "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
 	db.Insert(nrs1)
 }
 
 // notice_read_statusにデータがあるか調べる(確認済みの場合、データが存在する)
-func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
+func GetNoticeReadStatus(noticeUuid string, ouchiUuid string) (bool, error) {
 
 	//noticeUuidとuserUuidから一致するデータがあるか取得
-	has, err := db.Where("notice_uuid = ? AND user_uuid = ?", noticeUuid, userUuid).Get(&NoticeReadStatus{})
+	has, err := db.Where("notice_uuid = ? AND ouchi_uuid = ?", noticeUuid, ouchiUuid).Get(&NoticeReadStatus{})
 	if err != nil {
 		return false, err
 	}
@@ -51,9 +49,9 @@ func GetNoticeReadStatus(noticeUuid string, userUuid string) (bool, error) {
 }
 
 // お知らせ確認登録
-func ReadNotice(record NoticeReadStatus) (error){
-	
-	affected, err := db.Insert(record)
-	fmt.Println(affected)
-	return err
+// 新しい構造体をレコードとして受け取り、NoticeReadStatusテーブルにinsertし、成功した列数とerrorを返す
+func ReadNotice(bRead NoticeReadStatus) (int64, error) {
+
+	affected, err := db.Insert(bRead)
+	return affected, err
 }
