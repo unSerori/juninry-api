@@ -29,6 +29,10 @@ func MigrationTable() error {
 			new(TeachingMaterial),
 			new(Homework),
 			new(HomeworkSubmission),
+			new(Help),
+			new(Reward),
+			new(HelpSubmittion),
+			new(RewardExchanging),
 		)
 		if err != nil {
 			logging.ErrorLog("Failed to sync database.", err)
@@ -86,6 +90,26 @@ func initFK() error {
 	if err != nil {
 		return err
 	}
+	// help
+	err = InitHelpFK()
+	if err != nil {
+		return err
+	}
+	// reward
+	err = InitRewardFK()
+	if err != nil {
+		return err
+	}
+	// helpSubmittion
+	err = InitHelpSubmittionFK()
+	if err != nil {
+		return err
+	}
+	// rewardExchanging
+	err = InitRewardExchangingFK()
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -99,6 +123,8 @@ func RegisterSample() {
 	CreateClassTestData()
 	CreateSubjectTestData()
 	CreateTeachingMaterialTestData()
+	CreateHelpTestData()
+	CreateRewardTestData()
 	// テスト用データ作成
 	CreateUserTestData()
 	CreateClassMembershipsTestData()
