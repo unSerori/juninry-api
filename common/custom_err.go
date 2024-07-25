@@ -33,6 +33,9 @@ const ( // ========================ここに新しい独自のエラーを追加
 
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
+
+	ErrTypeZeroEffectCUD // CUD処理の第一引数が0だったときの独自エラー
+	ErrTypeNoFoundR      // R処理の第一引数がfalse時の独自エラー
 )
 
 // エラーに対するデフォルトmsgを設定
@@ -49,6 +52,9 @@ var errTypeMsg = map[ErrType]string{
 
 	ErrTypeOtherErrorsInTheORM:       "",
 	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",
+
+	ErrTypeZeroEffectCUD: "CUD process did not affect.",
+	ErrTypeNoFoundR:      "R processing did not find.",
 }
 
 // デフォルト引数をFunctional Option Patternで実装してみる

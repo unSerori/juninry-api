@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	"juninry-api/auth"
-	"juninry-api/di"
 	"juninry-api/logging"
-	"juninry-api/model"
+	"juninry-api/route"
 	"juninry-api/scheduler"
 
 	"go.uber.org/dig"
@@ -39,22 +38,6 @@ func Init() (*InitInstances, error) {
 		return nil, err
 	}
 
-	// DB初期化
-	err = model.DBConnect() // 接続
-	if err != nil {
-		logging.ErrorLog("Failed DB connect.", err)
-		return nil, err
-	}
-	err = model.MigrationTable() // テーブル作成
-	if err != nil {
-		logging.ErrorLog("Failed migration.", err)
-		return nil, err
-	}
-	// 接続を取得
-	db := model.DBInstance()
-	db.ShowSQL(true)       // SQL文の表示
-	db.SetMaxOpenConns(10) // 接続数
-
 	// 認証関連の初期化
 	err = auth.InitAuth()
 	if err != nil {
@@ -62,8 +45,8 @@ func Init() (*InitInstances, error) {
 		return nil, err
 	}
 
-	// DIコンテナ関連
-	initInstances.Container = di.BuildContainer()
+	// DB初期化やルーティング設定など、依存関係にかかわるものの初期化とDIコンテナによる各層の依存関係登録
+	initInstances.Container = route.BuildContainer()
 
 	// スケジューラを初期化して開始
 	scheduler.StartScheduler()

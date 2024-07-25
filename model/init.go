@@ -134,6 +134,31 @@ func DBConnect() error {
 	return nil
 }
 
+// ORM初期化
+func InitDB() (*xorm.Engine, error) {
+	err := DBConnect() // DBインスタンスの生成とDBサーバー接続
+	if err != nil {
+		logging.ErrorLog("Failed DB connect.", err)
+		return nil, err
+	}
+	err = MigrationTable() // テーブル作成
+	if err != nil {
+		logging.ErrorLog("Failed migration.", err)
+		return nil, err
+	}
+
+	// 接続を取得
+	db = DBInstance()
+
+	// 設定
+	db.ShowSQL(true)       // SQL文の表示
+	db.SetMaxOpenConns(10) // 接続数
+
+	fmt.Printf("db: %v\n", db)
+
+	return db, nil
+}
+
 // 接続を取得
 func DBInstance() *xorm.Engine {
 	return db // 接続を返す

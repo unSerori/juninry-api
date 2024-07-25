@@ -22,13 +22,6 @@ func main() {
 	defer model.DBInstance().Close() // defer文でこの関数が終了した際に破棄する
 	logging.SuccessLog("Successful server init process.")
 
-	// // router設定されたengineを受け取る。
-	// router, err := route.SetupRouter()
-	// if err != nil {
-	// 	logging.ErrorLog("Couldnt receive router engine.", err) // エラー内容を出力し早期リターン
-	// 	return
-	// }
-
 	// 鯖起動  // router.Run(":4561")
 	err = initInstances.Container.Invoke( // 依存性注入コンテナから必要な依存解決を解決し、渡されたコールバック関数にcontainerが持つエンジンの実体を渡す
 		func(r *gin.Engine) { // containerが持つエンジンを受け取り鯖を起動
