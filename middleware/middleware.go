@@ -60,7 +60,7 @@ func MidAuthToken() gin.HandlerFunc {
 			// エラーログ
 			logging.ErrorLog("Authentication unsuccessful. Invalid token format or content.", nil)
 			// レスポンス
-			resStatusCode := http.StatusBadRequest
+			resStatusCode := http.StatusUnauthorized
 			ctx.JSON(resStatusCode, gin.H{
 				"srvResMsg":  http.StatusText(resStatusCode),
 				"srvResData": gin.H{},
