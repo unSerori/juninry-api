@@ -231,7 +231,7 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 	}
 
 	// スライスに格納したuseridでユーザ情報を取得
-	myClass, err := model.FindClassMemberships(idAdjusteds)
+	myClass, err := model.GetClassList(idAdjusteds)
 	if err != nil {
 		return nil, err
 	}
