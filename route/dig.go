@@ -3,9 +3,9 @@ package route
 
 import (
 	"juninry-api/application"
+	"juninry-api/common/logging"
 	"juninry-api/domain"
 	"juninry-api/infrastructure"
-	"juninry-api/logging"
 	"juninry-api/model"
 	"juninry-api/presentation"
 

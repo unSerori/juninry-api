@@ -5,9 +5,9 @@ package infrastructure
 import (
 	"errors"
 	"io"
-	"juninry-api/common"
 	"juninry-api/domain"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"mime/multipart"
 	"os"
 
@@ -107,9 +107,9 @@ func (p *TeachingMaterialPersistence) CreateTM(tm domain.TeachingMaterial) error
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 
@@ -117,7 +117,7 @@ func (p *TeachingMaterialPersistence) CreateTM(tm domain.TeachingMaterial) error
 		return err // 受け取ったエラーを返す
 	}
 	if affected == 0 {
-		return common.NewErr(common.ErrTypeNoFoundR)
+		return custom.NewErr(custom.ErrTypeNoFoundR)
 	}
 	return nil
 }

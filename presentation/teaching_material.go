@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"juninry-api/application"
-	"juninry-api/common"
+	"juninry-api/common/logging"
 	"juninry-api/domain"
-	"juninry-api/logging"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -75,10 +75,10 @@ func (h TeachingMaterialHandler) RegisterTMHandler(c *gin.Context) {
 	if err != nil {                                           // エラーハンドル
 		logging.ErrorLog("Service Error.", err)
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeFileSizeTooLarge: // 画像がでかすぎる
+			case custom.ErrTypeFileSizeTooLarge: // 画像がでかすぎる
 				// エラーログ
 				logging.ErrorLog("Payload Too Large.", err)
 				// レスポンス
@@ -87,7 +87,7 @@ func (h TeachingMaterialHandler) RegisterTMHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeInvalidFileFormat: // 画像形式が不正
+			case custom.ErrTypeInvalidFileFormat: // 画像形式が不正
 				// エラーログ
 				logging.ErrorLog("Unsupported Media Type.", err)
 				// レスポンス

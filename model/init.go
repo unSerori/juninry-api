@@ -2,11 +2,10 @@ package model
 
 import (
 	"fmt"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"xorm.io/xorm"
 )
 

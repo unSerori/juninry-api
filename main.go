@@ -1,10 +1,8 @@
 package main // package
 
 import (
-	// import
-
 	"fmt"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 
 	"github.com/gin-gonic/gin"

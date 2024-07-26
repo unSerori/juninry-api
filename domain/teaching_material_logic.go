@@ -3,8 +3,8 @@
 package domain
 
 import (
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
+	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ func (l *TeachingMaterialLogic) IntegrityStruct(id string, bTM TeachingMaterial)
 		return TeachingMaterial{}, err
 	}
 	if permission != 1 { // teacher, junior, patron
-		return TeachingMaterial{}, common.NewErr(common.ErrTypePermissionDenied)
+		return TeachingMaterial{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// ユーザーがクラスに属していることを確認
@@ -43,7 +43,7 @@ func (l *TeachingMaterialLogic) IntegrityStruct(id string, bTM TeachingMaterial)
 		return TeachingMaterial{}, err
 	}
 	if permission != 1 { // teacher, junior, patron
-		return TeachingMaterial{}, common.NewErr(common.ErrTypePermissionDenied) // teacherであっても対象クラスに属していなければ権限なし。
+		return TeachingMaterial{}, custom.NewErr(custom.ErrTypePermissionDenied) // teacherであっても対象クラスに属していなければ権限なし。
 	}
 
 	// 教科があるか
@@ -52,7 +52,7 @@ func (l *TeachingMaterialLogic) IntegrityStruct(id string, bTM TeachingMaterial)
 		return TeachingMaterial{}, err
 	}
 	if permission != 1 { // teacher, junior, patron
-		return TeachingMaterial{}, common.NewErr(common.ErrTypeNoResourceExist)
+		return TeachingMaterial{}, custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// 問題ないので構造体を返す
@@ -66,8 +66,8 @@ func (l *TeachingMaterialLogic) ValidateImage(form *multipart.Form) (string, err
 	image := form.File["image"][0]
 
 	// 保存先ディレクトリの確保
-	dst := "./upload/homework"
-	l.r.CreateDstDir("./upload/t_material", 0644)
+	dst := "./upload/t_material"
+	l.r.CreateDstDir(dst, 0644)
 
 	// バリデーション
 
@@ -83,14 +83,14 @@ func (l *TeachingMaterialLogic) ValidateImage(form *multipart.Form) (string, err
 		maxSize = int64(maxSizeByEnvInt) // int64に変換
 	}
 	if image.Size > maxSize { // ファイルサイズと比較する
-		return "", common.NewErr(common.ErrTypeFileSizeTooLarge)
+		return "", custom.NewErr(custom.ErrTypeFileSizeTooLarge)
 	}
 	// ファイルサイズの制限(Content-Length, binary由来)
 	// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
 	mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
 	ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
 	if !ok {
-		return "", common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
+		return "", custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type of the request image is invalid"))
 	}
 	// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 	buffer := make([]byte, 512) // バイトスライスのバッファを作成
@@ -103,7 +103,7 @@ func (l *TeachingMaterialLogic) ValidateImage(form *multipart.Form) (string, err
 	mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 	ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
 	if !ok {
-		return "", common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
+		return "", custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type inferred from the request image binary is invalid"))
 	}
 	fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
 

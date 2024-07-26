@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	common "juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,10 +51,10 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -63,7 +63,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 非管理者ユーザーの場合
+			case custom.ErrTypePermissionDenied: // 非管理者ユーザーの場合
 				// エラーログ
 				logging.ErrorLog("Forbidden.", err)
 				// レスポンス
@@ -117,10 +117,10 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // リソースがなく見つからない
+			case custom.ErrTypeNoResourceExist: // リソースがなく見つからない
 				// エラーログ
 				logging.ErrorLog("Not Found.", err)
 				// レスポンス
@@ -232,10 +232,10 @@ func NoticeReadHandler(ctx *gin.Context) {
 	err := noticeService.ReadNotice(bRead)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -244,7 +244,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 権限なし
+			case custom.ErrTypePermissionDenied: // 権限なし
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{

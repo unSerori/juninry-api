@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,10 +36,10 @@ func GetAllClassesHandler(c *gin.Context) {
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // // お家に子供いないよエラー
+			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
 				// エラーログ
 				logging.ErrorLog("Bad Request.", err)
 				// レスポンス
@@ -113,17 +113,17 @@ func RegisterClassHandler(c *gin.Context) {
 	// 登録処理を投げてなんかいろいろもらう
 	class, err := ClassService.PermissionCheckedClassCreation(idAdjusted, bClass)
 	if err != nil {
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
+			case custom.ErrTypeMaxAttemptsReached: // 最大試行数を超えた
 				// エラーログ
 				logging.ErrorLog("Bad Request.", err)
 				// レスポンス
@@ -189,17 +189,17 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	// 招待コード登録します
 	class, err := ClassService.PermissionCheckedRefreshInviteCode(idAdjusted, classUuid)
 	if err != nil {
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeNoResourceExist: // リソースがない
+			case custom.ErrTypeNoResourceExist: // リソースがない
 				logging.ErrorLog("The resource does not exist", err)
 				resStatusCode := http.StatusNotFound
 				c.JSON(resStatusCode, gin.H{
@@ -259,10 +259,10 @@ func JoinClassHandler(c *gin.Context) {
 	// クラスに参加
 	className, err := ClassService.PermissionCheckedJoinClass(idAdjusted, inviteCode)
 	if err != nil {
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -271,14 +271,14 @@ func JoinClassHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeNoResourceExist: // 招待コード違います
+			case custom.ErrTypeNoResourceExist: // 招待コード違います
 				logging.ErrorLog("The resource does not exist", err)
 				resStatusCode := http.StatusNotFound
 				c.JSON(resStatusCode, gin.H{

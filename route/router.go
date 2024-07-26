@@ -1,10 +1,10 @@
 package route
 
 import (
-	"juninry-api/common"
+	"juninry-api/common/logging"
 	"juninry-api/controller"
-	"juninry-api/logging"
 	"juninry-api/middleware"
+	"juninry-api/utility/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -56,7 +56,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
 					// 宿題の提出
-					homeworks.POST("/submit", middleware.LimitReqBodySize(common.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
+					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
 
 				// noticeグループ

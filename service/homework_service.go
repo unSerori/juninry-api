@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"io"
-	"juninry-api/common"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -113,14 +113,14 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 			maxSize = int64(maxSizeByEnvInt) // int64に変換
 		}
 		if image.Size > maxSize { // ファイルサイズと比較する
-			return common.NewErr(common.ErrTypeFileSizeTooLarge)
+			return custom.NewErr(custom.ErrTypeFileSizeTooLarge)
 		}
 
 		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
 		mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
 		ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type of the request image is invalid"))
 		}
 		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 		buffer := make([]byte, 512) // バイトスライスのバッファを作成
@@ -133,7 +133,7 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type inferred from the request image binary is invalid"))
 		}
 		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
 
@@ -182,9 +182,9 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー

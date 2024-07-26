@@ -2,7 +2,7 @@
 // 独自のエラー型構造体にはmsgとエラー型の情報を含む。エラー型情報も独自のタイプで、int管理のENUM
 // サービス内で、コントローラでswitch分岐させたいエラーが出たときはNewErrに紐づけたいエラー名とerr.Error()(:エラーmsg)を渡し、カスタムエラーを返す
 
-package common
+package custom
 
 // カスタムエラー型  // エラーの種類を示すErrTypeとエラーのmsgを持つ
 type CustomErr struct {

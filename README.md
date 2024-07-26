@@ -40,6 +40,18 @@ SSH URL:
 
 5. .envファイルをもらうか作成。[.envファイルの説明](#env)
 
+## ディレクトリ構成
+
+- presentation, application, domain, infrastructure: DDDの4パッケージ
+- view: テスト用ページの静的ファイル
+- middleware: ミドルウェア。この中でDDD形式などに分割すべきかも。
+- route: ルーティングや付随する初期設定
+- utility: 再利用性の高い単体の処理群
+- common: utilityの中でもより一般性の高い処理群
+- asset: サーバー自体が最初から持つリソースや画像送信テストなどで使うリソースを置いておく
+- upload: アップロードされたファイル
+- controller, service, model: 旧アーキテクチャの3パッケージ、DDD形式に変換したい。modelはテーブルモデル定義ファイルとしてinfrastructure/modelに移動したい
+
 ## API仕様書
 
 エンドポイント、リクエストレスポンスの形式、その他情報のAPIの仕様書。

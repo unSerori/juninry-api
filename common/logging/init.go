@@ -12,7 +12,7 @@ var logFile *os.File // ログファイル
 // ログファイルを作成
 func openLogFile() error {
 	var err error
-	logFile, err = os.OpenFile("./logging/server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logFile, err = os.OpenFile("./common/logging/server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil { // エラーチェック
 		return fmt.Errorf("error opening file: %v", err) // エラーの場合
 	}

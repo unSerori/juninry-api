@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -24,7 +24,7 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	}
 	if !isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return common.NewErr(common.ErrTypePermissionDenied)
+		return custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// notice_uuidを生成
@@ -42,9 +42,9 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー
@@ -75,7 +75,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string) (NoticeDetail, error)
 	}
 	if noticeDetail == nil { // 取得できなかった
 		fmt.Println("noticeDetail is nil")
-		return NoticeDetail{}, common.NewErr(common.ErrTypeNoResourceExist)
+		return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -219,7 +219,7 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 	}
 	if !isPatron { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return common.NewErr(common.ErrTypePermissionDenied)
+		return custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// 構造体をレコード登録処理に投げる
@@ -230,9 +230,9 @@ func (s *NoticeService) ReadNotice(bRead model.NoticeReadStatus) error {
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー
