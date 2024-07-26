@@ -40,6 +40,18 @@ SSH URL:
 
 5. .envファイルをもらうか作成。[.envファイルの説明](#env)
 
+## ディレクトリ構成
+
+- presentation, application, domain, infrastructure: DDDの4パッケージ
+- view: テスト用ページの静的ファイル
+- middleware: ミドルウェア。この中でDDD形式などに分割すべきかも。
+- route: ルーティングや付随する初期設定
+- utility: 再利用性の高い単体の処理群
+- common: utilityの中でもより一般性の高い処理群
+- asset: サーバー自体が最初から持つリソースや画像送信テストなどで使うリソースを置いておく
+- upload: アップロードされたファイル
+- controller, service, model: 旧アーキテクチャの3パッケージ、DDD形式に変換したい。modelはテーブルモデル定義ファイルとしてinfrastructure/modelに移動したい
+
 ## API仕様書
 
 エンドポイント、リクエストレスポンスの形式、その他情報のAPIの仕様書。
@@ -694,6 +706,39 @@ SSH URL:
 
 </details>
 
+<details>
+  <summary>教材を登録するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/t_materials/register`
+- **メソッド:** POST
+- **説明:** 教師ユーザーが教科をもとに教材をクラスに登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: multipart/form-data
+  - ボディ: Form
+    - Form Fields - 教材の情報
+      - teachingMaterialName: リピート2
+      - subjectId: 4
+      - classUUID: 09eba495-fe09-4f54-a856-9bea9536b661
+    - Files - 教材の画像
+      - images: repeat_2.jpg
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created.",
+        "srvResData": {
+          "teachingMaterialUuid": "95af0199-3692-40af-b68f-a76e46cfad95"
+        },
+      }
+      ```
+
+</details>
+
 ### API仕様書てんぷれ
 
 <details>
@@ -747,6 +792,10 @@ JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用の�
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
 MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
+
+## TODO
+
+- 三層アーキテクチャなエンドポイントをDDDにリファクタリング。現状はmodel層として使っていたものがinfrastructure層外に置き去りにされている。
 
 ## 開発者
 

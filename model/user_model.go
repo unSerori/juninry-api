@@ -1,8 +1,6 @@
 package model
 
-import (
-	"juninry-api/logging"
-)
+import "juninry-api/common/logging"
 
 // ユーザテーブル  // モデルを構造体で定義
 type User struct { // typeで型の定義, structは構造体

@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -42,17 +42,17 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 	// 登録処理を投げてなんかいろいろもらう
 	ouchi, err := OuchiService.PermissionCheckedOuchiCreation(idAdjusted, bOuchi)
 	if err != nil {
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
-			case common.ErrTypeAlreadyExists: // すでに存在するので登録する必要がない&できない
+			case custom.ErrTypeAlreadyExists: // すでに存在するので登録する必要がない&できない
 				logging.ErrorLog("Forbidden.", err)
 				resStatusCode := http.StatusConflict
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{
@@ -114,17 +114,17 @@ func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 	// 招待コード登録します
 	ouchi, err := OuchiService.PermissionCheckedRefreshOuchiInviteCode(idAdjusted, ouchiUuid)
 	if err != nil {
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeNoResourceExist: // リソースがない
+			case custom.ErrTypeNoResourceExist: // リソースがない
 				logging.ErrorLog("The resource does not exist", err)
 				resStatusCode := http.StatusNotFound
 				ctx.JSON(resStatusCode, gin.H{
@@ -187,10 +187,10 @@ func JoinOuchiHandler(c *gin.Context) {
 	ouchiName, err := OuchiService.PermissionCheckedJoinOuchi(idAdjusted, inviteCode)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -199,7 +199,7 @@ func JoinOuchiHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 権限を持っていない
+			case custom.ErrTypePermissionDenied: // 権限を持っていない
 				// エラーログ
 				logging.ErrorLog("Bad Request.", err)
 				// レスポンス

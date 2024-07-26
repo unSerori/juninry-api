@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -53,11 +53,20 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 	// 登録処理と失敗レスポンス
 	err := noticeService.RegisterNotice(bNotice)
 	if err != nil { // エラーハンドル
-		// エラータイプを定義
-		var customErr *common.CustomErr
+		// カスタムエラーを仕分ける
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypePermissionDenied: // 非管理者ユーザーの場合
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+				// エラーログ
+				logging.ErrorLog("Conflict.", err)
+				// レスポンス
+				resStatusCode := http.StatusConflict
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			case custom.ErrTypePermissionDenied: // 非管理者ユーザーの場合
 				// エラーログ
 				logging.ErrorLog("Forbidden.", err)
 				// レスポンス
@@ -127,10 +136,10 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // リソースがなく見つからない
+			case custom.ErrTypeNoResourceExist: // リソースがなく見つからない
 				// エラーログ
 				logging.ErrorLog("Not Found.", err)
 				// レスポンス
@@ -202,10 +211,10 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) {
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied:
+			case custom.ErrTypePermissionDenied:
 				// エラーログ(権限無し)
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				// レスポンス
@@ -264,14 +273,20 @@ func NoticeReadHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
+	// 構造体にマッピング
+	// bRead := model.NoticeReadStatus{
+	// 	NoticeUuid: noticeUuid,
+	// 	UserUuid:   idAdjusted,
+	// }
+
 	// 登録処理と失敗レスポンス
 	err := noticeService.ReadNotice(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -280,7 +295,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypePermissionDenied: // 権限なし
+			case custom.ErrTypePermissionDenied: // 権限なし
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				resStatusCode := http.StatusForbidden
 				ctx.JSON(resStatusCode, gin.H{
@@ -351,10 +366,10 @@ func GetNoticestatusHandler(ctx *gin.Context) {
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
-		var serviceErr *common.CustomErr
+		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) {
 			switch serviceErr.Type {
-			case common.ErrTypePermissionDenied:
+			case custom.ErrTypePermissionDenied:
 				// エラーログ(権限無し)
 				logging.ErrorLog("Do not have the necessary permissions", err)
 				// レスポンス

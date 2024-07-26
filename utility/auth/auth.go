@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"time"
 

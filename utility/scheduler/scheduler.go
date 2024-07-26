@@ -1,8 +1,8 @@
 package scheduler
 
 import (
-	"juninry-api/batch"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
+	"juninry-api/utility/batch"
 
 	"github.com/robfig/cron/v3"
 )
@@ -27,7 +27,6 @@ func StartScheduler() {
 		logging.ErrorLog("Ouchi creation was not possible due to other problems.", err)
 		panic(err)
 	}
-
 
 	cron.Start()
 }

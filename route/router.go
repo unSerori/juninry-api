@@ -1,15 +1,16 @@
 package route
 
 import (
-	"juninry-api/common"
+	"juninry-api/common/logging"
 	"juninry-api/controller"
-	"juninry-api/logging"
 	"juninry-api/middleware"
+	"juninry-api/utility/config"
 
 	"github.com/gin-gonic/gin"
 )
 
-func routing(engine *gin.Engine) {
+// エンドポイントのルーティング
+func routing(engine *gin.Engine, handlers Handlers) {
 	// MidLog all
 	engine.Use(middleware.LoggingMid())
 
@@ -58,7 +59,7 @@ func routing(engine *gin.Engine) {
 					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
 					// 宿題の提出
-					homeworks.POST("/submit", middleware.LimitReqBodySize(common.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
+					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
 
 				// noticeグループ
@@ -94,10 +95,10 @@ func routing(engine *gin.Engine) {
 					classes.POST("/register", middleware.SingleExecutionMiddleware(), controller.RegisterClassHandler) // /v1/auth/users/classes/register
 
 					// 招待コードを更新する
-					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/invite-code
+					classes.PUT("/refresh/:class_uuid", controller.GenerateInviteCodeHandler) // /v1/auth/users/classes/refresh/invite-code
 
 					// クラスに参加する
-					classes.POST("/join/:invite_code", controller.JoinClassHandler)
+					classes.POST("/join/:invite_code", controller.JoinClassHandler) // /v1/auth/users/classes/join/invite_code
 				}
 
 				// ouchiesグループ
@@ -115,6 +116,13 @@ func routing(engine *gin.Engine) {
 			}
 		}
 	}
+
+	// ver2グループ
+	v2 := engine.Group("/v2")
+	{
+		// dddを試した教材登録エンドポイント
+		v2.POST("/auth/users/t_materials/register", middleware.MidAuthToken(), handlers.TeachingMaterialHandler.RegisterTMHandler)
+	}
 }
 
 // ファイルを設定
@@ -128,7 +136,7 @@ func loadingStaticFile(engine *gin.Engine) {
 }
 
 // エンジンを作成して返す
-func SetupRouter() (*gin.Engine, error) {
+func SetupRouter(handlers Handlers) (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
 
@@ -136,7 +144,7 @@ func SetupRouter() (*gin.Engine, error) {
 	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
-	routing(engine)
+	routing(engine, handlers)
 
 	// 静的ファイル設定
 	loadingStaticFile(engine)

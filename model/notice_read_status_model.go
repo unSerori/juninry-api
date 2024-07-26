@@ -7,7 +7,7 @@ import (
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
-	OuchiUuid   string `xorm:"varchar(36) pk" json:"ouchiUUID"`   // おうちID
+	OuchiUuid  string `xorm:"varchar(36) pk" json:"ouchiUUID"`  // おうちID
 }
 
 // テーブル名
@@ -35,7 +35,7 @@ func InitNoticeReadStatus() error {
 func CreateNoticeReadStatusTestData() {
 	nrs1 := &NoticeReadStatus{
 		NoticeUuid: "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
-		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
+		OuchiUuid:  "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
 	db.Insert(nrs1)
 }
@@ -76,4 +76,3 @@ func ReadNotice(noticeUuid string, ouchiUuid string) error {
 	fmt.Println(affected)
 	return err
 }
-

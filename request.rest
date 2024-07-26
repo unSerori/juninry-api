@@ -8,7 +8,6 @@
 @ouchi_invite_code = 006605
 @jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzY0NTMxMjQsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiNDJkZjNhYmQtZjJiMi00YTcwLTgyOGYtMTFhOTM4OGJhN2JhIn0.fo2v6iCbcm2mqar8tHhVg29190YRj_BNgmmDB7QDq0s
 
-
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
@@ -165,4 +164,32 @@ Authorization: {{jwt}}
 
 ### おうち所属
 POST {{base_url}}{{api_v}}/auth/users/ouchies/join/{{ouchi_invite_code}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 教材登録
+POST {{base_url}}/v2/auth/users/t_materials/register HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="teachingMaterialName";
+
+リピート2
+--{{boundary}}
+Content-Disposition: form-data; name="subjectId"
+
+4
+--{{boundary}}
+Content-Disposition: form-data; name="classUUID"
+
+09eba495-fe09-4f54-a856-9bea9536b661
+--{{boundary}}
+Content-Disposition: form-data; name="image"; filename="repeat_2.png"
+Content-Type: image/png
+
+< ./asset/images/repeat_2.png
+--{{boundary}}
+
+### v2 test
+POST {{base_url}}/v2/auth/users/t_materials/register HTTP/1.1
 Authorization: {{jwt}}

@@ -1,12 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +23,7 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	}
 	if !isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return common.NewErr(common.ErrTypePermissionDenied)
+		return custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// notice_uuidを生成
@@ -37,6 +39,17 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	// 構造体をレコード登録処理に投げる
 	_, err = model.CreateNotice(bNotice) // 第一返り血は登録成功したレコード数
 	if err != nil {                      // エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return err
 	}
 
@@ -68,7 +81,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	}
 	if noticeDetail == nil { // 取得できなかった
 		fmt.Println("noticeDetail is nil")
-		return NoticeDetail{}, common.NewErr(common.ErrTypeNoResourceExist)
+		return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -157,6 +170,10 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		if err != nil { // エラーハンドル
 			return nil, err
 		}
+	if isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
 
 		fmt.Println("ouchi uuid", *user.OuchiUuid)
 
@@ -292,7 +309,7 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 	}
 	if !isPatron { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return common.NewErr(common.ErrTypePermissionDenied)
+		return custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	user, err := model.GetUser(userUuid)
@@ -303,6 +320,16 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 	// 構造体をレコード登録処理に投げる
 	err = model.ReadNotice(noticeUuid, *user.OuchiUuid) // 第一返り血は登録成功したレコード数
 	if err != nil {
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
 		return err
 	}
 
@@ -327,7 +354,7 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 	}
 	if !isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return nil, common.NewErr(common.ErrTypePermissionDenied)
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	//確認用です
