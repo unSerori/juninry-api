@@ -133,7 +133,7 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 	noticeUuid := ctx.Param("notice_uuid")
 
 	//お知らせのレコードを取ってくる
-	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid, noticeUuid)
+	noticeDetail, err := noticeService.GetNoticeDetail(noticeUuid, idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
 		var customErr *custom.CustomErr
@@ -199,8 +199,15 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
+	var classUuids []string
+	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
+		for _, idStr := range idsStr {
+			classUuids = append(classUuids, idStr)
+		}
+	}
+
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ

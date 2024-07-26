@@ -34,6 +34,13 @@ func CreateClassTestData() {
 		ValidUntil: parsedTime,
 	}
 	db.Insert(class2)
+	class3 := &Class{
+		ClassUuid:  "c085a423-d44b-4bde-a2ff-7e24736d33b5",
+		ClassName:  "1-1 かかぽ学級",
+		InviteCode: "1111",
+		ValidUntil: parsedTime,
+	}
+	db.Insert(class3)
 
 }
 
@@ -50,7 +57,6 @@ func GetClass(classUuid string) (Class, error) {
 	if err != nil {
 		return Class{}, err
 	}
-
 	return class, nil
 }
 

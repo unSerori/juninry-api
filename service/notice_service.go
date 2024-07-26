@@ -153,34 +153,78 @@ type Notice struct { // typeで型の定義, structは構造体
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
-func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
+func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]Notice, error) {
 
-	//先生かのタイプチェック
-	isTeacher, err := model.IsTeacher(userUuid)
+	// 結果格納用変数
+	var userUuids []string
+
+	// ユーザーが親の場合は子供のIDを取得する必要
+	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return nil, err
 	}
+	if isPatron { // 親ユーザーの場合
+		fmt.Println("保護者:" + userUuid)
+		// おうちIDを取得
+		user, err := model.GetUser(userUuid)
+		if err != nil { // エラーハンドル
+			return nil, err
+		}
 	if isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
 		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
-	//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
-	userUuidSave := userUuid
+		fmt.Println("ouchi uuid", *user.OuchiUuid)
 
-	// userUuidを条件にしてclassUuidを取ってくる
-	// 1 - userUuidからclass_membershipの構造体を取ってくる
-	userUUIDs := []string{userUuid}
-	classMemberships, err := model.FindClassMemberships(userUUIDs)
-	if err != nil {
-		return nil, err
+		// 同じお家IDの子供のユーザーIDを取得
+		userUuids, err = model.GetChildrenUuids(*user.OuchiUuid)
+		if err != nil { // エラーハンドル
+			return nil, err
+		}
+
+		fmt.Println("uuids", userUuids)
+
+		if len(userUuids) == 0 {
+			//  エラー:おうちに子供はいないのになにしてんのエラー
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+		}
+
+	} else {
+		fmt.Println("がき:" + userUuid)
+		userUuids = append(userUuids, userUuid)
 	}
 
-	// 2 - 構造体からclassUuidのスライス(配列)を作る
-	var classUuids []string
-	for _, classMembership := range classMemberships {
-		classUuid := classMembership.ClassUuid
-		classUuids = append(classUuids, classUuid)
+	// classUuidsが空の場合の処理(絞り込みなしの全件取得)
+	if len(classUuids) == 0 {
+
+		// userUuidを条件にしてclassUuidを取ってくる
+		// 1 - userUuidからclass_membershipの構造体を取ってくる
+		classMemberships, err := model.GetClassList(userUuids)
+		if err != nil {
+			return nil, err
+		}
+
+		// 2 - 構造体からclassUuidのスライス(配列)を作る
+		for _, classMembership := range classMemberships {
+			classUuid := classMembership.ClassUuid
+			classUuids = append(classUuids, classUuid)
+		}
+
+	} else { // classUuidで絞り込まれた取得(絞り込み条件がなかったらエラーだよネ)
+		// ユーザーがクラスに所属しているかを確認する
+		classMemberships, err := model.CheckClassMemberships(userUuids, classUuids)
+
+		if err != nil || classMemberships == nil {
+			logging.ErrorLog("Do not have the necessary permissions", nil)
+			return []Notice{}, common.NewErr(common.ErrTypePermissionDenied)
+		}
+
+		// 2 - 構造体からclassUuidのスライス(配列)を作る
+		for _, classMembership := range classMemberships {
+			classUuid := classMembership.ClassUuid
+			classUuids = append(classUuids, classUuid)
+		}
 	}
 
 	// classUuidを条件にしてnoticeの構造体を取ってくる
@@ -189,11 +233,14 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		return nil, err
 	}
 
-	// TODO:データを逆順に追加するために一時的なスライス
-	var temp []Notice
+	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
+	var formattedAllNotices []Notice
 
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
+
+		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
+		userUuidSave := userUuid
 
 		//noticeを整形して、controllerに返すformatに追加する
 		notices := Notice{
@@ -245,19 +292,9 @@ func (s *NoticeService) FindAllNotices(userUuid string) ([]Notice, error) {
 		}
 
 		//宣言したスライスに追加していく
-		temp = append(temp, notices) //並べ替えるために一時的にtempに保存する
+		// formattedAllNotices = append(formattedAllNotices, notices)
+		formattedAllNotices = append(formattedAllNotices, notices)
 	}
-
-	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
-	var formattedAllNotices []Notice
-
-	// tempを逆順にしてformattedAllNoticesに追加する
-	for i := len(temp) - 1; i >= 0; i-- {
-		formattedAllNotices = append(formattedAllNotices, temp[i])
-	}
-
-	//確認用
-	fmt.Println(formattedAllNotices)
 
 	return formattedAllNotices, nil
 }

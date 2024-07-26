@@ -698,7 +698,7 @@ SSH URL:
       ```json
         {
           "srvResData": {
-            "className": "テスト3家"
+            "ouchiName": "テスト3家"
           },
           "srvResMsg": "OK"
         }      
