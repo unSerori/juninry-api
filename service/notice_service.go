@@ -170,10 +170,6 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		if err != nil { // エラーハンドル
 			return nil, err
 		}
-	if isTeacher { // 非管理者ユーザーの場合
-		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
-	}
 
 		fmt.Println("ouchi uuid", *user.OuchiUuid)
 
@@ -187,7 +183,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 
 		if len(userUuids) == 0 {
 			//  エラー:おうちに子供はいないのになにしてんのエラー
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 
 	} else {
@@ -217,7 +213,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 
 		if err != nil || classMemberships == nil {
 			logging.ErrorLog("Do not have the necessary permissions", nil)
-			return []Notice{}, common.NewErr(common.ErrTypePermissionDenied)
+			return []Notice{}, custom.NewErr(custom.ErrTypePermissionDenied)
 		}
 
 		// 2 - 構造体からclassUuidのスライス(配列)を作る
