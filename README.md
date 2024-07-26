@@ -1,5 +1,7 @@
 # juninry
 
+[RepositoryURL](https://github.com/unSerori/juninry-api)
+
 ## 概要
 
 juninryのGo APIサーバ。
