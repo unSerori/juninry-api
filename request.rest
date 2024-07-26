@@ -1,18 +1,12 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@notice_uuid = 2097a7bb-5140-460d-807e-7173a51672bd
-@class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
-@class_invite_code = 4504
-@ouchi_uuid = a861b4a8-97a8-4160-835d-80ae02ef7819
-@ouchi_invite_code = 002770
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzcyNDIyNzMsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiODA3NjQzZDAtYWJkMy00MWNjLWJjMjItMzdiNDQyZmY2ODFmIn0.QvcWN8-Fiwzb4KCmLQci9FqVfcBeLHEYQzEZcRJQI6g
-
-### /
-GET {{base_url}} HTTP/1.1
-
-### jsonテスト
-GET {{base_url}}/test/json HTTP/1.1
+@notice_uuid = ead5a49d-d3dd-463b-9bdb-4b4129ad5c7a
+@class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
+@class_invite_code = 9946
+@ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
+@ouchi_invite_code = 006605
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzY0NTMxMjQsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiNDJkZjNhYmQtZjJiMi00YTcwLTgyOGYtMTFhOTM4OGJhN2JhIn0.fo2v6iCbcm2mqar8tHhVg29190YRj_BNgmmDB7QDq0s
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -109,12 +103,28 @@ Content-Type: image/jpeg
 < ./asset/images/Crab_Nebula.jpg
 --{{boundary}}--
 
+### お知らせ投稿
+POST {{base_url}}{{api_v}}/auth/users/notices/register HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: application/json
+
+{
+    "noticeTitle": "【持ち物】習字道具必要です",
+    "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+    "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+    "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661"
+}
+
 ### お知らせ一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/notices/notices HTTP/1.1
 Authorization: {{jwt}}
 
 ### お知らせの詳細取得
 GET {{base_url}}{{api_v}}/auth/users/notices/{{notice_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### クラスメイト取得
+GET {{base_url}}{{api_v}}/auth/users/classes/users HTTP/1.1
 Authorization: {{jwt}}
 
 ### 所属しているクラス一覧取得

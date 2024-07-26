@@ -6,8 +6,9 @@ import "juninry-api/common/logging"
 type User struct { // typeで型の定義, structは構造体
 	UserUuid    string  `xorm:"varchar(36) pk" json:"userUUID"`                  // ユーザのUUID
 	UserName    string  `xorm:"varchar(25) not null" json:"userName"`            // 名前
-	UserTypeId  int     `xorm:"not null" json:"userTypeId"`                      // ユーザータイプ
+	UserTypeId  int     `xorm:"not null" json:"userTypeId"`                      // ユーザータイプ	1:教師, 2:児童, 3:保護者
 	MailAddress string  `xorm:"varchar(256) not null unique" json:"mailAddress"` // メアド
+	GenderId	int    	`xorm:"not null" json:"genderId"`                    	 // 性別 1:男性, 2:女性, 3:その他
 	Password    string  `xorm:"varchar(60) not null" json:"password"`            // bcrypt化されたパスワード
 	JtiUuid     string  `xorm:"varchar(36) unique" json:"jwtUUID"`               // jwtクレームのuuid
 	OuchiUuid   *string `xorm:"varchar(36) default NULL" json:"ouchiUUID"`       // 所属するおうちのUUID
@@ -36,10 +37,21 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+	user3 := &User{
+		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		UserName:    "test teacher",
+		UserTypeId:  1,
+		MailAddress: "test-teacher@gmail.com",
+		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
+		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
+	}
+	db.Insert(user3)
+
 	user4 := &User{
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
 		UserTypeId:  2,
+		GenderId:   1,
 		MailAddress: "test-pupil@gmail.com",
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "14dea318-8581-4cab-b233-995ce8e1a948",
@@ -49,6 +61,7 @@ func CreateUserTestData() {
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
 		UserTypeId:  1,
+		GenderId:   2,
 		MailAddress: "test-teacher@gmail.com",
 		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
 		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
@@ -90,6 +103,13 @@ func GetUser(userUuid string) (User, error) {
 	var user User
 	_, err := db.Where("user_uuid = ?", userUuid).Get(&user)
 	return user, err
+}
+
+// 複数件のユーザー情報の取得
+func GetUsers(userUuid []string) ([]User, error) {
+	var users []User
+	err := db.In("user_uuid", userUuid).And("user_type_id = 2").Find(&users)
+	return users, err
 }
 
 // idが存在するか確かめる
@@ -189,7 +209,7 @@ func IsPatron(userUuid string) (bool, error) {
 	return isPatron, nil
 }
 
-// アカウントタイプがガキかどうか判定して真偽値を返す
+// アカウントタイプがおこさまかどうか判定して真偽値を返す
 func IsJunior(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体
 	// TODO: ガキのみに制限する
@@ -223,4 +243,12 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 	// 付与処理（更新処理）
 	affected, err := db.Where("user_uuid = ?", userUuid).Update(&user)
 	return affected, err
+}
+
+// ouchiUuidとclassUuidからおこさまを取得
+func GetJunior(ouchiUuid string)(User, error) {
+	//junior
+	var junior User
+	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
+	return junior, err
 }

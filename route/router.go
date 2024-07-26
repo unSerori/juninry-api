@@ -55,6 +55,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
+					// 次の日が期限の課題一覧を取得
+					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+
 					// 宿題の提出
 					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 				}
@@ -72,12 +75,19 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+
+					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ
 				classes := users.Group("/classes")
 				{
+
+					// クラスに所属する人間たちを返す
+					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
+					
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 

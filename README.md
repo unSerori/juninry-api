@@ -277,18 +277,10 @@ SSH URL:
 
       ```json
       {
-        "srvResData": {
-        "notices": [
-          {
-            "NoticeUuid": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
-            "NoticeTitle": "【持ち物】おべんとうとぞうきん",
-            "NoticeDate": "2024-07-11T00:42:57Z",
-            "UserName": "test teacher",
-            "ClassUuid": "09eba495-fe09-4f54-a856-9bea9536b661",
-            "ClassName": "3-2 ふたば学級",
-            "ReadStatus": 0
-          }
-        ]}      
+          "noticeTitle": "【持ち物】習字道具必要です",
+          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+          "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
       }
       ```
 
@@ -302,21 +294,25 @@ SSH URL:
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**
   - ヘッダー:
-    - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
-  - ボディ:
-    ＊さまざまな形式のボディ値＊
+    - `Authorization`: (string) 認証トークン
 
 - **レスポンス:**
-  - ステータスコード: ＊ステータスコード ステータス＊
+  - ステータスコード: 200 OK
     - ボディ:
-      ＊さまざまな形式のレスポンスデータ（基本はJSON）＊
 
       ```json
       {
-        "srvResMsg":  "レスポンスステータスメッセージ",
         "srvResData": {
-        
+          "noticeTitle": "【持ち物】習字道具必要です",
+          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+          "noticeDate": "2024-07-16T00:45:47Z",
+          "userName": "test teacher",
+          "className": "3-2 ふたば学級",
+          "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
+          "readStatus": 0
         },
+        "srvResMsg": "OK"
       }
       ```
 
@@ -360,6 +356,16 @@ SSH URL:
       }
       ```
 
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
 </details>
 
 <details>
@@ -380,6 +386,70 @@ SSH URL:
       {
         "srvResData": {},
         "srvResMsg": "OK" 
+      }
+      ```
+
+<details>
+  <summary>クラスメイトを取得するエンドポイント</summary>
+
+- **URL:** `/＊エンドポイントパス＊`
+- **メソッド:** GET
+- **説明:** 自分のクラスのクラスメイトを取得
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+
+- **レスポンス:**
+  - ステータスコード: ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+            {
+              "className": "3-2 ふたば学級",
+              "juniorData": [
+                {
+                  "userName": "test pupil",
+                  "genderId": 1
+                }
+              ]
+            }
+        ],
+        "srvResMsg": "OK"
+      }
+      ```
+
+</details>
+
+</details>
+
+<details>
+  <summary>特定のお知らせ既読一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/notices/status/{notice_uuid}`
+- **メソッド:** GET
+- **説明:** 先生が特定のお知らせの生徒の既読情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200　OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+        {
+          "StudentNo": 0,   //定義がないので0デス
+          "UserName": "test oooo",
+          "GenderCode": null, //定義がないのでnullです 
+          "ReadStatus": 0
+        }
+        ],
+        "srvResMsg": "Successful noticeStatus get."
       }
       ```
 
@@ -426,11 +496,11 @@ SSH URL:
 </details>
 
 <details>
-  <summary>クラスを新規登録するエンドポイント</summary>
+  <summary>クラスを新規作成するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/classes/register`
 - **メソッド:** POST
-- **説明:** ＊クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。＊
+- **説明:** クラスを新規作成し、招待コードを発行する。新規作成を行なったユーザーはクラスに所属する。
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
@@ -476,7 +546,7 @@ SSH URL:
 
 - **URL:** `v1/auth/users/classes/refresh/{class_uuid}`
 - **メソッド:** PUT
-- **説明:** ＊クラスの招待IDを更新する＊
+- **説明:** クラスの招待IDを更新する
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
@@ -568,7 +638,7 @@ SSH URL:
 
 - **URL:** `/v1/auth/users/ouchies/register`
 - **メソッド:** POST
-- **説明:** ＊おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。＊
+- **説明:** おうちを新規作成し、招待コードを発行する。新規作成を行なったユーザーはおうちに所属する。
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
