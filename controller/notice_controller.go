@@ -249,15 +249,19 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		// エラーログ
 		logging.ErrorLog("notice find error", err)
 		// レスポンス(StatusInternalServerError サーバーエラー500番)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
 		return //　<-返すよって型指定してないから切り上げるだけ
 	}
 
 	// レスポンス(StatusOK　成功200番)
-	ctx.JSON(http.StatusOK, gin.H{
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
 		"srvResData": gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"notices": notices,
 		},
 	})
