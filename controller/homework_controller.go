@@ -64,10 +64,10 @@ func GetHomeworkRecordHandler(c *gin.Context) {
 	//問い合わせ処理と失敗レスポンス
 	homeworkList, err := homeworkService.GetHomeworkRecord(idAdjusted, targetTime)
 	if err != nil { //エラーハンドル
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) {
 			switch customErr.Type {
-			case common.ErrTypePermissionDenied:
+			case custom.ErrTypePermissionDenied:
 				// エラーログ
 				logging.ErrorLog("Permission denied.", err)
 				// レスポンス
@@ -131,7 +131,7 @@ func FindHomeworkHandler(c *gin.Context) {
 	homeworkList, err := homeworkService.FindHomework(idAdjusted)
 	if err != nil { //エラーハンドル
 
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) {
 			// エラーログ
 			logging.ErrorLog(customErr.Error(), nil)
