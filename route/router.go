@@ -52,7 +52,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
 				{
-					// 課題の提出状況を雑に取得する
+					// 相当月の提出状況を取得　//TODO: 親と保護者をどうするか決めてないので一旦弾いてる
 					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
 
 					// 期限がある課題一覧を取得
@@ -90,7 +90,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 					// クラスに所属する人間たちを返す
 					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
-					
+
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 
