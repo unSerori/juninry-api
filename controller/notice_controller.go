@@ -201,10 +201,9 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 
 	var classUuids []string
 	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
-		for _, idStr := range idsStr {
-			classUuids = append(classUuids, idStr)
-		}
+		classUuids = append(classUuids, idsStr...)
 	}
+
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
 	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
@@ -224,6 +223,18 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 					"srvResData": gin.H{},
 				})
 				return
+
+			case custom.ErrTypeNoResourceExist:
+				// エラーログ
+				logging.ErrorLog("Not Found.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
 			default:
 				// エラーログ
 				logging.ErrorLog("aiueos", err)
@@ -360,7 +371,7 @@ func GetNoticestatusHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	fmt.Println("noticeUuid：" + noticeUuid)
+	fmt.Println("noticeUuid:" + noticeUuid)
 
 	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
 	// 取得できなかった時のエラーを判断
