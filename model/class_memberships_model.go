@@ -40,20 +40,11 @@ func CreateClassMembershipsTestData() {
 		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
 	}
 	db.Insert(classMemberships2)
-}
-
-// user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
-func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
-	//ClassMemberships構造体のスライスを返すので定義
-	var classMemberships []ClassMembership
-
-	//uuidをWhere句で条件指定
-	err := db.Where("user_uuid = ?", userUuid).Find(&classMemberships)
-	if err != nil { //エラーハンドル
-		return nil, err
+	classMemberships3 := &ClassMembership{
+		UserUuid:  "3cac1684-c1e0-47ae-92fd-6d7959759224",
+		ClassUuid: "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
 	}
-
-	return classMemberships, nil
+	db.Insert(classMemberships3)
 }
 
 // user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
@@ -78,4 +69,37 @@ func JoinClass(record ClassMembership) (bool, error) {
 		return false, err // 受け取ったエラーを返す
 	}
 	return true, nil
+}
+
+// クラスIDから参加しているユーザーを全取得
+func FindClassMembers(classUuid string) ([]ClassMembership, error) {
+	var classMemberships []ClassMembership
+	//uuidをWhere句で条件指定
+	err := db.Where("class_uuid = ?", classUuid).Find(&classMemberships)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+	return classMemberships, nil
+ }
+
+//クラスに所属しているおこさんだけを全件取得(先生は除外するためuserUuidでnot in)
+func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembership, error) {
+	//ClassMembership型で返す(あってるのかは知らん「)
+	var user []ClassMembership
+	//classuuidで絞り込み
+	err := db.Where("class_uuid = ?", classUuid).
+				Where("user_uuid NOT IN (?)", userUuid).Find(&user)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+
+	return user, nil
+}
+func CheckClassMemberships(userUuids []string, classUuids []string) ([]ClassMembership, error) {
+	var  result []ClassMembership 
+	err := db.In("user_uuid", userUuids).In("class_uuid", classUuids).Find(&result)
+	if err != nil {
+		return nil, err
+	}
+	return  result, nil
 }

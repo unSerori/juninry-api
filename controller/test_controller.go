@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

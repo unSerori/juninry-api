@@ -34,6 +34,13 @@ func CreateClassTestData() {
 		ValidUntil: parsedTime,
 	}
 	db.Insert(class2)
+	class3 := &Class{
+		ClassUuid:  "c085a423-d44b-4bde-a2ff-7e24736d33b5",
+		ClassName:  "1-1 かかぽ学級",
+		InviteCode: "1111",
+		ValidUntil: parsedTime,
+	}
+	db.Insert(class3)
 
 }
 
@@ -50,8 +57,21 @@ func GetClass(classUuid string) (Class, error) {
 	if err != nil {
 		return Class{}, err
 	}
-
 	return class, nil
+}
+
+// 複数クラス取得
+func GetClasses(classUUids []string) ([]Class, error) {
+	// 結果格納用変数
+	var classes []Class
+
+	// 全件取得
+	err := db.In("class_uuid", classUUids).Find(&classes)
+	if err != nil {
+		return nil, err
+	}
+
+	return classes, nil
 }
 
 // 招待コードからクラスを取得
@@ -70,6 +90,7 @@ func GetClassByInviteCode(inviteCode string) (Class, error) {
 	}
 
 	return class, nil
+
 }
 
 // 新規ユーザ登録

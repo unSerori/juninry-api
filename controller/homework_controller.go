@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 	"time"
 
@@ -165,6 +165,48 @@ func FindHomeworkHandler(c *gin.Context) {
 	})
 }
 
+// 次の日の課題を取得
+func FindNextdayHomeworkHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	//問い合わせ処理と失敗レスポンス
+	homeworkList, err := homeworkService.FindClassHomework(idAdjusted)
+	if err != nil { //エラーハンドル
+		// エラーログ
+		logging.ErrorLog("SQL query failed.", err)
+		//レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// 処理後の成功
+	// 成功ログ
+	logging.SuccessLog("Successful get homework list.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": homeworkList,
+	})
+}
+
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
 	// ユーザーを特定する
@@ -220,10 +262,10 @@ func SubmitHomeworkHandler(c *gin.Context) {
 	if err != nil {                                 // エラーハンドル
 		logging.ErrorLog("Service Error.", err)
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeFileSizeTooLarge: // 画像がでかすぎる
+			case custom.ErrTypeFileSizeTooLarge: // 画像がでかすぎる
 				// エラーログ
 				logging.ErrorLog("Payload Too Large.", err)
 				// レスポンス
@@ -232,7 +274,7 @@ func SubmitHomeworkHandler(c *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
-			case common.ErrTypeInvalidFileFormat: // 画像形式が不正
+			case custom.ErrTypeInvalidFileFormat: // 画像形式が不正
 				// エラーログ
 				logging.ErrorLog("Unsupported Media Type.", err)
 				// レスポンス

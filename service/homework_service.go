@@ -1,9 +1,10 @@
 package service
 
 import (
+	"errors"
 	"io"
-	"juninry-api/common"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -31,7 +33,7 @@ func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time
 		return nil, err
 	}
 	if !isJunior {
-		return nil, common.NewErr(common.ErrTypePermissionDenied)
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// その月締め切りの課題一覧を取得
@@ -112,6 +114,14 @@ type TransformedData struct {
 	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
 }
 
+// クラスごとに課題データをまとめた構造体
+type ClassHomeworkSummary struct {
+	ClassName string      `json:"className"` //提出期限
+	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+}
+
+
+
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
 
@@ -121,7 +131,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 		return nil, err
 	}
 	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
-		return nil, common.NewErr(common.ErrTypePermissionDenied)
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
@@ -153,6 +163,48 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	for limit, homeworkData := range transformedDataMap {
 		transformedData := TransformedData{
 			HomeworkLimit: limit,
+			HomeworkData:  homeworkData,
+		}
+		transformedDataList = append(transformedDataList, transformedData)
+	}
+
+	//できたら返す
+	return transformedDataList, nil
+}
+
+
+// userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
+func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
+
+	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
+	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	if err != nil { //エラーハンドル エラーを上に投げるだけ
+		return nil, err
+	}
+
+	// クラス名をキー、バリューを課題データのマップにする
+	transformedDataMap := make(map[string][]HomeworkData)
+	for _, userHomework := range userHomeworkList {
+		homeworkData := HomeworkData{
+			HomeworkUuid:              userHomework.HomeworkUuid,
+			StartPage:                 userHomework.StartPage,
+			PageCount:                 userHomework.PageCount,
+			HomeworkNote:              userHomework.HomeworkNote,
+			TeachingMaterialName:      userHomework.TeachingMaterialName,
+			SubjectId:                 userHomework.SubjectId,
+			SubjectName:               userHomework.SubjectName,
+			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
+			ClassName:                 userHomework.ClassName,
+			SubmitFlag:                userHomework.SubmitFlag,
+		}
+		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
+	}
+
+	//作ったマップをさらに整形
+	var transformedDataList []ClassHomeworkSummary
+	for className, homeworkData := range transformedDataMap {
+		transformedData := ClassHomeworkSummary{
+			ClassName: className,
 			HomeworkData:  homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
@@ -196,14 +248,14 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 			maxSize = int64(maxSizeByEnvInt) // int64に変換
 		}
 		if image.Size > maxSize { // ファイルサイズと比較する
-			return common.NewErr(common.ErrTypeFileSizeTooLarge)
+			return custom.NewErr(custom.ErrTypeFileSizeTooLarge)
 		}
 
 		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
 		mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
 		ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type of the request image is invalid"))
 		}
 		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 		buffer := make([]byte, 512) // バイトスライスのバッファを作成
@@ -216,7 +268,7 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type inferred from the request image binary is invalid"))
 		}
 		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
 
@@ -263,6 +315,17 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 	// DBに登録
 	_, err := model.StoreHomework(bHW)
 	if err != nil {
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return err
 	}
 
