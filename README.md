@@ -381,7 +381,7 @@ SSH URL:
           "className": "3-2 ふたば学級",
           "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
           "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
-          "readStatus": 0
+          "readStatus": 0   // 未読: 0, 既読: 1, 対象外: null
         },
         "srvResMsg": "OK"
       }

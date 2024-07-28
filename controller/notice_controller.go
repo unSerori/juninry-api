@@ -148,6 +148,15 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
+			case custom.ErrTypePermissionDenied: // 所属していないクラスのお知らせを取得しようとしているね
+				// エラーログ
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
 				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))

@@ -14,6 +14,7 @@ import (
 
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
+
 // noticeの新規登録
 func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	//先生かのタイプチェック
@@ -67,11 +68,68 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
 	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 引用お知らせUUID
-	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
+	ReadStatus        *int       `json:"readStatus"`        // 既読ステータス
 }
 
 // お知らせ詳細取得
 func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (NoticeDetail, error) {
+	// お知らせを確認する権限があるか確認
+	user, err := model.GetUser(userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	var ouchiUuid string
+	if user.OuchiUuid != nil {	// あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
+		ouchiUuid = *user.OuchiUuid
+	}
+
+	// 閲覧許可のあるクラス一覧
+	allowedClassUuids := []string{userUuid}
+
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	// 親の場合は子供をたどり、そうでない場合は自身の所属クラスを確認
+	if isPatron {
+		// 親の場合お家IDがなかったら話にならないので破壊
+		if ouchiUuid == "" {
+			return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+
+		// 同じお家IDの子供のユーザーIDを取得
+		userUuids, err := model.GetChildrenUuids(*user.OuchiUuid)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+
+		if len(userUuids) == 0 {
+			//  エラー:おうちに子供はいないのになにしてんのエラー
+			return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+
+		// 子供のクラスUUID一覧取得
+		classes, err := model.GetClassList(userUuids)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+
+		// 親が閲覧許可のあるクラスたち
+		for _, class := range classes {
+			allowedClassUuids = append(allowedClassUuids, class.ClassUuid)
+		}
+	} else {
+		// 自身の閲覧可能クラス
+		classes, err := model.FindClassMemberships(userUuid)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+		for _, class := range classes {
+			allowedClassUuids = append(allowedClassUuids, class.ClassUuid)
+		}
+	}
 
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
@@ -79,9 +137,23 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		fmt.Printf("err: %v\n", err)
 		return NoticeDetail{}, err //nilで返せない!不思議!!  // A. 返り血の方がNoticeDetailになっていてNoticeDetail型で返さなければいけないから。*NoticeDetailのようにポインタで返せばポインタの指定先が空の状態≒nilを返すことができるよ。
 	}
+
 	if noticeDetail == nil { // 取得できなかった
 		fmt.Println("noticeDetail is nil")
 		return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+
+	// 取得したお知らせにアクセスする許可があるか確認
+	found := false
+	for _, uuid := range allowedClassUuids {
+		if uuid == noticeDetail.ClassUuid {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return NoticeDetail{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -94,18 +166,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 	}
 
-	//確認しているか取得
-	status, err := model.IsRead(noticeUuid, userUuid)
-	if err != nil {
-		return NoticeDetail{}, err
-	}
-
-	fmt.Println(status)
-	//確認していた場合、ReadStatusに1を保存する
-	formattedNotice.ReadStatus = 0
-	if status {
-		formattedNotice.ReadStatus = 1
-	}
 
 	//userUuidをuserNameに整形
 	teacherUuid := noticeDetail.UserUuid
@@ -125,19 +185,24 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	//整形後formatに追加
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
 
-	//確認しているか取得
-	status, err = model.IsRead(noticeUuid, userUuid)
-	if err != nil {
-		return NoticeDetail{}, err
-	}
 
-	//確認していた場合、ReadStatusに1を保存する
-	if status {
-		formattedNotice.ReadStatus = 1
-	} else {
-		formattedNotice.ReadStatus = 0
-	}
+	// お家に所属している場合、お知らせの既読状況確認
+	if ouchiUuid != "" {
+		//確認しているか取得
+		status, err := model.IsRead(noticeUuid, userUuid)
+		if err != nil {
+			return NoticeDetail{}, err
+		}
 
+		//確認していた場合、ReadStatusに1を保存する
+		if status {
+			read := 1
+			formattedNotice.ReadStatus = &read
+		} else {
+			unRead := 0
+			formattedNotice.ReadStatus = &unRead
+		}
+	}
 	return formattedNotice, err
 }
 
