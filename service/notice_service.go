@@ -189,7 +189,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	// お家に所属している場合、お知らせの既読状況確認
 	if ouchiUuid != "" {
 		//確認しているか取得
-		status, err := model.IsRead(noticeUuid, userUuid)
+		status, err := model.IsRead(noticeUuid, ouchiUuid)
 		if err != nil {
 			return NoticeDetail{}, err
 		}
@@ -376,9 +376,15 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("今からレコード登録")
+
+	readStatus := model.NoticeReadStatus{
+		NoticeUuid: noticeUuid,
+		OuchiUuid:  *user.OuchiUuid,
+	}
 
 	// 構造体をレコード登録処理に投げる
-	err = model.ReadNotice(noticeUuid, *user.OuchiUuid) // 第一返り血は登録成功したレコード数
+	err = model.ReadNotice(readStatus) // 第一返り血は登録成功したレコード数
 	if err != nil {
 		// XormのORMエラーを仕分ける
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス

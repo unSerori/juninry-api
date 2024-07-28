@@ -278,7 +278,6 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 
 // お知らせ既読処理
 func NoticeReadHandler(ctx *gin.Context) {
-
 	// ユーザーを特定する
 	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。

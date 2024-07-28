@@ -5,8 +5,8 @@
 @class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
-@ouchi_invite_code = 731217
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc1MDQ4MTQsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiMmZkNGE4MTAtMjNiNC00ZjIwLTliOTEtYjkyNzk4NzlhNzJiIn0.VjbJBDiPKveUocNj3jSG0zuK2z1Hndwab3su5-SVGWo
+@ouchi_invite_code = 339841
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc1MzQ0NzksImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiYmJhNGFjNmEtNDEyYS00ZDMzLWJmNzItYzFkYTU1NTNkZDUxIn0.3-40MIRhXlZDN8ju8zU_HJ2--IK7pja8jmyrC4v88FY
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1

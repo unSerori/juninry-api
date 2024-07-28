@@ -1,9 +1,5 @@
 package model
 
-import (
-	"fmt"
-)
-
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
@@ -70,9 +66,10 @@ func GetNoticeStatusList(noticeUuid string) ([]NoticeReadStatus, error) {
 }
 
 // お知らせ確認登録
-func ReadNotice(noticeUuid string, ouchiUuid string) error {
-
-	affected, err := db.Insert("notice_uuid = ?, ouchi_uuid = ?", noticeUuid, ouchiUuid)
-	fmt.Println(affected)
+func ReadNotice(record NoticeReadStatus) error {
+	attached, err := db.Insert(record)
+	if err != nil || attached == 0 {
+		return err
+	}
 	return err
 }
