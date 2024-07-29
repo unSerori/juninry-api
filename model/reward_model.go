@@ -5,7 +5,7 @@ type Reward struct { // typeで型の定義, structは構造体
 	RewardUuid  string `xorm:"varchar(36) pk" json:"rewardUUID"` // タスクのID
 	OuchiUuid   string `xorm:"varchar(36)" json:"ouchiUUID"`     // タスクのID
 	RewardPoint int    `xorm:"not null" json:"rewardPoint"`      // 教材ID
-	RewardNote  string `json:"rewardNote"`                       // 開始ページ
+	RewardContent  string `json:"rewardContent"`                       // 開始ページ
 	RewardTitle string `xorm:"not null" json:"rewardTitle"`      // ページ数
 	IconId      int    `xorm:"not null" json:"iconId"`           // 投稿者ID
 }
@@ -31,7 +31,7 @@ func CreateRewardTestData() {
 		RewardUuid:  "a3579e71-3be5-4b4d-a0df-1f05859a7104",
 		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 		RewardPoint: 10,
-		RewardNote:  "200円まで",
+		RewardContent:  "200円まで",
 		RewardTitle: "アイス購入権",
 		IconId:      1,
 	}
@@ -40,7 +40,7 @@ func CreateRewardTestData() {
 		RewardUuid:  "a3579e71-3be5-4b4d-a0df-1f05859a7103",
 		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 		RewardPoint: 25,
-		RewardNote:  "予算千円",
+		RewardContent:  "予算千円",
 		RewardTitle: "晩ごはん決定権",
 		IconId:      2,
 	}

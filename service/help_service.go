@@ -4,8 +4,9 @@ import (
 	// "crypto/rand"
 	"errors"
 	"juninry-api/model"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type HelpService struct{}
@@ -15,7 +16,7 @@ type HelpService struct{}
 func (s *HelpService) GetHelps(userUUID string) ([]model.Help, error) {
 	// ユーザーが教員であれば返す
 	result, err := model.IsTeacher(userUUID)
-	if result ||  err != nil {
+	if result || err != nil {
 		return []model.Help{}, errors.New("user is not a teacher")
 	}
 	// ユーザー情報の取得
@@ -24,7 +25,7 @@ func (s *HelpService) GetHelps(userUUID string) ([]model.Help, error) {
 		return []model.Help{}, err
 	}
 	// ユーザー情報のouchiUUIDでご褒美を取得
-	helps, err := model.GetHelps(*bUser.OuchiUuid)
+	helps, err := model.GetHelps(*bUser.OuchiUuid, userUUID)
 	if err != nil {
 		return []model.Help{}, err
 	}
@@ -35,18 +36,18 @@ func (s *HelpService) GetHelps(userUUID string) ([]model.Help, error) {
 func (s *HelpService) CreateHelp(userUUID string, help model.Help) (model.Help, error) {
 	// ユーザーが教員であれば返す
 	result, err := model.IsTeacher(userUUID)
-	if result ||  err != nil {
+	if result || err != nil {
 		return model.Help{}, errors.New("user is not a teacher")
 	}
 	// 児童であっても同様
 	result, err = model.IsJunior(userUUID)
-	if result ||  err != nil {
+	if result || err != nil {
 		return model.Help{}, errors.New("user is not a junior")
 	}
 
 	// ごほうびUUIDの生成
 	helpUUID, err := uuid.NewRandom() // 新しいuuidの生成
-	if err != nil {                     // 空の構造体とエラー
+	if err != nil {                   // 空の構造体とエラー
 		return model.Help{}, err
 	}
 	help.HelpUuid = helpUUID.String() // uuidを文字列に変換してバインド
@@ -61,28 +62,32 @@ func (s *HelpService) CreateHelp(userUUID string, help model.Help) (model.Help, 
 }
 
 // おてつだいを消化
-func (s *HelpService) HelpDigestion(userUUID string, helpSubmittion model.HelpSubmittion) (bool, error) {
+func (s *HelpService) HelpDigestion(userUUID string, helpSubmittion model.HelpSubmittion) (*int, error) {
 	// ユーザーが教員であれば返す
 	result, err := model.IsTeacher(userUUID)
 	if result || err != nil {
-		return false, errors.New("user is not a teacher")
+		return nil, errors.New("user is not a teacher")
 		// 保護者であっても同様
 	}
 	result, err = model.IsPatron(userUUID)
 	if result || err != nil {
-		return false, errors.New("user is not a teacher")
+		return nil, errors.New("user is not a teacher")
 	}
 
+	helpSubmittion.UserUuid = userUUID       // ユーザーIDをバインド
 	helpSubmittion.SubmittionAt = time.Now() // 現在時刻をバインド
 
 	// おてつだいを消化
 	// エラーが出なければコミットして追加したごほうびを返す
-	dResult, err := model.StoreHelpSubmittion(helpSubmittion)
+	_, err = model.StoreHelpSubmittion(helpSubmittion)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	// 交換できたらその分のポイントを減らす
-	_, err = model.IncrementUpdatePoint(userUUID, helpSubmittion.HelpUuid)
+	ouchiPoint, err := model.IncrementUpdatePoint(userUUID, helpSubmittion.HelpUuid)
+	if err != nil {
+		return nil, err
+	}
 
-	return dResult, err
+	return ouchiPoint, err
 }

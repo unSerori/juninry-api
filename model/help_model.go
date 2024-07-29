@@ -1,13 +1,18 @@
 package model
 
+import (
+	"time"
+)
+
 // 課題テーブル
 type Help struct { // typeで型の定義, structは構造体
-	HelpUuid    string `xorm:"varchar(36) pk" json:"helpUUID"` // タスクのID
-	OuchiUuid   string `xorm:"varchar(36)" json:"ouchiUUID"`   // タスクのID
-	RewardPoint int    `xorm:"not null" json:"rewardPoint"`    // 教材ID
-	HelpNote    string `json:"helpNote"`                       // 開始ページ
-	HelpTitle   string `xorm:"not null" json:"helpTitle"`      // ページ数
-	IconId      int    `xorm:"not null" json:"iconId"`         // 投稿者ID
+	HelpUuid       string `xorm:"varchar(36) pk" json:"helpUUID"` // おてつだいのID
+	OuchiUuid      string `xorm:"varchar(36)" json:"ouchiUUID"`   // おうちのID
+	RewardPoint    int    `xorm:"not null" json:"rewardPoint"`    // もらえるおうちポイント
+	HelpContent    string `json:"helpContent"`                    // 概要
+	HelpTitle      string `xorm:"not null" json:"helpTitle"`      // タイトル
+	IconId         int    `xorm:"not null" json:"iconId"`         // iconID
+	SubmittedToday bool   `xorm:"-" json:"submittedToday"`        // フラグを追加　dbには保存されない
 }
 
 // テーブル名
@@ -31,7 +36,7 @@ func CreateHelpTestData() {
 		HelpUuid:    "a3579e71-3be5-4b4d-a0df-1f05859a7104",
 		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 		RewardPoint: 24,
-		HelpNote:    "たたむところまでおねがいね",
+		HelpContent: "たたむところまでおねがいね",
 		HelpTitle:   "せんたくもの",
 		IconId:      1,
 	}
@@ -40,7 +45,7 @@ func CreateHelpTestData() {
 		HelpUuid:    "a3579e71-3be5-4b4d-a0df-1f05859a7103",
 		OuchiUuid:   "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 		RewardPoint: 25,
-		HelpNote:    "乾かしてるのは直してね",
+		HelpContent: "乾かしてるのは直してね",
 		HelpTitle:   "あらいもの",
 		IconId:      2,
 	}
@@ -54,12 +59,12 @@ func CreateHelp(record Help) (int64, error) {
 	return affected, err
 }
 
-// おてつだいを取得
-func GetHelp(ouchiUuid string) (Help, error) {
+// 特定のおてつだいを取得
+func GetHelp(helpUUID string) (Help, error) {
 	//結果格納用変数
 	var help Help
 	//ouchiUuidで絞り込んで全取得
-	_, err := db.Where("ouchi_uuid =?", ouchiUuid).Get(
+	_, err := db.Where("help_uuid =?", helpUUID).Get(
 		&help,
 	)
 	// データが取得できなかったらerrを返す
@@ -70,13 +75,26 @@ func GetHelp(ouchiUuid string) (Help, error) {
 }
 
 // 複数のおてつだいを取得
-func GetHelps(ouchiUuid string) ([]Help, error) {
+func GetHelps(ouchiUuid string, userUuid string) ([]Help, error) {
 	//結果格納用変数
 	var helps []Help
+	today := time.Now().Format("2006-01-02")
 	//ouchiUuidで絞り込んで全取得
-	err := db.Where("ouchi_uuid =?", ouchiUuid).Find(
-		&helps,
-	)
+	// err := db.Where("ouchi_uuid =?", ouchiUuid).Find(
+	// 	&helps,
+	// )
+	// err := db.Table("helps").
+	// 	Alias("h").
+	// 	Join("LEFT", "help_submittions", "h.help_uuid = help_submittions.help_uuid AND DATE(help_submittions.submittion_at) = ? AND help_submittions.user_uuid = ?", today, userUuid).
+	// 	Where("h.ouchi_uuid = ?", ouchiUuid).
+	// 	Select("h.*, CASE WHEN help_submittions.help_submittion_id IS NOT NULL THEN 1 ELSE 0 END as submitted_today").
+	// 	Find(&helps)
+	err := db.Table("helps").
+		Alias("h").
+		Join("LEFT", "(SELECT help_uuid, MAX(submittion_at) as latest_submittion FROM help_submittions WHERE DATE(submittion_at) = ? AND user_uuid = ? GROUP BY help_uuid) hs", "h.help_uuid = hs.help_uuid", today, userUuid).
+		Where("h.ouchi_uuid = ?", ouchiUuid).
+		Select("h.*, CASE WHEN hs.latest_submittion IS NOT NULL THEN 1 ELSE 0 END as submitted_today").
+		Find(&helps)
 	// データが取得できなかったらerrを返す
 	if err != nil {
 		return []Help{}, err

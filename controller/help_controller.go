@@ -58,7 +58,7 @@ func GetHelpsHandler(c *gin.Context) {
 		// "srvResCode": 1001,
 		// "srvResMsg":  "Successful user get.",
 		"srvResData": gin.H{
-			"rewardData": helps,
+			"helpData": helps,
 		},
 	})
 }
@@ -146,7 +146,7 @@ func HelpSubmittionHandler(c *gin.Context) {
 	}
 
 	// おてつだいを交換
-	helps, err := helpService.HelpDigestion(idAdjusted, bHelps)
+	point, err := helpService.HelpDigestion(idAdjusted, bHelps)
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
@@ -174,7 +174,7 @@ func HelpSubmittionHandler(c *gin.Context) {
 		// "srvResCode": 1001,
 		// "srvResMsg":  "Successful user get.",
 		"srvResData": gin.H{
-			"rewardData": helps,
+			"ouchiPoint": point,
 		},
 	})
 }

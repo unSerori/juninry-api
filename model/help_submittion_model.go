@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// ごほうび交換記録テーブル
+// おてつだい消化記録テーブル
 type HelpSubmittion struct {
 	HelpSubmittionId int       `xorm:"pk autoincr pk" json:"helpSubmittionId"` // おてつだいID
 	UserUuid         string    `xorm:"varchar(36)" json:"userUUID"`      // ユーザーID
