@@ -97,8 +97,8 @@ func FindNotices(classUuids []string) ([]Notice, error) {
 	var notices []Notice
 
 	//classUuidで絞り込んだデータを全件取得
-	err := db.In("class_Uuid", classUuids).OrderBy("notice_date").Desc("notice_date").Find(&notices,)
-	
+	err := db.In("class_Uuid", classUuids).Desc("notice_date").Find(&notices,)
+
 	// データが取得できなかったらerrを返す
 	if err != nil {
 		return nil, err

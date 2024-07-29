@@ -318,10 +318,40 @@ SSH URL:
 
       ```json
       {
-          "noticeTitle": "【持ち物】習字道具必要です",
-          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
-          "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
+        "srvResData": {
+          "notices": [
+            {
+              "noticeUUID": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
+              "noticeTitle": "【持ち物】おべんとうとぞうきん",
+              "noticeDate": "2024-07-27T10:53:22Z",
+              "userName": "test teacher",
+              "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+              "className": "3-2 ふたば学級",
+              "readStatus": 0 // 未読: 0, 既読: 1, 対象外: null
+            },,,
+          ]
+        },
+        "srvResMsg": "OK"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
+  - ステータスコード: 404
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Not Found"
       }
       ```
 
@@ -351,7 +381,7 @@ SSH URL:
           "className": "3-2 ふたば学級",
           "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
           "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
-          "readStatus": 0
+          "readStatus": 0   // 未読: 0, 既読: 1, 対象外: null
         },
         "srvResMsg": "OK"
       }

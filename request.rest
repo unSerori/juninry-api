@@ -1,13 +1,12 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@notice_uuid = fd000332-b567-47e2-baca-28aa5b6ddb80
-@class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
+@notice_uuid = 51e6807b-9528-4a4b-bbe2-d59e9118a70d
+@class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
-@ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzcwMjI4OTIsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNTQ5MGM1ZDctZTIxYy00NTdmLWFiNDYtYWE0MDBmM2JkMjc3In0.lme70Zu6OwiryTS3yro-m0OvlcFj-8T4MhhZlKovug4
-
+@ouchi_invite_code = 339841
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc1NzMyOTgsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiMDM3ZWVlNzAtM2ZmNy00YjlmLTlkZmEtYTQxZTViYzI4NDU4In0.ICQl7Nq_34KqSDwXw5ixt89j0mmEbAiEXc9UfUdoaos
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
@@ -120,12 +119,20 @@ Content-Type: application/json
     "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661"
 }
 
-### お知らせ一覧の取得
+### お知らせ一覧の取得(絞り込みなし)
 GET {{base_url}}{{api_v}}/auth/users/notices/notices HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせ一覧の取得(クラス絞り込み)
+GET {{base_url}}{{api_v}}/auth/users/notices/notices?classUUID[]={{class_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### お知らせの詳細取得
 GET {{base_url}}{{api_v}}/auth/users/notices/{{notice_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせの既読処理
+POST {{base_url}}{{api_v}}/auth/users/notices/read/{{notice_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### クラスメイト取得

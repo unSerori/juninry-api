@@ -14,6 +14,7 @@ import (
 
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
+
 // noticeの新規登録
 func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	//先生かのタイプチェック
@@ -67,11 +68,68 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
 	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 引用お知らせUUID
-	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
+	ReadStatus        *int       `json:"readStatus"`        // 既読ステータス
 }
 
 // お知らせ詳細取得
 func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (NoticeDetail, error) {
+	// お知らせを確認する権限があるか確認
+	user, err := model.GetUser(userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	var ouchiUuid string
+	if user.OuchiUuid != nil {	// あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
+		ouchiUuid = *user.OuchiUuid
+	}
+
+	// 閲覧許可のあるクラス一覧
+	allowedClassUuids := []string{userUuid}
+
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return NoticeDetail{}, err
+	}
+
+	// 親の場合は子供をたどり、そうでない場合は自身の所属クラスを確認
+	if isPatron {
+		// 親の場合お家IDがなかったら話にならないので破壊
+		if ouchiUuid == "" {
+			return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+
+		// 同じお家IDの子供のユーザーIDを取得
+		userUuids, err := model.GetChildrenUuids(*user.OuchiUuid)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+
+		if len(userUuids) == 0 {
+			//  エラー:おうちに子供はいないのになにしてんのエラー
+			return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+
+		// 子供のクラスUUID一覧取得
+		classes, err := model.GetClassList(userUuids)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+
+		// 親が閲覧許可のあるクラスたち
+		for _, class := range classes {
+			allowedClassUuids = append(allowedClassUuids, class.ClassUuid)
+		}
+	} else {
+		// 自身の閲覧可能クラス
+		classes, err := model.FindClassMemberships(userUuid)
+		if err != nil { // エラーハンドル
+			return NoticeDetail{}, err
+		}
+		for _, class := range classes {
+			allowedClassUuids = append(allowedClassUuids, class.ClassUuid)
+		}
+	}
 
 	//お知らせ詳細情報取得
 	noticeDetail, err := model.GetNoticeDetail(noticeUuid)
@@ -79,9 +137,23 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		fmt.Printf("err: %v\n", err)
 		return NoticeDetail{}, err //nilで返せない!不思議!!  // A. 返り血の方がNoticeDetailになっていてNoticeDetail型で返さなければいけないから。*NoticeDetailのようにポインタで返せばポインタの指定先が空の状態≒nilを返すことができるよ。
 	}
+
 	if noticeDetail == nil { // 取得できなかった
 		fmt.Println("noticeDetail is nil")
 		return NoticeDetail{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+
+	// 取得したお知らせにアクセスする許可があるか確認
+	found := false
+	for _, uuid := range allowedClassUuids {
+		if uuid == noticeDetail.ClassUuid {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return NoticeDetail{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
@@ -94,18 +166,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 	}
 
-	//確認しているか取得
-	status, err := model.GetNoticeReadStatus(noticeUuid, userUuid)
-	if err != nil {
-		return NoticeDetail{}, err
-	}
-
-	fmt.Println(status)
-	//確認していた場合、ReadStatusに1を保存する
-	formattedNotice.ReadStatus = 0
-	if status {
-		formattedNotice.ReadStatus = 1
-	}
 
 	//userUuidをuserNameに整形
 	teacherUuid := noticeDetail.UserUuid
@@ -125,53 +185,66 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	//整形後formatに追加
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
 
-	//確認しているか取得
-	status, err = model.GetNoticeReadStatus(noticeUuid, userUuid)
-	if err != nil {
-		return NoticeDetail{}, err
-	}
 
-	//確認していた場合、ReadStatusに1を保存する
-	if status {
-		formattedNotice.ReadStatus = 1
-	} else {
-		formattedNotice.ReadStatus = 0
-	}
+	// お家に所属している場合、お知らせの既読状況確認
+	if ouchiUuid != "" {
+		//確認しているか取得
+		status, err := model.IsRead(noticeUuid, ouchiUuid)
+		if err != nil {
+			return NoticeDetail{}, err
+		}
 
+		//確認していた場合、ReadStatusに1を保存する
+		if status {
+			read := 1
+			formattedNotice.ReadStatus = &read
+		} else {
+			unRead := 0
+			formattedNotice.ReadStatus = &unRead
+		}
+	}
 	return formattedNotice, err
 }
 
 // おしらせテーブル(全件取得用)
-type Notice struct { // typeで型の定義, structは構造体
-	NoticeUuid  string    // おしらせUUID
-	NoticeTitle string    //お知らせのタイトル
-	NoticeDate  time.Time //お知らせの作成日時
-	UserName    string    // おしらせ発行ユーザ
-	ClassUuid   string    // クラスUUID
-	ClassName   string    // どのクラスのお知らせか
-	ReadStatus  int       //お知らせを確認しているか
+type NoticeHeader struct { // typeで型の定義, structは構造体
+	NoticeUuid  string    `json:"noticeUUID"`  // おしらせUUID
+	NoticeTitle string    `json:"noticeTitle"` //お知らせのタイトル
+	NoticeDate  time.Time `json:"noticeDate"`  //お知らせの作成日時
+	UserName    string    `json:"userName"`    // おしらせ発行ユーザ
+	ClassUuid   string    `json:"classUUID"`   // クラスUUID
+	ClassName   string    `json:"className"`   // どのクラスのお知らせか
+	ReadStatus  *int      `json:"readStatus"` //お知らせを確認しているか　お家に所属していない場合、既読情報は存在しないのでポインタを使いnilを許容する
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
-func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]Notice, error) {
+func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]NoticeHeader, error) {
 
 	// 結果格納用変数
 	var userUuids []string
 
-	// ユーザーが親の場合は子供のIDを取得する必要
+	// 既読テーブル問い合わせに必要なお家UUIDを定義
+	var ouchiUuid string
+
+	// とりあえずユーザーテーブルからもろもろを引っ張ってくる
+	user, err := model.GetUser(userUuid)
+	if err != nil { // エラーハンドル
+		return nil, err
+	}
+	if user.OuchiUuid != nil {	// あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
+		ouchiUuid = *user.OuchiUuid
+	}
+
 	isPatron, err := model.IsPatron(userUuid)
 	if err != nil { // エラーハンドル
 		return nil, err
 	}
-	if isPatron { // 親ユーザーの場合
-		fmt.Println("保護者:" + userUuid)
-		// おうちIDを取得
-		user, err := model.GetUser(userUuid)
-		if err != nil { // エラーハンドル
-			return nil, err
-		}
 
-		fmt.Println("ouchi uuid", *user.OuchiUuid)
+	if isPatron { 	// ユーザーが親の場合は子供のIDを取得する必要
+		// 親の場合お家IDがなかったら話にならないので破壊
+		if ouchiUuid == "" {
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
 
 		// 同じお家IDの子供のユーザーIDを取得
 		userUuids, err = model.GetChildrenUuids(*user.OuchiUuid)
@@ -179,17 +252,17 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 			return nil, err
 		}
 
-		fmt.Println("uuids", userUuids)
-
 		if len(userUuids) == 0 {
 			//  エラー:おうちに子供はいないのになにしてんのエラー
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 
-	} else {
-		fmt.Println("がき:" + userUuid)
+	} else {	// 親でない場合はそのまま自分のIDでと合わせることができる
 		userUuids = append(userUuids, userUuid)
 	}
+
+	// お知らせの取得条件に使うclassUUIDのスライス
+	var displayedClassUuids []string
 
 	// classUuidsが空の場合の処理(絞り込みなしの全件取得)
 	if len(classUuids) == 0 {
@@ -204,7 +277,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		// 2 - 構造体からclassUuidのスライス(配列)を作る
 		for _, classMembership := range classMemberships {
 			classUuid := classMembership.ClassUuid
-			classUuids = append(classUuids, classUuid)
+			displayedClassUuids = append(displayedClassUuids, classUuid)
 		}
 
 	} else { // classUuidで絞り込まれた取得(絞り込み条件がなかったらエラーだよネ)
@@ -213,86 +286,77 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 
 		if err != nil || classMemberships == nil {
 			logging.ErrorLog("Do not have the necessary permissions", nil)
-			return []Notice{}, custom.NewErr(custom.ErrTypePermissionDenied)
+			return []NoticeHeader{}, custom.NewErr(custom.ErrTypePermissionDenied)
 		}
 
 		// 2 - 構造体からclassUuidのスライス(配列)を作る
 		for _, classMembership := range classMemberships {
 			classUuid := classMembership.ClassUuid
-			classUuids = append(classUuids, classUuid)
+			displayedClassUuids = append(displayedClassUuids, classUuid)
 		}
 	}
 
 	// classUuidを条件にしてnoticeの構造体を取ってくる
-	notices, err := model.FindNotices(classUuids)
+	notices, err := model.FindNotices(displayedClassUuids)
 	if err != nil {
 		return nil, err
 	}
 
-	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
-	var formattedAllNotices []Notice
+	//format後のnotices格納用変数(複数返ってくるのでスライス)
+	var noticeHeaders []NoticeHeader
 
 	//noticesの一つをnoticeに格納(for文なのでデータ分繰り返す)
 	for _, notice := range notices {
 
-		//整形する段階で渡されるuserUuidが消えてしまうため、saveに保存しておく
-		userUuidSave := userUuid
-
-		//noticeを整形して、controllerに返すformatに追加する
-		notices := Notice{
+		// そのまま挿入できるデータを突っ込む
+		noticeHeader := NoticeHeader{
 			NoticeUuid:  notice.NoticeUuid,  //おしらせUuid
 			NoticeTitle: notice.NoticeTitle, //お知らせのタイトル
 			NoticeDate:  notice.NoticeDate,  //お知らせの作成日時
+			ClassUuid:   notice.ClassUuid,   //お知らせのクラスUuid
 		}
 
-		//userUuidをuserNameに整形(お知らせの作成者を取ってくる)
-		userUuid := notice.UserUuid
-		creatorUser, err := model.GetUser(userUuid) //ユーザ取得
+		// お知らせ作成者の名前をUUIDから取得する
+		creatorUser, err := model.GetUser(notice.UserUuid) //ユーザ取得
 		if err != nil {
-			return []Notice{}, err
+			return []NoticeHeader{}, err
 		}
-
 		//整形後formatに追加
-		notices.UserName = creatorUser.UserName // おしらせ発行ユーザ
+		noticeHeader.UserName = creatorUser.UserName // おしらせ発行ユーザ
 
-		//classUuidをclassNameに整形
+		// お知らせのクラス名をUUIDから取得する
 		classUuid := notice.ClassUuid
 		class, nil := model.GetClass(classUuid) //クラス取得
 		if err != nil {
-			return []Notice{}, err
+			return []NoticeHeader{}, err
 		}
 		//整形後formatに追加
-		notices.ClassUuid = classUuid       // おしらせUuid
-		notices.ClassName = class.ClassName // おしらせ発行ユーザ
+		noticeHeader.ClassName = class.ClassName // おしらせ発行ユーザ
 
-		//既読状況を取ってくる(トークン主)
-		user, err := model.GetUser(userUuidSave)
-		if err != nil {
-			return []Notice{}, err
-		}
+		// リクエストしたユーザーがお家を持っている場合既読ステータスを取得
+		if ouchiUuid != "" {
+			// 確認しているか取得
+			status, err := model.IsRead(notice.NoticeUuid, ouchiUuid)
+			if err != nil {
+				return []NoticeHeader{}, err
+			}
 
-		fmt.Println("user:", *user.OuchiUuid)
-
-		// 確認しているか取得
-		status, err := model.GetNoticeReadStatus(notice.NoticeUuid, *user.OuchiUuid)
-		if err != nil {
-			return []Notice{}, err
-		}
-
-		fmt.Println(status)
-		//確認していた場合、ReadStatusに1を保存する
-		if status {
-			notices.ReadStatus = 1
-		} else {
-			notices.ReadStatus = 0
+			//確認していた場合、ReadStatusに1を保存する
+			if status {
+				Read := 1
+				noticeHeader.ReadStatus = &Read
+			} else {
+				Unread := 0
+				noticeHeader.ReadStatus = &Unread
+			}
 		}
 
 		//宣言したスライスに追加していく
 		// formattedAllNotices = append(formattedAllNotices, notices)
-		formattedAllNotices = append(formattedAllNotices, notices)
+		noticeHeaders = append(noticeHeaders, noticeHeader)
 	}
 
-	return formattedAllNotices, nil
+	return noticeHeaders, nil
 }
 
 // noticeの既読登録
@@ -312,9 +376,15 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("今からレコード登録")
+
+	readStatus := model.NoticeReadStatus{
+		NoticeUuid: noticeUuid,
+		OuchiUuid:  *user.OuchiUuid,
+	}
 
 	// 構造体をレコード登録処理に投げる
-	err = model.ReadNotice(noticeUuid, *user.OuchiUuid) // 第一返り血は登録成功したレコード数
+	err = model.ReadNotice(readStatus) // 第一返り血は登録成功したレコード数
 	if err != nil {
 		// XormのORMエラーを仕分ける
 		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
