@@ -55,7 +55,7 @@ func CreateHelpTestData() {
 // 新規おてつだい登録
 // 新しい構造体をレコードとして受け取り、ouchiテーブルにinsertし、成功した列数とerrorを返す
 func CreateHelp(record Help) (int64, error) {
-	affected, err := db.Nullable("invite_code", "valid_until").Insert(record)
+	affected, err := db.Insert(record)
 	return affected, err
 }
 

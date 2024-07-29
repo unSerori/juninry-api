@@ -93,30 +93,35 @@ func (s *RewardService) DeleteReward(userUUID string, reward_UUID string) (bool,
 }
 
 // ごほうびを交換
-func (s *RewardService) ExchangeReward(userUUID string, rewardExchange model.RewardExchanging) (bool, error) {
+func (s *RewardService) ExchangeReward(userUUID string, rewardExchange model.RewardExchanging) (*int, error) {
 	// ユーザーが教員であれば返す
 	result, err := model.IsTeacher(userUUID)
 	if result || err != nil {
-		return false, errors.New("user is not a teacher")
+		return nil, errors.New("user is not a teacher")
 		// 保護者であっても同様
 	}
 	result, err = model.IsPatron(userUUID)
 	if result || err != nil {
-		return false, errors.New("user is not a teacher")
+		return nil, errors.New("user is not a teacher")
 	}
 
 	rewardExchange.ExchangingAt = time.Now() // 現在時刻をバインド
+	rewardExchange.UserUuid = userUUID       // ユーザーIDをバインド
 
 	// ごほうびを交換
 	// エラーが出なければコミットして追加したごほうびを返す
-	dResult, err := model.RewardExchange(rewardExchange)
+	_, err = model.RewardExchange(rewardExchange)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	// 交換できたらその分のポイントを減らす
-	_, err = model.DecrementUpdatePoint(userUUID, rewardExchange.RewardUuid)
+	point, err := model.DecrementUpdatePoint(userUUID, rewardExchange.RewardUuid)
+	if err != nil {
+		return nil, err
+	}
+	ouchiPoint := &point
 
-	return dResult, err
+	return ouchiPoint, err
 }
 
 // 交換されたごほうびを消化

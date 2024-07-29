@@ -29,7 +29,7 @@ func GetHelpsHandler(c *gin.Context) {
 		return
 	}
 	idAdjusted := id.(string) // アサーション
-	// おてつだい
+	// おてつだいを取得
 	helps, err := helpService.GetHelps(idAdjusted)
 	if err != nil {
 		// エラーログ

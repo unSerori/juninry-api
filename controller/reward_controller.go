@@ -202,7 +202,7 @@ func RewardsExchangeHandler(c *gin.Context) {
 	}
 
 	// ご褒美を交換
-	rewards, err := rewardService.ExchangeReward(idAdjusted, bReward)
+	ouchiPoint, err := rewardService.ExchangeReward(idAdjusted, bReward)
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
@@ -230,7 +230,7 @@ func RewardsExchangeHandler(c *gin.Context) {
 		// "srvResCode": 1001,
 		// "srvResMsg":  "Successful user get.",
 		"srvResData": gin.H{
-			"rewardData": rewards,
+			"ouchiPoint": ouchiPoint,
 		},
 	})
 }

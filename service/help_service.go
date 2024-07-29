@@ -24,7 +24,7 @@ func (s *HelpService) GetHelps(userUUID string) ([]model.Help, error) {
 	if err != nil {
 		return []model.Help{}, err
 	}
-	// ユーザー情報のouchiUUIDでご褒美を取得
+	// ユーザー情報のouchiUUIDでおてつだいを取得
 	helps, err := model.GetHelps(*bUser.OuchiUuid, userUUID)
 	if err != nil {
 		return []model.Help{}, err
@@ -44,6 +44,12 @@ func (s *HelpService) CreateHelp(userUUID string, help model.Help) (model.Help, 
 	if result || err != nil {
 		return model.Help{}, errors.New("user is not a junior")
 	}
+	// ユーザー情報を取得
+	user,err := model.GetUser(userUUID)
+	if result || err != nil {
+		return model.Help{}, errors.New("user is not resorce")
+	}
+	help.OuchiUuid = *user.OuchiUuid // おうちのuuidをバインド
 
 	// ごほうびUUIDの生成
 	helpUUID, err := uuid.NewRandom() // 新しいuuidの生成
@@ -51,6 +57,7 @@ func (s *HelpService) CreateHelp(userUUID string, help model.Help) (model.Help, 
 		return model.Help{}, err
 	}
 	help.HelpUuid = helpUUID.String() // uuidを文字列に変換してバインド
+	
 
 	// ごほうび作成
 	// エラーが出なければコミットして追加したごほうびを返す

@@ -128,8 +128,8 @@ func routing(engine *gin.Engine) {
 					rewards := ouchies.Group("/rewards")
 					{
 
-						// ご褒美を取得
-						rewards.GET("/rewards", controller.RegisterOuchiHandler) // /v1/auth/users/ouchies/register
+						// ごほうびを取得
+						rewards.GET("/rewards", controller.GetRewardsHandler) // /v1/auth/users/ouchies/register
 
 						// ごほうびを追加
 						rewards.POST("/register", middleware.SingleExecutionMiddleware(), controller.CreateRewardHandler) // /v1/auth/users/ouchies/join/{invite_code}
