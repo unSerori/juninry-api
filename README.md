@@ -191,6 +191,45 @@ SSH URL:
 </details>
 
 <details>
+  <summary>特定の月の課題の提出状況を取得するエンドポイント</summary>
+
+- **URL** `/v1/auth/users/homeworks/record?targetMonth=2025-01-01 00:00:00.000Z`
+- **メソッド** GET
+- **説明** 送られてきた特定の月の各日に設定されている課題の数と提出状況を返す
+- **リクエスト**
+  - ヘッダー:
+    - Authorization: (string) 認証トークン
+
+- **レスポンス**:
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+          {
+            "limitDate": "2025-01-21T00:00:00Z",
+            "submissionCount": 0,
+            "homeworkCount": 2
+          },,,
+        ],
+        "srvResMsg": "OK"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
+</details>
+
+<details>
   <summary>クラスの課題情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/homeworks/upcoming`

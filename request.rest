@@ -1,12 +1,12 @@
 @base_url = http://localhost:4561
 @api_v = /v1
 @boundary = ----MyBoundary
-@notice_uuid = ead5a49d-d3dd-463b-9bdb-4b4129ad5c7a
+@notice_uuid = fd000332-b567-47e2-baca-28aa5b6ddb80
 @class_uuid = 370f14b2-c5a4-485e-91c6-0f35381d8577
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 @ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzczNDM5NzEsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiYWQwOWZlYmItMTVlNy00M2E0LThiNjUtNmQ5NWNlOWFiYzM0In0.hS0_TyXn655lYFc88KEFH1QZmq4hXGzDhEssJ-0mNE4
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzcwMjI4OTIsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNTQ5MGM1ZDctZTIxYy00NTdmLWFiNDYtYWE0MDBmM2JkMjc3In0.lme70Zu6OwiryTS3yro-m0OvlcFj-8T4MhhZlKovug4
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -61,6 +61,11 @@ Content-Type: application/json
 ### 認証ありのテスト
 GET {{base_url}}{{api_v}}/auth/test/cfmreq HTTP/1.1
 Authorization: {{jwt}}
+
+### 課題提出ログ取得
+GET {{base_url}}{{api_v}}/auth/users/homeworks/record?targetMonth=2025-01-01 00:00:00.000Z HTTP/1.1
+Authorization: {{jwt}}
+
 
 ### 課題一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
@@ -137,7 +142,7 @@ Authorization: {{jwt}}
 Content-Type: application/json
 
 {
-  "className": "テストクラス"
+  "className": "テスト"
 }
 
 ### クラス招待コード更新

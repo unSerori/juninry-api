@@ -8,11 +8,107 @@ import (
 	"juninry-api/service"
 	"juninry-api/utility/custom"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 var homeworkService = service.HomeworkService{}
+
+// 課題の提出履歴を取得
+func GetHomeworkRecordHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+
+	// リクエストパラメータを取得
+	targetMonth := c.Query("targetMonth")
+	if targetMonth == "" {
+		// エラーログ
+		logging.ErrorLog("Don't have targetMonth.", nil)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	//　文字列日付くんを元に戻してあげる
+	targetTime, err := time.Parse("2006-01-02 15:04:05.000Z", targetMonth)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failure to parse date.", err)
+		// レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	//問い合わせ処理と失敗レスポンス
+	homeworkList, err := homeworkService.GetHomeworkRecord(idAdjusted, targetTime)
+	if err != nil { //エラーハンドル
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) {
+			switch customErr.Type {
+			case custom.ErrTypePermissionDenied:
+				// エラーログ
+				logging.ErrorLog("Permission denied.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			}
+		} else {
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
+	}
+
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": homeworkList,
+	})
+}
 
 // 課題全件取得
 func FindHomeworkHandler(c *gin.Context) {
@@ -34,6 +130,19 @@ func FindHomeworkHandler(c *gin.Context) {
 	//問い合わせ処理と失敗レスポンス
 	homeworkList, err := homeworkService.FindHomework(idAdjusted)
 	if err != nil { //エラーハンドル
+
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) {
+			// エラーログ
+			logging.ErrorLog(customErr.Error(), nil)
+			// レスポンス
+			resStatusCode := http.StatusForbidden
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)
 		//レスポンス

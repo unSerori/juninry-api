@@ -59,14 +59,14 @@ func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 
 // おしらせテーブル(1件取得用)
 type NoticeDetail struct { // typeで型の定義, structは構造体
-	NoticeUuid        string
+	NoticeUuid        string    `json:"noticeUUID"`        // お知らせUUID
 	NoticeTitle       string    `json:"noticeTitle"`       //お知らせのタイトル
 	NoticeExplanatory string    `json:"noticeExplanatory"` //お知らせの内容
 	NoticeDate        time.Time `json:"noticeDate"`        //お知らせの作成日時
 	UserName          string    `json:"userName"`          // おしらせ発行ユーザ
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
-	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 親お知らせUUID
+	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 引用お知らせUUID
 	ReadStatus        int       `json:"readStatus"`        // 既読ステータス
 }
 
@@ -86,12 +86,12 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 
 	//取ってきたnoticeDetailを整形して、controllerに返すformatに追加する
 	formattedNotice := NoticeDetail{
-		NoticeTitle:       noticeDetail.NoticeTitle,       //お知らせタイトル
-		NoticeExplanatory: noticeDetail.NoticeExplanatory, //お知らせの内容
-		NoticeDate:        noticeDetail.NoticeDate,        //お知らせ作成日時
-		QuotedNoticeUuid:  noticeDetail.QuotedNoticeUuid,  // 親お知らせUUID
-		NoticeUuid:        noticeDetail.NoticeUuid,        //おしらせ引用UUID
-		ClassUuid:         noticeDetail.ClassUuid,         //おしらせ引用UUID
+		NoticeUuid:        noticeDetail.NoticeUuid,        // お知らせUUID
+		NoticeTitle:       noticeDetail.NoticeTitle,       // お知らせタイトル
+		NoticeExplanatory: noticeDetail.NoticeExplanatory, // お知らせの内容
+		NoticeDate:        noticeDetail.NoticeDate,        // お知らせ作成日時
+		QuotedNoticeUuid:  noticeDetail.QuotedNoticeUuid,  // 引用おしらせUUID
+		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 	}
 
 	//確認しているか取得
