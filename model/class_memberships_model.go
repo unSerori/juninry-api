@@ -4,6 +4,7 @@ package model
 type ClassMembership struct {
 	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
 	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
+	StudentNumber *int `xorm:"int" json:"classNumber"`  // クラス番号
 }
 
 // テーブル名
@@ -108,6 +109,7 @@ func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembe
 
 	return user, nil
 }
+
 func CheckClassMemberships(userUuids []string, classUuids []string) ([]ClassMembership, error) {
 	var  result []ClassMembership
 	err := db.In("user_uuid", userUuids).In("class_uuid", classUuids).Find(&result)
