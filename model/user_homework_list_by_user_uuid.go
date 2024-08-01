@@ -45,7 +45,7 @@ func FindUserHomework(userUuid string) ([]UserHomework, error) {
 }
 
 // userUuidから期限を次の日に指定して課題を取得、取得できなければエラーを返す
-func FindUserHomeworkforNextday(userUuid string) ([]UserHomework, error) {
+func FindUserHomeworkforNextday(userUuid []string) ([]UserHomework, error) {
 	//クソデカ構造体のスライスを定義
 	var userHomeworkList []UserHomework
 	// 現在の日付を取得
@@ -54,6 +54,13 @@ func FindUserHomeworkforNextday(userUuid string) ([]UserHomework, error) {
 	tomorrowMidnight := time.Date(
 		now.Year(), now.Month(), now.Day()+2, 0, 0, 0, 0, now.Location(),
 	)
+
+	// userUuid をインターフェース型にキャスト
+	uuidInterfaces := make([]interface{}, len(userUuid))
+	for i, v := range userUuid {
+		uuidInterfaces[i] = v
+	}
+
 	//クソデカ構造体をとるすごいやつだよ
 	err := db.Table("homeworks").
 		Join("LEFT", "teaching_materials", "homeworks.teaching_material_uuid = teaching_materials.teaching_material_uuid").
@@ -61,8 +68,8 @@ func FindUserHomeworkforNextday(userUuid string) ([]UserHomework, error) {
 		Join("LEFT", "subjects", "teaching_materials.subject_id = subjects.subject_id").
 		Join("LEFT", "class_memberships", "teaching_materials.class_uuid = class_memberships.class_uuid").
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
-		Join("LEFT", "homework_submissions", "homeworks.homework_uuid = homework_submissions.homework_uuid AND homework_submissions.user_uuid = ?", userUuid).
-		Where("class_memberships.user_uuid = ?", userUuid).
+		Join("LEFT", "homework_submissions", "homeworks.homework_uuid = homework_submissions.homework_uuid AND homework_submissions.user_uuid IN (?)", uuidInterfaces...).
+		In("class_memberships.user_uuid", uuidInterfaces...).
 		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_flag").
 		OrderBy("homework_limit, teaching_materials.class_uuid, submit_flag").
 		Find(&userHomeworkList)

@@ -1,6 +1,12 @@
 package model
 
-import "juninry-api/common/logging"
+import (
+	"errors"
+	"juninry-api/common/logging"
+	"juninry-api/utility/custom"
+
+	"github.com/go-sql-driver/mysql"
+)
 
 // ユーザテーブル  // モデルを構造体で定義
 type User struct { // typeで型の定義, structは構造体
@@ -8,10 +14,11 @@ type User struct { // typeで型の定義, structは構造体
 	UserName    string  `xorm:"varchar(25) not null" json:"userName"`            // 名前
 	UserTypeId  int     `xorm:"not null" json:"userTypeId"`                      // ユーザータイプ	1:教師, 2:児童, 3:保護者
 	MailAddress string  `xorm:"varchar(256) not null unique" json:"mailAddress"` // メアド
-	GenderId	int    	`xorm:"not null" json:"genderId"`                    	 // 性別 1:男性, 2:女性, 3:その他
+	GenderId    int     `xorm:"not null" json:"genderId"`                        // 性別 1:男性, 2:女性, 3:その他
 	Password    string  `xorm:"varchar(60) not null" json:"password"`            // bcrypt化されたパスワード
 	JtiUuid     string  `xorm:"varchar(36) unique" json:"jwtUUID"`               // jwtクレームのuuid
 	OuchiUuid   *string `xorm:"varchar(36) default NULL" json:"ouchiUUID"`       // 所属するおうちのUUID
+	OuchiPoint 	int    `xorm:"default 0" json:"ouchiPoint"`                      // おうちのポイント
 }
 
 // テーブル名
@@ -37,6 +44,15 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+
+ 	str := "2e17a448-985b-421d-9b9f-62e5a4f28c49"
+    strPtr := &str
+
+    // ポインタ型の変数に割り当て
+    var ouchiUUID *string = strPtr
+
+	
+
 	user3 := &User{
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
@@ -51,17 +67,19 @@ func CreateUserTestData() {
 		UserUuid:    "3cac1684-c1e0-47ae-92fd-6d7959759224",
 		UserName:    "test pupil",
 		UserTypeId:  2,
-		GenderId:   1,
+		GenderId:    1,
 		MailAddress: "test-pupil@gmail.com",
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "14dea318-8581-4cab-b233-995ce8e1a948",
+		OuchiUuid: ouchiUUID,
+		
 	}
 	db.Insert(user4)
 	user5 := &User{
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
 		UserTypeId:  1,
-		GenderId:   2,
+		GenderId:    2,
 		MailAddress: "test-teacher@gmail.com",
 		Password:    "$2a$10$Ig/s1wsrXBuZ7qvjudr4CeQFhqJTLQpoAAp1LrBNh5jX9VZZxa3R6", // C@tt
 		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
@@ -74,15 +92,34 @@ func CreateUserTestData() {
 		MailAddress: "test-parent@gmail.com",
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "0553853f-cbcf-49e2-81d6-a4c7e4b1b470",
+		OuchiUuid: ouchiUUID,
 	}
 	db.Insert(user6)
 }
 
 // 新規ユーザ登録
 // 新しい構造体をレコードとして受け取り、usersテーブルにinsertし、成功した列数とerrorを返す
-func CreateUser(record User) (int64, error) {
+func CreateUser(record User) error {
 	affected, err := db.Insert(record)
-	return affected, err
+	if err != nil { //エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
+		return err
+	}
+	if affected == 0 {
+		return custom.NewErr(custom.ErrTypeZeroEffectCUD)
+	}
+
+	return nil
 }
 
 // jtiを保存更新
@@ -246,9 +283,54 @@ func AssignOuchi(userUuid string, ouchiUuid string) (int64, error) {
 }
 
 // ouchiUuidとclassUuidからおこさまを取得
-func GetJunior(ouchiUuid string)(User, error) {
+func GetJunior(ouchiUuid string) (User, error) {
 	//junior
 	var junior User
 	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
 	return junior, err
+}
+
+// helpをもとにポイントを加算
+func IncrementUpdatePoint(userUuid string, helpUUID string) (*int, error) {
+
+	// 現在のポイントを取得
+	user,err := GetUser(userUuid)
+	if(err != nil){
+		return nil, err
+	}
+	// おてつだいを取得
+	help,err := GetHelp(helpUUID)
+	if(err != nil){
+		return nil,err
+	}
+
+	incrementedPoint := user.OuchiPoint + help.RewardPoint
+	// ポイントを更新
+	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: incrementedPoint})
+	if(err != nil){
+		return nil,err
+	}
+	ouchiPoint := &incrementedPoint
+	return ouchiPoint, err
+}
+
+// rewardをもとにポイントを減算
+func DecrementUpdatePoint(userUuid string, rewardUUID string) (int, error) {
+	// 現在のポイントを取得
+	user,err := GetUser(userUuid)
+	if(err != nil){
+		return 0, err
+	}
+	// ごほうびを取得
+	reward,err := GetReward(rewardUUID)
+	if(err != nil){
+		return 0,err
+	}
+	decrementedPoint := user.OuchiPoint - reward.RewardPoint
+	// ポイントを更新
+	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: decrementedPoint})
+	if(err != nil){
+		return 0,err
+	}
+	return decrementedPoint, err
 }
