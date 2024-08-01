@@ -5,8 +5,14 @@
 @class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
+<<<<<<< HEAD
+@ouchi_invite_code = 006605
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc4OTc5NzgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiNDY0OTZjMjEtNjNlMy00YzhmLTg3MWQtN2JlMTExNjA2YjNhIn0.8ORNMoTC0loTq__-xWICKXsiKvKaIT4o6uIQS-YMSLI
+
+=======
 @ouchi_invite_code = 339841
 @jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc1NzMyOTgsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiMDM3ZWVlNzAtM2ZmNy00YjlmLTlkZmEtYTQxZTViYzI4NDU4In0.ICQl7Nq_34KqSDwXw5ixt89j0mmEbAiEXc9UfUdoaos
+>>>>>>> develop
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
@@ -61,10 +67,23 @@ Content-Type: application/json
 GET {{base_url}}{{api_v}}/auth/test/cfmreq HTTP/1.1
 Authorization: {{jwt}}
 
+### 宿題作成
+POST {{base_url}}{{api_v}}/auth/users/homeworks/register HTTP/1.1
+Content-Type: application/json
+Authorization: {{jwt}}
+
+  {
+    "homeworkLimit": "2024-08-02T23:59:59Z",
+    "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+    "homeworkNote": "がんばえ",
+    "teachingMaterialUUID": "978f9835-5a16-4ac0-8581-7af8fac06b4e",
+    "startPage": 2,
+    "pageCount": 8
+  }
+
 ### 課題提出ログ取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/record?targetMonth=2025-01-01 00:00:00.000Z HTTP/1.1
 Authorization: {{jwt}}
-
 
 ### 課題一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
@@ -78,7 +97,7 @@ Content-Type: multipart/form-data; boundary={{boundary}}
 --{{boundary}}
 Content-Disposition: form-data; name="homeworkUUID";
 
-a3579e71-3be5-4b4d-a0df-1f05859a7104
+K2079e71-3be5-4b4d-a0df-1f05859a7104
 --{{boundary}}
 Content-Disposition: form-data; name="images"; filename="pa.PNG"
 Content-Type: image/png
