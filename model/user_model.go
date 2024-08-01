@@ -18,6 +18,7 @@ type User struct { // typeで型の定義, structは構造体
 	Password    string  `xorm:"varchar(60) not null" json:"password"`            // bcrypt化されたパスワード
 	JtiUuid     string  `xorm:"varchar(36) unique" json:"jwtUUID"`               // jwtクレームのuuid
 	OuchiUuid   *string `xorm:"varchar(36) default NULL" json:"ouchiUUID"`       // 所属するおうちのUUID
+	OuchiPoint 	int    `xorm:"default 0" json:"ouchiPoint"`                      // おうちのポイント
 }
 
 // テーブル名
@@ -43,6 +44,15 @@ func InitUserFK() error {
 
 // テストデータ
 func CreateUserTestData() {
+
+ 	str := "2e17a448-985b-421d-9b9f-62e5a4f28c49"
+    strPtr := &str
+
+    // ポインタ型の変数に割り当て
+    var ouchiUUID *string = strPtr
+
+	
+
 	user3 := &User{
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
@@ -61,6 +71,8 @@ func CreateUserTestData() {
 		MailAddress: "test-pupil@gmail.com",
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "14dea318-8581-4cab-b233-995ce8e1a948",
+		OuchiUuid: ouchiUUID,
+		
 	}
 	db.Insert(user4)
 	user5 := &User{
@@ -80,6 +92,7 @@ func CreateUserTestData() {
 		MailAddress: "test-parent@gmail.com",
 		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
 		JtiUuid:     "0553853f-cbcf-49e2-81d6-a4c7e4b1b470",
+		OuchiUuid: ouchiUUID,
 	}
 	db.Insert(user6)
 }
@@ -275,4 +288,49 @@ func GetJunior(ouchiUuid string) (User, error) {
 	var junior User
 	_, err := db.Where("ouchi_uuid = ? and user_type_id = 2", ouchiUuid).Get(&junior)
 	return junior, err
+}
+
+// helpをもとにポイントを加算
+func IncrementUpdatePoint(userUuid string, helpUUID string) (*int, error) {
+
+	// 現在のポイントを取得
+	user,err := GetUser(userUuid)
+	if(err != nil){
+		return nil, err
+	}
+	// おてつだいを取得
+	help,err := GetHelp(helpUUID)
+	if(err != nil){
+		return nil,err
+	}
+
+	incrementedPoint := user.OuchiPoint + help.RewardPoint
+	// ポイントを更新
+	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: incrementedPoint})
+	if(err != nil){
+		return nil,err
+	}
+	ouchiPoint := &incrementedPoint
+	return ouchiPoint, err
+}
+
+// rewardをもとにポイントを減算
+func DecrementUpdatePoint(userUuid string, rewardUUID string) (int, error) {
+	// 現在のポイントを取得
+	user,err := GetUser(userUuid)
+	if(err != nil){
+		return 0, err
+	}
+	// ごほうびを取得
+	reward,err := GetReward(rewardUUID)
+	if(err != nil){
+		return 0,err
+	}
+	decrementedPoint := user.OuchiPoint - reward.RewardPoint
+	// ポイントを更新
+	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: decrementedPoint})
+	if(err != nil){
+		return 0,err
+	}
+	return decrementedPoint, err
 }

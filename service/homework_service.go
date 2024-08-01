@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
@@ -181,8 +180,33 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 // userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
 func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
 
+	var children []string // useruuidを保管する配列
+	// 親かどうか
+	isPatron, _ := model.IsPatron(userUuid)
+	// 親であれば子どものUUIDを取得
+	if isPatron {
+		patron, err := model.GetUser(userUuid)
+		if patron.OuchiUuid == nil {
+			// 保護者さんおうちに所属してないよエラー
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		if err != nil {
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		children, err = model.GetChildrenUuids(*patron.OuchiUuid)
+		if err != nil {
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		if len(children) == 0 {
+			// あなたのおうちにこどもはいないよ
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+	} else {
+		children = append(children, userUuid)
+	}
+
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
-	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	userHomeworkList, err := model.FindUserHomeworkforNextday(children)
 	if err != nil { //エラーハンドル エラーを上に投げるだけ
 		return nil, err
 	}
