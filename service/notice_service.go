@@ -351,7 +351,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 		// 条件がない時の値を保存
 		noFilterStatus := -1
 
-		// XXX:絞り込み条件が予測しない値の場合(あってるかわからん)
+		// XXX:絞り込み条件が予測しない値の場合弾く
 		if sortReadStatus < noFilterStatus || sortReadStatus > 1 {
 			logging.ErrorLog("Do not have the necessary permissions", nil)
 			return []NoticeHeader{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)

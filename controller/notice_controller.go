@@ -230,8 +230,6 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		sortReadStatus = -1 //絞り込み条件がなかった場合を判定する用
 	}
 
-	fmt.Println("コントローラー絞込み条件:", sortReadStatus)
-
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
 	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, sortReadStatus)
 	// 取得できなかった時のエラーを判断
