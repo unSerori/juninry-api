@@ -1,9 +1,5 @@
 package model
 
-import (
-	"fmt"
-)
-
 // ユーザのクラス所属中間テーブル
 type NoticeReadStatus struct {
 	NoticeUuid string `xorm:"varchar(36) pk" json:"noticeUUID"` // おしらせID
@@ -41,10 +37,10 @@ func CreateNoticeReadStatusTestData() {
 }
 
 // notice_read_statusにデータがあるか調べる(確認済みの場合、データが存在する)
-func GetNoticeReadStatus(noticeUuid string, ouchiUuid string) (bool, error) {
+func IsRead(noticeUuid string, ouchiUuid string) (bool, error) {
 
 	//noticeUuidとuserUuidから一致するデータがあるか取得
-	has, err := db.Where("notice_uuid = ? AND ouchi_uuid = ?", noticeUuid, ouchiUuid).Get(&NoticeReadStatus{})
+	has, err := db.Where("notice_uuid = ? AND ouchi_uuid = ?", noticeUuid, ouchiUuid).Exist(&NoticeReadStatus{})
 	if err != nil {
 		return false, err
 	}
@@ -70,9 +66,10 @@ func GetNoticeStatusList(noticeUuid string) ([]NoticeReadStatus, error) {
 }
 
 // お知らせ確認登録
-func ReadNotice(noticeUuid string, ouchiUuid string) error {
-
-	affected, err := db.Insert("notice_uuid = ?, ouchi_uuid = ?", noticeUuid, ouchiUuid)
-	fmt.Println(affected)
+func ReadNotice(record NoticeReadStatus) error {
+	attached, err := db.Insert(record)
+	if err != nil || attached == 0 {
+		return err
+	}
 	return err
 }

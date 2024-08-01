@@ -3,7 +3,9 @@ package service
 import (
 	"errors"
 	"io"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility"
 	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
@@ -18,9 +20,85 @@ import (
 
 type HomeworkService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
+// 課題の提出履歴の構造体
+type SubmissionRecord struct {
+	LimitDate      	time.Time	`json:"limitDate"`			// 締め切り
+	SubmissionCount int			`json:"submissionCount"`	// 提出数
+	HomeworkCount  	int			`json:"homeworkCount"`		// 課題数
+}
+
+// 課題の提出履歴を取得
+func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time) ([]SubmissionRecord, error) {
+	// ユーザーが生徒かな
+	isJunior, err := model.IsJunior(userId)
+	if err != nil {
+		return nil, err
+	}
+	if !isJunior {
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// その月締め切りの課題一覧を取得
+	// ユーザーIDからクラスを取得
+	classMemberships, err := model.FindClassMemberships(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// クラスIDをスライスに変換
+	var classUuids []string
+	for _, value := range classMemberships {
+		classUuids = append(classUuids, value.ClassUuid)
+	}
+
+	// クラスIDから教材一覧を取得
+	teachingMaterials, err := model.FindTeachingMaterials(classUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	// 教材IDをスライスに変換
+	var materialUuids []string
+	for _, value := range teachingMaterials {
+		materialUuids = append(materialUuids, value.TeachingMaterialUuid)
+	}
+
+	// 教材IDから課題一覧を取得
+	homeworks, err := model.FindHomeworks(materialUuids, targetMonth)
+	if err != nil {
+		return nil, err
+	}
+
+	// 課題の日付をキーとしたMap
+	var homeworkUuidsMap = make(map[time.Time] []string)
+
+	// 提出期限を1日でまとめたのキーに課題UUIDを追加
+	for _, v := range homeworks {
+		// 時間を24時間単位に切り捨てる
+		homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)] = append(homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)], v.HomeworkUuid)
+	}
+
+	// レスポンスの構造体
+	var submissionRecord []SubmissionRecord
+
+	for key, value := range homeworkUuidsMap {
+		// 課題が提出されているかを確認
+		count, err := model.CheckHomeworkSubmission(value)
+		if err != nil {
+			return nil, err
+		}
+
+		// 日付と課題数、提出数をどこどこ追加
+		submissionRecord = append(submissionRecord, SubmissionRecord{LimitDate: key, HomeworkCount: len(value), SubmissionCount: int(count)})
+	}
+
+	return submissionRecord, nil
+}
+
+
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
@@ -40,14 +118,27 @@ type TransformedData struct {
 
 // クラスごとに課題データをまとめた構造体
 type ClassHomeworkSummary struct {
-	ClassName string      `json:"className"` //提出期限
-	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+	ClassName    string         `json:"className"`    //提出期限
+	HomeworkData []HomeworkData `json:"homeworkData"` //課題データのスライス
 }
 
-
+// 宿題登録のリクエストバインド構造体
+type BindRegisterHW struct { // model.Homework + classUUID
+	model.Homework
+	ClassUUID string `json:"classUUID"`
+}
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
+
+	// 親には宿題一覧使えないよ
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
 
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
 	userHomeworkList, err := model.FindUserHomework(userUuid)
@@ -87,7 +178,6 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	return transformedDataList, nil
 }
 
-
 // userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
 func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
 
@@ -119,8 +209,8 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 	var transformedDataList []ClassHomeworkSummary
 	for className, homeworkData := range transformedDataMap {
 		transformedData := ClassHomeworkSummary{
-			ClassName: className,
-			HomeworkData:  homeworkData,
+			ClassName:    className,
+			HomeworkData: homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
 	}
@@ -224,6 +314,9 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
 	bHW.ImageNameListString = imageNameListString
 
+	// 提出日時を現在日時に設定
+	bHW.SubmissionDate = time.Now()
+
 	// DBに登録
 	_, err := model.StoreHomework(bHW)
 	if err != nil {
@@ -261,4 +354,50 @@ func validMime(mimetype string) (bool, string) {
 	}
 
 	return false, ""
+}
+
+// 宿題登録
+func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (string, error) {
+	// ユーザー権限の確認
+	isTeacher, err := model.IsTeacher(userId)
+	if err != nil {
+		return "", err
+	}
+	if !isTeacher { // 教師権限を持っていないならエラー
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	logging.SuccessLog("User creation authority confirmation complete")
+
+	// 指定されたクラスIDに投稿ユーザー自身が所属しているかを確認
+	isMember, err := model.CheckUserClassMembership(bHW.ClassUUID, userId)
+	if err != nil {
+		return "", err
+	}
+	if !isMember {
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	// 投稿者ID追加
+	bHW.HomeworkPosterUuid = userId
+	logging.SuccessLog("Confirmation of user's affiliation authority complete.")
+
+	// 一意ID生成
+	newId, err := uuid.NewRandom() // 新しいuuidの生成
+	if err != nil {
+		return "", err
+	}
+	bHW.HomeworkUuid = newId.String() // 設定
+
+	// 構造体をテーブルモデルに変換
+	var hw model.Homework // 構造体のインスタンス
+	utility.ConvertStructCopyMatchingFields(&bHW, &hw)
+
+	// 登録
+	err = model.CreateHW(hw)
+	if err != nil {
+		logging.ErrorLog("Failed to register homework", err)
+		return "", err
+	}
+
+	return bHW.HomeworkUuid, nil
 }

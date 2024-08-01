@@ -52,6 +52,12 @@ func routing(engine *gin.Engine, handlers Handlers) {
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
 				{
+					// 宿題登録
+					homeworks.POST("/register", controller.RegisterHWHandler) // /v1/auth/users/homeworks/register
+
+					// 相当月の提出状況を取得　//TODO: 親と保護者をどうするか決めてないので一旦弾いてる
+					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
+
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
@@ -69,7 +75,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notices/{notice_uuid}
 
 					//　お知らせ新規登録
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register

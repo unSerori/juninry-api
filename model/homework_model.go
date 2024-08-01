@@ -1,8 +1,12 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+	"juninry-api/utility/custom"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 // 課題テーブル
@@ -70,4 +74,38 @@ func CreateHomeworkTestData() {
 		HomeworkNote:         "3こめ",
 	}
 	db.Insert(homework3)
+}
+
+// 宿題登録
+func CreateHW(record Homework) error {
+	affected, err := db.Insert(record)
+	if err != nil { //エラーハンドル
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
+		return err
+	}
+	if affected == 0 {
+		return custom.NewErr(custom.ErrTypeZeroEffectCUD)
+	}
+
+	return nil
+}
+
+// 教材ID,と時刻から相当月の課題一覧を取得
+func FindHomeworks(teachingMaterialUuids []string, targetMonth time.Time) ([]Homework, error) {
+	var homeworks []Homework
+	err := db.In("teaching_material_uuid", teachingMaterialUuids).Where("homework_limit between ? and ?", targetMonth, targetMonth.AddDate(0, 1, 0)).Asc("homework_limit").Find(&homeworks)
+	if err != nil {
+		return nil, err
+	}
+	return homeworks, nil
 }

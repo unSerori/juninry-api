@@ -50,6 +50,10 @@ server.log
 
 # upload directory
 /upload/homework/*
+# サンプルの宿題画像
+/upload/homework/bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg
+/upload/homework/gggggggg-176f-4dea-bec0-21464f192869.jpg
+/upload/homework/rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg
 
 # empty directory
 !.gitignore

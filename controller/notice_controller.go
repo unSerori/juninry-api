@@ -148,6 +148,15 @@ func GetNoticeDetailHandler(ctx *gin.Context) {
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
 				})
+			case custom.ErrTypePermissionDenied: // 所属していないクラスのお知らせを取得しようとしているね
+				// エラーログ
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
 			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
 				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
@@ -201,10 +210,9 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 
 	var classUuids []string
 	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
-		for _, idStr := range idsStr {
-			classUuids = append(classUuids, idStr)
-		}
+		classUuids = append(classUuids, idsStr...)
 	}
+
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
 	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
@@ -224,6 +232,18 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 					"srvResData": gin.H{},
 				})
 				return
+
+			case custom.ErrTypeNoResourceExist:
+				// エラーログ
+				logging.ErrorLog("Not Found.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
 			default:
 				// エラーログ
 				logging.ErrorLog("aiueos", err)
@@ -238,15 +258,19 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		// エラーログ
 		logging.ErrorLog("notice find error", err)
 		// レスポンス(StatusInternalServerError サーバーエラー500番)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"srvResData": gin.H{},
 		})
 		return //　<-返すよって型指定してないから切り上げるだけ
 	}
 
 	// レスポンス(StatusOK　成功200番)
-	ctx.JSON(http.StatusOK, gin.H{
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
 		"srvResData": gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
 			"notices": notices,
 		},
 	})
@@ -254,7 +278,6 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 
 // お知らせ既読処理
 func NoticeReadHandler(ctx *gin.Context) {
-
 	// ユーザーを特定する
 	id, exists := ctx.Get("id")
 	if !exists { // idがcに保存されていない。
@@ -360,7 +383,7 @@ func GetNoticestatusHandler(ctx *gin.Context) {
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
-	fmt.Println("noticeUuid：" + noticeUuid)
+	fmt.Println("noticeUuid:" + noticeUuid)
 
 	noticeStatus, err := noticeService.GetNoticeStatus(noticeUuid, idAdjusted)
 	// 取得できなかった時のエラーを判断
