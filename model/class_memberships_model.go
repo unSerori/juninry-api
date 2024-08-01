@@ -4,6 +4,7 @@ package model
 type ClassMembership struct {
 	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
 	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
+	StudentNumber *int `xorm:"int" json:"classNumber"`  // クラス番号
 }
 
 // テーブル名

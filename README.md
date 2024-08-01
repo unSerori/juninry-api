@@ -520,8 +520,10 @@ SSH URL:
               "className": "3-2 ふたば学級",
               "juniorData": [
                 {
+                  "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
                   "userName": "test pupil",
-                  "genderId": 1
+                  "genderId": 1,
+                  "studentNumber": null // 数字 or null
                 }
               ]
             }
@@ -706,6 +708,12 @@ SSH URL:
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ: ※任意
+
+    ```json
+      "studentNumber": 20
+    ```
 
 - **レスポンス:**
   - ステータスコード: 200 OK
