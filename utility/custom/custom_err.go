@@ -20,16 +20,17 @@ type ErrType int
 
 // エラーの種類を定義
 const ( // ========================ここに新しい独自のエラーを追加していく
-	ErrTypeCustom             ErrType = iota
-	ErrTypeHashingPassFailed          // ハッシュ化失敗
-	ErrTypeGenTokenFailed             // トークン作成失敗
-	ErrTypeNoResourceExist            // リソースが存在しない
-	ErrTypePassMismatch               // パスワードが一致しない
-	ErrTypePermissionDenied           // 権限がない
-	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
-	ErrTypeInvalidFileFormat          // ファイル形式が無効
-	ErrTypeFileSizeTooLarge           // ファイルサイズがでか杉ます;~;
-	ErrTypeAlreadyExists              // すでに存在するので登録する必要がない&できない
+	ErrTypeCustom                  ErrType = iota
+	ErrTypeHashingPassFailed               // ハッシュ化失敗
+	ErrTypeGenTokenFailed                  // トークン作成失敗
+	ErrTypeNoResourceExist                 // リソースが存在しない
+	ErrTypePassMismatch                    // パスワードが一致しない
+	ErrTypePermissionDenied                // 権限がない
+	ErrTypeMaxAttemptsReached              // 最大試行回数に達した
+	ErrTypeInvalidFileFormat               // ファイル形式が無効
+	ErrTypeFileSizeTooLarge                // ファイルサイズがでか杉ます;~;
+	ErrTypeAlreadyExists                   // すでに存在するので登録する必要がない&できない
+	ErrTypeUnforeseenCircumstances         // 予期せぬ条件
 
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
@@ -40,15 +41,16 @@ const ( // ========================ここに新しい独自のエラーを追加
 
 // エラーに対するデフォルトmsgを設定
 var errTypeMsg = map[ErrType]string{
-	ErrTypeHashingPassFailed:  "",
-	ErrTypeGenTokenFailed:     "",
-	ErrTypeNoResourceExist:    "could not find the relevant ID",
-	ErrTypePassMismatch:       "password does not match",
-	ErrTypePermissionDenied:   "do not have the necessary permissions",
-	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
-	ErrTypeInvalidFileFormat:  "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
-	ErrTypeFileSizeTooLarge:   "the file size exceeds the allowed limit",
-	ErrTypeAlreadyExists:      "no need to register as it already exists & cannot be done",
+	ErrTypeHashingPassFailed:       "",
+	ErrTypeGenTokenFailed:          "",
+	ErrTypeNoResourceExist:         "could not find the relevant ID",
+	ErrTypePassMismatch:            "password does not match",
+	ErrTypePermissionDenied:        "do not have the necessary permissions",
+	ErrTypeMaxAttemptsReached:      "maximum number of attempts reached",
+	ErrTypeInvalidFileFormat:       "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
+	ErrTypeFileSizeTooLarge:        "the file size exceeds the allowed limit",
+	ErrTypeAlreadyExists:           "no need to register as it already exists & cannot be done",
+	ErrTypeUnforeseenCircumstances: "unforeseen circumstances",
 
 	ErrTypeOtherErrorsInTheORM:       "",
 	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",

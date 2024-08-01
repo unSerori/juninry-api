@@ -8,6 +8,7 @@ import (
 	"juninry-api/service"
 	"juninry-api/utility/custom"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -209,13 +210,30 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	idAdjusted := id.(string) // アサーション
 
 	var classUuids []string
+	// クエリパラメータに入力されているクラスIDを保存していく(複数)
 	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
 		classUuids = append(classUuids, idsStr...)
 	}
 
+	var sortReadStatus int
+	var err error
+	// クエリパラメータに入力されている条件を保存する(単数) 指定がない場合マイナス値を入れる
+	if idStr := ctx.Query("readstatus"); idStr != "" {
+		// 文字列を整数に変換
+		sortReadStatus, err = strconv.Atoi(idStr)
+		if err != nil {
+			// 変換に失敗した場合のエラーハンドリング
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid readstatus parameter"})
+			return
+		}
+	} else {
+		sortReadStatus = -1 //絞り込み条件がなかった場合を判定する用
+	}
+
+	fmt.Println("コントローラー絞込み条件:", sortReadStatus)
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, sortReadStatus)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
@@ -238,6 +256,17 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 				logging.ErrorLog("Not Found.", err)
 				// レスポンス
 				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
+			case custom.ErrTypeUnforeseenCircumstances:
+				//エラーログ
+				logging.ErrorLog("unforeseen circumstances", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
@@ -270,8 +299,8 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
 		"srvResData": gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"notices": notices,
+			"srvResMsg": http.StatusText(resStatusCode),
+			"notices":   notices,
 		},
 	})
 }
