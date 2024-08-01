@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"math/big"
 	"time"
 
@@ -53,7 +53,7 @@ func (s *OuchiService) generateOuchiInviteCode(bOuchi model.Ouchi) (model.Ouchi,
 
 	// 試行回数10回以上で失敗したらエラーを返す
 	logging.ErrorLog("Maximum number of attempts reached", nil)
-	return model.Ouchi{}, common.NewErr(common.ErrTypeMaxAttemptsReached)
+	return model.Ouchi{}, custom.NewErr(custom.ErrTypeMaxAttemptsReached)
 }
 
 // おうち作成
@@ -67,7 +67,7 @@ func (s *OuchiService) PermissionCheckedOuchiCreation(userUuid string, bOuchi mo
 	fmt.Println(isPatron)
 	if !isPatron { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return model.Ouchi{}, common.NewErr(common.ErrTypePermissionDenied)
+		return model.Ouchi{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// ユーザがすでにおうちに所属していないかの確認
@@ -78,7 +78,7 @@ func (s *OuchiService) PermissionCheckedOuchiCreation(userUuid string, bOuchi mo
 	// null確認
 	if user.OuchiUuid != nil {
 		logging.ErrorLog("You are already assigned to an Ouchi", nil)
-		return model.Ouchi{}, common.NewErr(common.ErrTypeAlreadyExists)
+		return model.Ouchi{}, custom.NewErr(custom.ErrTypeAlreadyExists)
 	}
 
 	// おうちUUIDの生成
@@ -121,7 +121,7 @@ func (s *OuchiService) PermissionCheckedRefreshOuchiInviteCode(userUuid string, 
 	}
 	if !isPatron { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return model.Ouchi{}, common.NewErr(common.ErrTypePermissionDenied)
+		return model.Ouchi{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 	// おうちUUIDが存在するかどうか
 	targetouchi, err := model.GetOuchi(ouchiUuid)
@@ -129,7 +129,7 @@ func (s *OuchiService) PermissionCheckedRefreshOuchiInviteCode(userUuid string, 
 		return model.Ouchi{}, err
 	}
 	if targetouchi.OuchiUuid == "" { // そんなおうち存在しない場合弾く
-		return model.Ouchi{}, common.NewErr(common.ErrTypeNoResourceExist)
+		return model.Ouchi{}, custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// 招待コード入ったクラスもらえます！
@@ -151,7 +151,7 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 	}
 	if !isJunior { // 先生も親も両方弾く
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return "", common.NewErr(common.ErrTypePermissionDenied)
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// ouchiUuidが存在するか
@@ -160,7 +160,7 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 		return "", err
 	}
 	if targetOuchi.OuchiUuid == "" { // おうちが存在しない場合
-		return "", common.NewErr(common.ErrTypeNoResourceExist)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// ユーザにouchiUuidを付与
@@ -171,9 +171,9 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return "", common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return "", custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return "", common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return "", custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー

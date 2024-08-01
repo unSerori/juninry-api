@@ -1,22 +1,97 @@
 package service
 
 import (
+	"errors"
 	"io"
-	"juninry-api/common"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"fmt"
-
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
 type HomeworkService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
+
+// 課題の提出履歴の構造体
+type SubmissionRecord struct {
+	LimitDate      	time.Time	`json:"limitDate"`			// 締め切り
+	SubmissionCount int			`json:"submissionCount"`	// 提出数
+	HomeworkCount  	int			`json:"homeworkCount"`		// 課題数
+}
+
+// 課題の提出履歴を取得
+func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time) ([]SubmissionRecord, error) {
+	// ユーザーが生徒かな
+	isJunior, err := model.IsJunior(userId)
+	if err != nil {
+		return nil, err
+	}
+	if !isJunior {
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// その月締め切りの課題一覧を取得
+	// ユーザーIDからクラスを取得
+	classMemberships, err := model.FindClassMemberships(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// クラスIDをスライスに変換
+	var classUuids []string
+	for _, value := range classMemberships {
+		classUuids = append(classUuids, value.ClassUuid)
+	}
+
+	// クラスIDから教材一覧を取得
+	teachingMaterials, err := model.FindTeachingMaterials(classUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	// 教材IDをスライスに変換
+	var materialUuids []string
+	for _, value := range teachingMaterials {
+		materialUuids = append(materialUuids, value.TeachingMaterialUuid)
+	}
+
+	// 教材IDから課題一覧を取得
+	homeworks, err := model.FindHomeworks(materialUuids, targetMonth)
+	if err != nil {
+		return nil, err
+	}
+
+	// 課題の日付をキーとしたMap
+	var homeworkUuidsMap = make(map[time.Time] []string)
+
+	// 提出期限を1日でまとめたのキーに課題UUIDを追加
+	for _, v := range homeworks {
+		// 時間を24時間単位に切り捨てる
+		homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)] = append(homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)], v.HomeworkUuid)
+	}
+
+	// レスポンスの構造体
+	var submissionRecord []SubmissionRecord
+
+	for key, value := range homeworkUuidsMap {
+		// 課題が提出されているかを確認
+		count, err := model.CheckHomeworkSubmission(value)
+		if err != nil {
+			return nil, err
+		}
+
+		// 日付と課題数、提出数をどこどこ追加
+		submissionRecord = append(submissionRecord, SubmissionRecord{LimitDate: key, HomeworkCount: len(value), SubmissionCount: int(count)})
+	}
+
+	return submissionRecord, nil
+}
+
 
 // 課題データの構造体
 type HomeworkData struct {
@@ -46,6 +121,15 @@ type ClassHomeworkSummary struct {
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
+
+	// 親には宿題一覧使えないよ
+	isPatron, err := model.IsPatron(userUuid)
+	if err != nil {
+		return nil, err
+	}
+	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
 
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
 	userHomeworkList, err := model.FindUserHomework(userUuid)
@@ -96,19 +180,18 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 		patron, err := model.GetUser(userUuid)
 		if patron.OuchiUuid == nil {
 			// 保護者さんおうちに所属してないよエラー
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		if err != nil {
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		children, err = model.GetChildrenUuids(*patron.OuchiUuid)
-		fmt.Print(children)
 		if err != nil {
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		if len(children) == 0 {
 			// あなたのおうちにこどもはいないよ
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 	} else {
 		children = append(children, userUuid)
@@ -186,14 +269,14 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 			maxSize = int64(maxSizeByEnvInt) // int64に変換
 		}
 		if image.Size > maxSize { // ファイルサイズと比較する
-			return common.NewErr(common.ErrTypeFileSizeTooLarge)
+			return custom.NewErr(custom.ErrTypeFileSizeTooLarge)
 		}
 
 		// 画像リクエストのContent-Typeから形式(png, jpg, jpeg, gif)の確認
 		mimeType := image.Header.Get("Content-Type") // リクエスト画像のmime typeを取得
 		ok, _ := validMime(mimeType)                 // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type of the request image is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type of the request image is invalid"))
 		}
 		// ファイルのバイナリからMIMEタイプを推測し確認、拡張子を取得
 		buffer := make([]byte, 512) // バイトスライスのバッファを作成
@@ -206,7 +289,7 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 		mimeTypeByBinary := http.DetectContentType(buffer) // 読み込んだバッファからコンテントタイプを取得
 		ok, validType := validMime(mimeTypeByBinary)       // 許可されたMIMEタイプか確認
 		if !ok {
-			return common.NewErr(common.ErrTypeInvalidFileFormat, common.WithMsg("the Content-Type inferred from the request image binary is invalid"))
+			return custom.NewErr(custom.ErrTypeInvalidFileFormat, custom.WithMsg("the Content-Type inferred from the request image binary is invalid"))
 		}
 		fileExt := strings.Split(validType, "/")[1] // 画像の種類を取得して拡張子として保存
 
@@ -247,9 +330,23 @@ func (s *HomeworkService) SubmitHomework(bHW *model.HomeworkSubmission, form *mu
 	// 画像一覧を提出中間テーブル構造体インスタンスに追加し、
 	bHW.ImageNameListString = imageNameListString
 
+	// 提出日時を現在日時に設定
+	bHW.SubmissionDate = time.Now()
+
 	// DBに登録
 	_, err := model.StoreHomework(bHW)
 	if err != nil {
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
 		return err
 	}
 

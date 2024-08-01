@@ -1,9 +1,8 @@
 package model
 
-import (
-	"fmt"
-	"juninry-api/logging"
-)
+
+import "juninry-api/common/logging"
+
 
 // ユーザテーブル  // モデルを構造体で定義
 type User struct { // typeで型の定義, structは構造体
@@ -284,9 +283,6 @@ func IncrementUpdatePoint(userUuid string, helpUUID string) (*int, error) {
 	}
 
 	incrementedPoint := user.OuchiPoint + help.RewardPoint
-	fmt.Println(user.OuchiPoint)
-	fmt.Println(help.RewardPoint)
-	fmt.Println(incrementedPoint)
 	// ポイントを更新
 	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: incrementedPoint})
 	if(err != nil){

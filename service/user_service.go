@@ -2,11 +2,11 @@ package service
 
 import (
 	"errors"
-	"juninry-api/auth"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
-	"juninry-api/security"
+	"juninry-api/utility/auth"
+	"juninry-api/utility/custom"
+	"juninry-api/utility/security"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -25,7 +25,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// パスワードをハッシュ化
 	hashed, err := security.HashingByEncrypt(bUser.Password)
 	if err != nil {
-		return "", common.NewErr(common.ErrTypeHashingPassFailed, common.WithMsg(err.Error())) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
+		return "", custom.NewErr(custom.ErrTypeHashingPassFailed, custom.WithMsg(err.Error())) // controller側でエラーを判別するために、ENUMで管理されたエラーを返す
 	}
 	// ハッシュ(:バイト配列)化されたパスワードを文字列にsh知恵構造体に戻す
 	bUser.Password = string(hashed)
@@ -38,9 +38,9 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return "", common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return "", custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return "", common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return "", custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー
@@ -50,7 +50,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	// 登録が成功したらトークンを生成する
 	token, err := auth.GenerateToken(bUser.UserUuid) // トークンを取得
 	if err != nil {
-		return "", common.NewErr(common.ErrTypeGenTokenFailed, common.WithMsg(err.Error()))
+		return "", custom.NewErr(custom.ErrTypeGenTokenFailed, custom.WithMsg(err.Error()))
 	}
 
 	return token, nil
@@ -78,7 +78,7 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	}
 	if !isFound {
 		logging.ErrorLog("Could not find the relevant ID.", nil)
-		return "", common.NewErr(common.ErrTypeNoResourceExist)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// 登録済みのパスワードを取得し、
@@ -89,13 +89,13 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	}
 	if !isFound {
 		logging.ErrorLog("Could not find the relevant ID.", nil)
-		return "", common.NewErr(common.ErrTypeNoResourceExist)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 	// 比較する
 	err = security.CompareHashAndStr([]byte(pass), bUser.Password)
 	if err != nil {
 		logging.ErrorLog("Password does not match.", err)
-		return "", common.NewErr(common.ErrTypePassMismatch, common.WithMsg(err.Error()))
+		return "", custom.NewErr(custom.ErrTypePassMismatch, custom.WithMsg(err.Error()))
 	}
 
 	// トークンを生成しなおす
@@ -106,7 +106,7 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 	}
 	if !isFound { // idが見つからなかった
 		logging.ErrorLog("Could not find the relevant ID.", err)
-		return "", common.NewErr(common.ErrTypeNoResourceExist)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 	token, err := auth.GenerateToken(id) // user_uuidをもとにトークンを生成
 	if err != nil {

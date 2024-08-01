@@ -1,5 +1,7 @@
 # juninry
 
+[RepositoryURL](https://github.com/unSerori/juninry-api)
+
 ## 概要
 
 juninryのGo APIサーバ。
@@ -39,6 +41,18 @@ SSH URL:
     ```
 
 5. .envファイルをもらうか作成。[.envファイルの説明](#env)
+
+## ディレクトリ構成
+
+- presentation, application, domain, infrastructure: DDDの4パッケージ
+- view: テスト用ページの静的ファイル
+- middleware: ミドルウェア。この中でDDD形式などに分割すべきかも。
+- route: ルーティングや付随する初期設定
+- utility: 再利用性の高い単体の処理群
+- common: utilityの中でもより一般性の高い処理群
+- asset: サーバー自体が最初から持つリソースや画像送信テストなどで使うリソースを置いておく
+- upload: アップロードされたファイル
+- controller, service, model: 旧アーキテクチャの3パッケージ、DDD形式に変換したい。modelはテーブルモデル定義ファイルとしてinfrastructure/modelに移動したい
 
 ## API仕様書
 
@@ -177,6 +191,45 @@ SSH URL:
 </details>
 
 <details>
+  <summary>特定の月の課題の提出状況を取得するエンドポイント</summary>
+
+- **URL** `/v1/auth/users/homeworks/record?targetMonth=2025-01-01 00:00:00.000Z`
+- **メソッド** GET
+- **説明** 送られてきた特定の月の各日に設定されている課題の数と提出状況を返す
+- **リクエスト**
+  - ヘッダー:
+    - Authorization: (string) 認証トークン
+
+- **レスポンス**:
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": [
+          {
+            "limitDate": "2025-01-21T00:00:00Z",
+            "submissionCount": 0,
+            "homeworkCount": 2
+          },,,
+        ],
+        "srvResMsg": "OK"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
+</details>
+
+<details>
   <summary>クラスの課題情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/homeworks/upcoming`
@@ -265,10 +318,40 @@ SSH URL:
 
       ```json
       {
-          "noticeTitle": "【持ち物】習字道具必要です",
-          "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-          "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
-          "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b"
+        "srvResData": {
+          "notices": [
+            {
+              "noticeUUID": "51e6807b-9528-4a4b-bbe2-d59e9118a70d",
+              "noticeTitle": "【持ち物】おべんとうとぞうきん",
+              "noticeDate": "2024-07-27T10:53:22Z",
+              "userName": "test teacher",
+              "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+              "className": "3-2 ふたば学級",
+              "readStatus": 0 // 未読: 0, 既読: 1, 対象外: null
+            },,,
+          ]
+        },
+        "srvResMsg": "OK"
+      }
+      ```
+
+  - ステータスコード: 403 Forbidden
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Forbidden"
+      }
+      ```
+
+  - ステータスコード: 404
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {},
+        "srvResMsg": "Not Found"
       }
       ```
 
@@ -298,7 +381,7 @@ SSH URL:
           "className": "3-2 ふたば学級",
           "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
           "quotedNoticeUUID": "2097a7bb-5140-460d-807e-7173a51672bd",
-          "readStatus": 0
+          "readStatus": 0   // 未読: 0, 既読: 1, 対象外: null
         },
         "srvResMsg": "OK"
       }
@@ -686,10 +769,43 @@ SSH URL:
       ```json
         {
           "srvResData": {
-            "className": "テスト3家"
+            "ouchiName": "テスト3家"
           },
           "srvResMsg": "OK"
         }      
+      ```
+
+</details>
+
+<details>
+  <summary>教材を登録するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/t_materials/register`
+- **メソッド:** POST
+- **説明:** 教師ユーザーが教科をもとに教材をクラスに登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: multipart/form-data
+  - ボディ: Form
+    - Form Fields - 教材の情報
+      - teachingMaterialName: リピート2
+      - subjectId: 4
+      - classUUID: 09eba495-fe09-4f54-a856-9bea9536b661
+    - Files - 教材の画像
+      - images: repeat_2.jpg
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created.",
+        "srvResData": {
+          "teachingMaterialUuid": "95af0199-3692-40af-b68f-a76e46cfad95"
+        },
+      }
       ```
 
 </details>
@@ -747,6 +863,10 @@ JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用の�
 JWT_TOKEN_LIFETIME=JWTトークンの有効期限
 MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
 ```
+
+## TODO
+
+- 三層アーキテクチャなエンドポイントをDDDにリファクタリング。現状はmodel層として使っていたものがinfrastructure層外に置き去りにされている。
 
 ## 開発者
 

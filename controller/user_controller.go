@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
-	common "juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,10 +34,10 @@ func RegisterUserHandler(c *gin.Context) {
 	token, err := userService.RegisterUser(bUser)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
 				// エラーログ
 				logging.ErrorLog("Conflict.", err)
 				// レスポンス
@@ -158,10 +158,10 @@ func LoginHandler(c *gin.Context) {
 	token, err := userService.LoginUser(bUser)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist, common.ErrTypePassMismatch: // ユーザーが見つからなかった, パスワードが不一致
+			case custom.ErrTypeNoResourceExist, custom.ErrTypePassMismatch: // ユーザーが見つからなかった, パスワードが不一致
 				// エラーログ
 				logging.ErrorLog("Bad Request.", err)
 				// レスポンス

@@ -1,5 +1,7 @@
 package model
 
+import "juninry-api/domain"
+
 // 教材テーブル
 type TeachingMaterial struct { // typeで型の定義, structは構造体
 	TeachingMaterialUuid      string `xorm:"varchar(36) pk" json:"teachingMaterialUUID"`          // 教材ID
@@ -29,6 +31,30 @@ func InitTeachingMaterialFK() error {
 	return nil
 }
 
+// エンティティとの相互変換
+
+// テーブルモデルをドメインエンティティに変換
+func (tm *TeachingMaterial) ToDomainEntity() *domain.TeachingMaterial {
+	return &domain.TeachingMaterial{
+		TeachingMaterialUuid:      tm.TeachingMaterialUuid,
+		TeachingMaterialName:      tm.TeachingMaterialName,
+		SubjectId:                 tm.SubjectId,
+		TeachingMaterialImageUuid: tm.TeachingMaterialImageUuid,
+		ClassUuid:                 tm.ClassUuid,
+	}
+}
+
+// ドメインエンティティをテーブルモデルに変換
+func FromDomainEntity(de *domain.TeachingMaterial) *TeachingMaterial {
+	return &TeachingMaterial{
+		TeachingMaterialUuid:      de.TeachingMaterialUuid,
+		TeachingMaterialName:      de.TeachingMaterialName,
+		SubjectId:                 de.SubjectId,
+		TeachingMaterialImageUuid: de.TeachingMaterialImageUuid,
+		ClassUuid:                 de.ClassUuid,
+	}
+}
+
 // テストデータ
 func CreateTeachingMaterialTestData() {
 	tm1 := &TeachingMaterial{
@@ -49,10 +75,20 @@ func CreateTeachingMaterialTestData() {
 	db.Insert(tm2)
 	tm3 := &TeachingMaterial{
 		TeachingMaterialUuid:      "22b78a9d-cfc2-4f0e-bb2f-19002dd259f3",
-		TeachingMaterialName:      "リピート2",
-		SubjectId:                 4,
+		TeachingMaterialName:      "せいかつ",
+		SubjectId:                 3,
 		TeachingMaterialImageUuid: "4391c3e9-0151-45e8-ae70-d20879dacc95",
 		ClassUuid:                 "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
 	}
 	db.Insert(tm3)
+}
+
+// クラスIDから教材一覧を取得
+func FindTeachingMaterials(classUuids []string) ([]TeachingMaterial, error) {
+	var teachingMaterials []TeachingMaterial
+	err := db.In("class_uuid", classUuids).Find(&teachingMaterials)
+	if err != nil {
+		return nil, err
+	}
+	return teachingMaterials, nil
 }

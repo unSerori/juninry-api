@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"math/big"
 	"time"
 
@@ -61,7 +61,7 @@ func (s *ClassService) generateInviteCode(bClass model.Class) (model.Class, erro
 	// これ10回連続衝突する可能性そこそこあるよね〜
 	// TODO: 改善の余地あり
 	logging.ErrorLog("Maximum number of attempts reached", nil)
-	return model.Class{}, common.NewErr(common.ErrTypeMaxAttemptsReached)
+	return model.Class{}, custom.NewErr(custom.ErrTypeMaxAttemptsReached)
 }
 
 // クラス一覧取得
@@ -94,7 +94,7 @@ func (s *ClassService) GetClassList(userUuid string) ([]ClassDetail, error) {
 
 		if len(userUuids) == 0 {
 			//  エラー:おうちに子供はいないのになにしてんのエラー
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 
 	} else {
@@ -141,7 +141,7 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 	}
 	if !isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return model.Class{}, common.NewErr(common.ErrTypePermissionDenied)
+		return model.Class{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// クラス作成
@@ -207,23 +207,23 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		if patron.OuchiUuid == nil {
 			// 保護者さんおうちに所属してないよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		if err != nil {
 			// ユーザーがいないよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		// 保護者のOUCHIUUIDから子供のIDを取得
 		idAdjusteds, err = model.GetChildrenUuids(*patron.OuchiUuid)
 		if err != nil {
 			// とれなかったよエラー
 			logging.ErrorLog("Failure to get user.", err)
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		if len(idAdjusteds) == 0 {
 			// あなたのおうちにこどもはいないよ
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 	} else {
 		// 保護者でない場合は自分のIDを使う
@@ -231,7 +231,7 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 	}
 
 	// スライスに格納したuseridでユーザ情報を取得
-	myClass, err := model.FindClassMemberships(idAdjusteds)
+	myClass, err := model.GetClassList(idAdjusteds)
 	if err != nil {
 		return nil, err
 	}
@@ -247,12 +247,12 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		// uuid
 		class, err := model.GetClass(uuid)
 		if err != nil {
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		// 参加しているユーザーを全取得
 		memberships, err := model.FindClassMembers(uuid)
 		if err != nil {
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		// ユーザーIDの配列に格納
 		var membershipsUUIDs []string
@@ -262,7 +262,7 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		// 配列からユーザー情報を取得
 		classmates, err := model.GetUsers(membershipsUUIDs)
 		if err != nil {
-			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		for _, classmate := range classmates {
 			juniorData := JuniorData{
@@ -294,7 +294,7 @@ func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, class
 	}
 	if !isTeacher { // 非管理者ユーザーの場合
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return model.Class{}, common.NewErr(common.ErrTypePermissionDenied)
+		return model.Class{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 	// クラスUUIDが存在するかどうか
 	targetClass, err := model.GetClass(classUuid)
@@ -302,7 +302,7 @@ func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, class
 		return model.Class{}, err
 	}
 	if targetClass.ClassUuid == "" { // そんなクラス存在しない場合
-		return model.Class{}, common.NewErr(common.ErrTypeNoResourceExist)
+		return model.Class{}, custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// 招待コード入ったクラスもらえます！
@@ -324,7 +324,7 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 	}
 	if isPatron { // 親がクラスに直接入ってくるなってやつです
 		logging.ErrorLog("Do not have the necessary permissions", nil)
-		return "", common.NewErr(common.ErrTypePermissionDenied)
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
 	// クラスUUIDが存在するかどうか
@@ -334,7 +334,7 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 		return "", err
 	}
 	if targetClass.ClassUuid == "" { // そんなクラス存在しない場合
-		return "", common.NewErr(common.ErrTypeNoResourceExist)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
 	}
 
 	// クラスに参加させる
@@ -351,9 +351,9 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
 			switch err.(*mysql.MySQLError).Number {
 			case 1062: // 一意性制約違反
-				return "", common.NewErr(common.ErrTypeUniqueConstraintViolation)
+				return "", custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
 			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return "", common.NewErr(common.ErrTypeOtherErrorsInTheORM)
+				return "", custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
 			}
 		}
 		// 通常の処理エラー
