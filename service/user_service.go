@@ -1,14 +1,12 @@
 package service
 
 import (
-	"errors"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/utility/auth"
 	"juninry-api/utility/custom"
 	"juninry-api/utility/security"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
 
@@ -31,19 +29,8 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	bUser.Password = string(hashed)
 
 	// 構造体をレコード登録処理に投げる
-	_, err = model.CreateUser(bUser) // 第一返り血は登録成功したレコード数
-	if err != nil {                  // エラーハンドル
-		// XormのORMエラーを仕分ける
-		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
-		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
-			switch err.(*mysql.MySQLError).Number {
-			case 1062: // 一意性制約違反
-				return "", custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
-			default: // ORMエラーの仕分けにぬけがある可能性がある
-				return "", custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
-			}
-		}
-		// 通常の処理エラー
+	err = model.CreateUser(bUser) // 第一返り血は登録成功したレコード数
+	if err != nil {               // エラーハンドル
 		return "", err
 	}
 
@@ -116,3 +103,5 @@ func (s *UserService) LoginUser(bUser model.User) (string, error) {
 
 	return token, nil
 }
+
+// ポイントをアップデート

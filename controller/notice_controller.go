@@ -317,17 +317,20 @@ func NoticeReadHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
+
+	// ここエラー出てたのでエラーが出ないようにする処置をしていたんですが、
+	// mergeで受け入れたらまたエラーが出てしまって、ううううううううううう　もうなにもわからない　たすけて；〜〜；
 	//notice_uuidの取得
 	noticeUuid := ctx.Param("notice_uuid")
 
 	// 構造体にマッピング
-	// bRead := model.NoticeReadStatus{
-	// 	NoticeUuid: noticeUuid,
-	// 	UserUuid:   idAdjusted,
-	// }
+	bRead := model.NoticeReadStatus{
+		NoticeUuid: noticeUuid,
+		OuchiUuid:   idAdjusted,
+	}
 
 	// 登録処理と失敗レスポンス
-	err := noticeService.ReadNotice(noticeUuid, idAdjusted)
+	err := noticeService.ReadNotice(bRead.NoticeUuid, bRead.OuchiUuid)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける
 		var customErr *custom.CustomErr

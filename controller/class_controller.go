@@ -306,6 +306,7 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	})
 }
 
+
 func JoinClassHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
@@ -325,8 +326,21 @@ func JoinClassHandler(c *gin.Context) {
 	// クラスUUIDを取得
 	inviteCode := c.Param("invite_code")
 
+	// 出席番号受け取りマン
+	var studentNumberJSON  struct {
+		StudentNumber *int `json:"studentNumber"`
+	}
+
+	// JSONをバインド
+	err := c.ShouldBind(&studentNumberJSON)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Bind error.", err)
+		// TODO:JSONがちゃんと送られてきていない場合と、ミスってる場合の切り分けができていないけど手段なくね
+	}
+
 	// クラスに参加
-	className, err := ClassService.PermissionCheckedJoinClass(idAdjusted, inviteCode)
+	className, err := ClassService.PermissionCheckedJoinClass(idAdjusted, inviteCode, studentNumberJSON.StudentNumber)
 	if err != nil {
 		var serviceErr *custom.CustomErr
 		if errors.As(err, &serviceErr) { // カスタムエラーの場合

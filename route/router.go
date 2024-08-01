@@ -52,6 +52,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
 				{
+					// 宿題登録
+					homeworks.POST("/register", controller.RegisterHWHandler) // /v1/auth/users/homeworks/register
+
 					// 相当月の提出状況を取得　//TODO: 親と保護者をどうするか決めてないので一旦弾いてる
 					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
 
@@ -72,16 +75,16 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
-					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notice/{notice_uuid}
+					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notices/{notice_uuid}
 
 					//　お知らせ新規登録
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
 
 					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
-					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler) // /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ
@@ -115,7 +118,41 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 					// おうちに所属
 					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+					helps := ouchies.Group("/helps")
+					{
+
+						//おてつだいを取得
+						helps.GET("/helps", controller.GetHelpsHandler) // /v1/auth/users/ouchies/register
+
+						// おてつだいを追加
+						helps.POST("/register", middleware.SingleExecutionMiddleware(), controller.CreateHelpHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+						// おてつだいを消化
+						helps.POST("/submittion", controller.HelpSubmittionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+					}
+
+					rewards := ouchies.Group("/rewards")
+					{
+
+						// ごほうびを取得
+						rewards.GET("/rewards", controller.GetRewardsHandler) // /v1/auth/users/ouchies/register
+
+						// ごほうびを追加
+						rewards.POST("/register", middleware.SingleExecutionMiddleware(), controller.CreateRewardHandler) // /v1/auth/users/ouchies/join/{invite_code}
+
+						// ごほうびを交換
+						rewards.POST("/exchange", controller.RewardsExchangeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+						// 交換されたごほうびを取得
+						rewards.GET("/exchanges", controller.GetExchangedRewardsHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+						// 交換されたご褒美を消化
+						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+					}
+
 				}
+
 			}
 		}
 	}
