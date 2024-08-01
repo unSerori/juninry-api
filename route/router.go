@@ -137,6 +137,9 @@ func routing(engine *gin.Engine) {
 						// ごほうびを交換
 						rewards.POST("/exchange", controller.RewardsExchangeHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
 
+						// 交換されたごほうびを取得
+						rewards.GET("/exchanges", controller.GetExchangedRewardsHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
 						// 交換されたご褒美を消化
 						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
 					}

@@ -53,6 +53,12 @@ func (s *RewardService) CreateRewards(userUUID string, reward model.Reward) (mod
 	if result || err != nil {
 		return model.Reward{}, errors.New("user is not a teacher")
 	}
+	// ユーザー情報を取得
+	user, err := model.GetUser(userUUID)
+	if result || err != nil {
+		return model.Reward{}, errors.New("user is not resorce")
+	}
+	reward.OuchiUuid = *user.OuchiUuid // おうちのuuidをバインド
 
 	// ごほうびUUIDの生成
 	rewardUuid, err := uuid.NewRandom() // 新しいuuidの生成
@@ -143,4 +149,64 @@ func (s *RewardService) RewardDigestion(userUUID string, rewardExchangingId stri
 		return false, err
 	}
 	return dResult, err
+}
+
+// ごほうび交換履歴の構造体
+type RewardExchangeHistory struct {
+	RewardExchangengId int          `json:"rewardExchangengId"`
+	ExchangengAt       string       `json:"exchangengAt"`
+	UserName           string       `json:"userName"`
+	RewardData         model.Reward `json:"rewardData"`
+	IsExchange         int          `json:"isExchange"`
+}
+
+// 交換されたごほうびを取得
+func (s *RewardService) GetRewardExchanging(userUUID string) ([]RewardExchangeHistory, error) {
+	// ユーザーが教員であれば返す
+	result, err := model.IsTeacher(userUUID)
+	if result || err != nil {
+		return []RewardExchangeHistory{}, errors.New("user is not a teacher")
+	}
+	// ouchiUUIDを取得
+	user, err := model.GetUser(userUUID)
+	if err != nil {
+		return []RewardExchangeHistory{}, err
+	}
+	// 児童のIDを取得
+	children, err := model.GetChildrenUuids(*user.OuchiUuid)
+	if err != nil {
+		return []RewardExchangeHistory{}, err
+	}
+
+	// ごほうび交換履歴の構造体
+	var rewardExchangeHistories []RewardExchangeHistory
+	// 交換されたごほうびを取得
+	rewardExchangings, err := model.GetRewardExchangings(children)
+	if err != nil {
+		return []RewardExchangeHistory{}, err
+	}
+	// 交換されたごほうびを取得
+	for _, rewardExchanging := range rewardExchangings {
+		// ごほうびの取得
+		reward, err := model.GetReward(rewardExchanging.RewardUuid)
+		if err != nil {
+			return []RewardExchangeHistory{}, err
+		}
+		// ユーザー名の取得
+		user, err := model.GetUser(rewardExchanging.UserUuid)
+		if err != nil {
+			return []RewardExchangeHistory{}, err
+		}
+		// ごほうび交換履歴の構造体にバインド
+		rewardExchangeHistory := RewardExchangeHistory{
+			RewardExchangengId: rewardExchanging.RewardExchangingId,
+			ExchangengAt:       rewardExchanging.ExchangingAt.Format("2006-01-02 15:04:05"),
+			UserName:           user.UserName,
+			RewardData:         reward,
+			IsExchange:         rewardExchanging.Exchange,
+		}
+		// ごほうび交換履歴の構造体をスライスに追加
+		rewardExchangeHistories = append(rewardExchangeHistories, rewardExchangeHistory)
+	}
+	return rewardExchangeHistories, nil
 }

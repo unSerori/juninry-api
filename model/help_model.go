@@ -6,13 +6,13 @@ import (
 
 // 課題テーブル
 type Help struct { // typeで型の定義, structは構造体
-	HelpUuid       string `xorm:"varchar(36) pk" json:"helpUUID"` // おてつだいのID
-	OuchiUuid      string `xorm:"varchar(36)" json:"ouchiUUID"`   // おうちのID
-	RewardPoint    int    `xorm:"not null" json:"rewardPoint"`    // もらえるおうちポイント
-	HelpContent    string `json:"helpContent"`                    // 概要
-	HelpTitle      string `xorm:"not null" json:"helpTitle"`      // タイトル
-	IconId         int    `xorm:"not null" json:"iconId"`         // iconID
-	SubmittedToday bool   `xorm:"-" json:"submittedToday"`        // フラグを追加　dbには保存されない
+	HelpUuid       string `xorm:"varchar(36) pk" json:"helpUUID"`        // おてつだいのID
+	OuchiUuid      string `xorm:"varchar(36)" json:"ouchiUUID"`          // おうちのID
+	RewardPoint    int    `xorm:"not null" json:"rewardPoint"`           // もらえるおうちポイント
+	HelpContent    string `xorm:"varchar(20)" json:"helpContent"`        // 概要
+	HelpTitle      string `xorm:"varchar(15) not null" json:"helpTitle"` // タイトル
+	IconId         int    `xorm:"not null" json:"iconId"`                // iconID
+	SubmittedToday bool   `xorm:"-" json:"submittedToday"`               // フラグを追加　dbには保存されない
 }
 
 // テーブル名
@@ -78,26 +78,19 @@ func GetHelp(helpUUID string) (Help, error) {
 func GetHelps(ouchiUuid string, userUuid string) ([]Help, error) {
 	//結果格納用変数
 	var helps []Help
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().Format("2006-01-02 00:00:00")
 	//ouchiUuidで絞り込んで全取得
-	// err := db.Where("ouchi_uuid =?", ouchiUuid).Find(
-	// 	&helps,
-	// )
-	// err := db.Table("helps").
-	// 	Alias("h").
-	// 	Join("LEFT", "help_submittions", "h.help_uuid = help_submittions.help_uuid AND DATE(help_submittions.submittion_at) = ? AND help_submittions.user_uuid = ?", today, userUuid).
-	// 	Where("h.ouchi_uuid = ?", ouchiUuid).
-	// 	Select("h.*, CASE WHEN help_submittions.help_submittion_id IS NOT NULL THEN 1 ELSE 0 END as submitted_today").
-	// 	Find(&helps)
-	err := db.Table("helps").
-		Alias("h").
-		Join("LEFT", "(SELECT help_uuid, MAX(submittion_at) as latest_submittion FROM help_submittions WHERE DATE(submittion_at) = ? AND user_uuid = ? GROUP BY help_uuid) hs", "h.help_uuid = hs.help_uuid", today, userUuid).
-		Where("h.ouchi_uuid = ?", ouchiUuid).
-		Select("h.*, CASE WHEN hs.latest_submittion IS NOT NULL THEN 1 ELSE 0 END as submitted_today").
-		Find(&helps)
-	// データが取得できなかったらerrを返す
+	err := db.Where("ouchi_uuid = ?", ouchiUuid).Find(&helps)
 	if err != nil {
-		return []Help{}, err
+		return nil, err
+	}
+	// 各レコードに対してHelpSubmittionsテーブルを確認
+	for i, help := range helps {
+		count, err := db.Where("help_uuid = ? AND user_uuid = ? AND DATE(submittion_at) = ?", help.HelpUuid, userUuid, today).Count(&HelpSubmittion{})
+		if err != nil {
+			return nil, err
+		}
+		helps[i].SubmittedToday = count > 0
 	}
 	return helps, nil
 }

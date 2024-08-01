@@ -35,10 +35,12 @@ func InitRewardExchangingFK() error {
 }
 
 // 交換記録を全件取得
-func GetRewardExchangings(userUuid string) ([]RewardExchanging, error) {
+func GetRewardExchangings(userUUID []string) ([]RewardExchanging, error) {
 	//結果格納用変数
 	var rewardExchangings []RewardExchanging
-	err := db.Where("user_uuid = ?", userUuid).And("exchange = 0").Find(&rewardExchangings)
+	err := db.In("user_uuid", userUUID).
+	OrderBy("exchanging_at desc").
+	Find(&rewardExchangings)
 	return rewardExchangings, err
 }
 

@@ -1,12 +1,12 @@
 package model
 
-// 課題テーブル
+// ご褒美テーブル
 type Reward struct { // typeで型の定義, structは構造体
 	RewardUuid  string `xorm:"varchar(36) pk" json:"rewardUUID"` // タスクのID
 	OuchiUuid   string `xorm:"varchar(36)" json:"ouchiUUID"`     // タスクのID
 	RewardPoint int    `xorm:"not null" json:"rewardPoint"`      // 教材ID
-	RewardContent  string `json:"rewardContent"`                       // 開始ページ
-	RewardTitle string `xorm:"not null" json:"rewardTitle"`      // ページ数
+	RewardContent  string `xorm:"varchar(20)" json:"rewardContent"`                       // 開始ページ
+	RewardTitle string `xorm:"varchar(10) not null" json:"rewardTitle"`      // ページ数
 	IconId      int    `xorm:"not null" json:"iconId"`           // 投稿者ID
 }
 

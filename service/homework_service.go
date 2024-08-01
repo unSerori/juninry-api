@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -18,7 +20,7 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
@@ -38,11 +40,9 @@ type TransformedData struct {
 
 // クラスごとに課題データをまとめた構造体
 type ClassHomeworkSummary struct {
-	ClassName string      `json:"className"` //提出期限
-	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+	ClassName    string         `json:"className"`    //提出期限
+	HomeworkData []HomeworkData `json:"homeworkData"` //課題データのスライス
 }
-
-
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
@@ -85,12 +85,37 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	return transformedDataList, nil
 }
 
-
 // userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
 func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
 
+	var children []string // useruuidを保管する配列
+	// 親かどうか
+	isPatron, _ := model.IsPatron(userUuid)
+	// 親であれば子どものUUIDを取得
+	if isPatron {
+		patron, err := model.GetUser(userUuid)
+		if patron.OuchiUuid == nil {
+			// 保護者さんおうちに所属してないよエラー
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		if err != nil {
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		children, err = model.GetChildrenUuids(*patron.OuchiUuid)
+		fmt.Print(children)
+		if err != nil {
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+		}
+		if len(children) == 0 {
+			// あなたのおうちにこどもはいないよ
+			return nil, common.NewErr(common.ErrTypeNoResourceExist)
+		}
+	} else {
+		children = append(children, userUuid)
+	}
+
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
-	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	userHomeworkList, err := model.FindUserHomeworkforNextday(children)
 	if err != nil { //エラーハンドル エラーを上に投げるだけ
 		return nil, err
 	}
@@ -117,8 +142,8 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 	var transformedDataList []ClassHomeworkSummary
 	for className, homeworkData := range transformedDataMap {
 		transformedData := ClassHomeworkSummary{
-			ClassName: className,
-			HomeworkData:  homeworkData,
+			ClassName:    className,
+			HomeworkData: homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
 	}

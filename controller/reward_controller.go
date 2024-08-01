@@ -289,7 +289,59 @@ func RewardDigestionHandler(c *gin.Context) {
 			"rewardData": "ok!",
 		},
 	})
+
+	
 }
+
+// 交換されたごほうび一覧を取得
+func GetExchangedRewardsHandler(c *gin.Context) {
+// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	// 交換されたご褒美を取得
+	result, err := rewardService.GetRewardExchanging(idAdjusted)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failed to get class list.", err)
+		var customErr *common.CustomErr
+		if errors.As(err, &customErr) { // カスタムエラーの場合
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case common.ErrTypeNoResourceExist: // // お家に子供いないよエラー
+
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+		}
+	}
+	// 成功ログ
+	logging.SuccessLog("Successful user get.")
+	// レスポンス
+	c.JSON(http.StatusCreated, gin.H{
+		"srvResData": gin.H{
+			"exchangeData": result,
+		},
+	})
+}
+
 
 
 

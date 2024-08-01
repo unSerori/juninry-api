@@ -82,7 +82,10 @@ func (s *HelpService) HelpDigestion(userUUID string, helpSubmittion model.HelpSu
 	}
 
 	helpSubmittion.UserUuid = userUUID       // ユーザーIDをバインド
-	helpSubmittion.SubmittionAt = time.Now() // 現在時刻をバインド
+	now := time.Now()	// 現在の時刻を取得
+	helpSubmittion.SubmittionAt = time.Date(
+		now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location(),
+	) // 現在の日付を00:00でバインド
 
 	// おてつだいを消化
 	// エラーが出なければコミットして追加したごほうびを返す
