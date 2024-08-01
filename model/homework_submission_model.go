@@ -32,8 +32,9 @@ func InitHomeworkSubmissionFK() error {
 // テストデータ
 func CreateHomeworkSubmissionTestData() {
 	hs1 := &HomeworkSubmission{
-		HomeworkUuid: "a3579e71-3be5-4b4d-a0df-1f05859a7104",
-		UserUuid:     "3cac1684-c1e0-47ae-92fd-6d7959759224",
+		HomeworkUuid:        "a3579e71-3be5-4b4d-a0df-1f05859a7104",
+		UserUuid:            "3cac1684-c1e0-47ae-92fd-6d7959759224",
+		ImageNameListString: "bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg, gggggggg-176f-4dea-bec0-21464f192869.jpg, rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg",
 	}
 	db.Insert(hs1)
 }
