@@ -75,10 +75,10 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					notices.POST("/register", controller.RegisterNoticeHandler) // /v1/auth/users/notices/register
 
 					// お知らせ既読済み処理
-					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler)	// /v1/auth/users/notices/read/{notice_uuid}
+					notices.POST("/read/:notice_uuid", controller.NoticeReadHandler) // /v1/auth/users/notices/read/{notice_uuid}
 
 					// 特定のお知らせを既読しているユーザ一覧を取る(エンドポイント名不安。)
-					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler)	// /v1/auth/users/notices/status/{notice_uuid}
+					notices.GET("/status/:notice_uuid", controller.GetNoticestatusHandler) // /v1/auth/users/notices/status/{notice_uuid}
 				}
 
 				// classesグループ
@@ -87,7 +87,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 					// クラスに所属する人間たちを返す
 					classes.GET("/users", controller.GetClasssmaitesHandler) // /v1/auth/users/classes/users
-					
+
 					// 自分の所属するクラス一覧をとる
 					classes.GET("/affiliations", controller.GetAllClassesHandler) // /v1/auth/users/classes/classes
 
@@ -121,7 +121,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	v2 := engine.Group("/v2")
 	{
 		// dddを試した教材登録エンドポイント
-		v2.POST("/auth/users/t_materials/register", middleware.MidAuthToken(), handlers.TeachingMaterialHandler.RegisterTMHandler)
+		v2.POST("/auth/users/t_materials/register", middleware.MidAuthToken(), handlers.TeachingMaterialHandler.RegisterTMHandler) // /v2/auth/users/t_materials/register
 	}
 }
 
