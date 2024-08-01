@@ -191,6 +191,44 @@ SSH URL:
 </details>
 
 <details>
+  <summary>新規宿題を登録するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/register`
+- **メソッド:** POST
+- **説明:** 教師権限を持つユーザーがクラスに対して宿題を登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+    - `Authorization`: (string) 認証トークン
+  - ボディ:
+
+    ```json
+    {
+      "homeworkLimit": "2024-08-2T23:59:59Z",
+      "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
+      "homeworkNote": "がんばってくださ～い＾＾",
+      "teachingMaterialUUID": "978f9835-5a16-4ac0-8581-7af8fac06b4e",
+      "startPage": 2,
+      "pageCount": 8
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "201",
+        "srvResData": {
+          "homeworkUUID": "6e8ad122-2ca9-453b-92ba-65edaf786ec2"
+        },
+      }
+      ```
+
+</details>
+
+<details>
   <summary>クラスの課題情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/homeworks/upcoming`
@@ -291,7 +329,7 @@ SSH URL:
 <details>
   <summary>おてがみの詳細情報を取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/notice/{notice_uuid}`
+- **URL:** `/v1/auth/users/notices/{notice_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したおしらせの詳細情報を取得する
 - **リクエスト:**

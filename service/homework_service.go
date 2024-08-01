@@ -3,7 +3,9 @@ package service
 import (
 	"errors"
 	"io"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility"
 	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
@@ -20,7 +22,7 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題データの構造体
 type HomeworkData struct {
-	HomeworkUuid              string `json:"homeworkUUID"` // 課題ID
+	HomeworkUuid              string `json:"homeworkUUID"`              // 課題ID
 	StartPage                 int    `json:"startPage"`                 // 開始ページ
 	PageCount                 int    `json:"pageCount"`                 // ページ数
 	HomeworkNote              string `json:"homeworkNote"`              // 課題の説明
@@ -40,11 +42,15 @@ type TransformedData struct {
 
 // クラスごとに課題データをまとめた構造体
 type ClassHomeworkSummary struct {
-	ClassName string      `json:"className"` //提出期限
-	HomeworkData  []HomeworkData `json:"homeworkData"`  //課題データのスライス
+	ClassName    string         `json:"className"`    //提出期限
+	HomeworkData []HomeworkData `json:"homeworkData"` //課題データのスライス
 }
 
-
+// 宿題登録のリクエストバインド構造体
+type BindRegisterHW struct { // model.Homework + classUUID
+	model.Homework
+	ClassUUID string `json:"classUUID"`
+}
 
 // userUuidをuserHomeworkモデルに投げて、受け取ったデータを整形して返す
 func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, error) {
@@ -87,7 +93,6 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	return transformedDataList, nil
 }
 
-
 // userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
 func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
 
@@ -119,8 +124,8 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 	var transformedDataList []ClassHomeworkSummary
 	for className, homeworkData := range transformedDataMap {
 		transformedData := ClassHomeworkSummary{
-			ClassName: className,
-			HomeworkData:  homeworkData,
+			ClassName:    className,
+			HomeworkData: homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
 	}
@@ -261,4 +266,50 @@ func validMime(mimetype string) (bool, string) {
 	}
 
 	return false, ""
+}
+
+// 宿題登録
+func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (string, error) {
+	// ユーザー権限の確認
+	isTeacher, err := model.IsTeacher(userId)
+	if err != nil {
+		return "", err
+	}
+	if !isTeacher { // 教師権限を持っていないならエラー
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	logging.SuccessLog("User creation authority confirmation complete")
+
+	// 指定されたクラスIDに投稿ユーザー自身が所属しているかを確認
+	isMember, err := model.CheckUserClassMembership(bHW.ClassUUID, userId)
+	if err != nil {
+		return "", err
+	}
+	if !isMember {
+		return "", custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	// 投稿者ID追加
+	bHW.HomeworkPosterUuid = userId
+	logging.SuccessLog("Confirmation of user's affiliation authority complete.")
+
+	// 一意ID生成
+	newId, err := uuid.NewRandom() // 新しいuuidの生成
+	if err != nil {
+		return "", err
+	}
+	bHW.HomeworkUuid = newId.String() // 設定
+
+	// 構造体をテーブルモデルに変換
+	var hw model.Homework // 構造体のインスタンス
+	utility.ConvertStructCopyMatchingFields(&bHW, &hw)
+
+	// 登録
+	err = model.CreateHW(hw)
+	if err != nil {
+		logging.ErrorLog("Failed to register homework", err)
+		return "", err
+	}
+
+	return bHW.HomeworkUuid, nil
 }
