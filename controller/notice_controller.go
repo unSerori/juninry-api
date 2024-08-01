@@ -215,23 +215,20 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		classUuids = append(classUuids, idsStr...)
 	}
 
-	var sortReadStatus int
-	var err error
-	// クエリパラメータに入力されている条件を保存する(単数) 指定がない場合マイナス値を入れる
-	if idStr := ctx.Query("readstatus"); idStr != "" {
-		// 文字列を整数に変換
-		sortReadStatus, err = strconv.Atoi(idStr)
-		if err != nil {
-			// 変換に失敗した場合のエラーハンドリング
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid readstatus parameter"})
-			return
-		}
-	} else {
-		sortReadStatus = -1 //絞り込み条件がなかった場合を判定する用
+
+	var readStatus *int
+
+	// readStatus = ctx.Query("readStatus")
+	// Queryメソッドからの文字列を取得
+    readStatusStr := ctx.Query("readStatus")
+
+	if readStatusStr != "" {	// 値がから文字でない→送られてきているならば
+		readStatusInt, _ := strconv.Atoi(readStatusStr)
+		readStatus = &readStatusInt
 	}
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, sortReadStatus)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, readStatus)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ

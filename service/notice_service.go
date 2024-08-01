@@ -215,7 +215,7 @@ type NoticeHeader struct { // typeで型の定義, structは構造体
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
-func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sortReadStatus int) ([]NoticeHeader, error) {
+func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sortReadStatus *int) ([]NoticeHeader, error) {
 
 	// 結果格納用変数
 	var userUuids []string
@@ -346,23 +346,28 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 				Unread := 0
 				noticeHeader.ReadStatus = &Unread
 			}
+
+
 		}
 
-		// 条件がない時の値を保存
-		noFilterStatus := -1
+		// 直接nilとの比較ができないので条件がない時の値を定義nil
+		var noFilterStatus *int
 
-		// XXX:絞り込み条件が予測しない値の場合弾く
-		if sortReadStatus < noFilterStatus || sortReadStatus > 1 {
-			logging.ErrorLog("Do not have the necessary permissions", nil)
-			return []NoticeHeader{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+		if sortReadStatus != noFilterStatus {
+
+			// XXX:絞り込み条件が予測しない値の場合弾く
+			if *sortReadStatus != 0 && *sortReadStatus != 1 {
+				logging.ErrorLog("Do not have the necessary permissions", nil)
+				return []NoticeHeader{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+			}
+
+			// ソート条件があるなら、条件に合うものだけ追加していく
+			if *sortReadStatus == *noticeHeader.ReadStatus {	//　条件在り(0か1)
+				noticeHeaders = append(noticeHeaders, noticeHeader)
+			}
+		} else {		//　条件なし
+			noticeHeaders = append(noticeHeaders, noticeHeader)
 		}
-
-		// ソート条件があるなら、条件に合うものだけ追加していく
-		if sortReadStatus == *noticeHeader.ReadStatus {	//　条件在り(0か1)
-			noticeHeaders = append(noticeHeaders, noticeHeader)
-		} else if sortReadStatus == noFilterStatus  {		//　条件なし(-1)
-			noticeHeaders = append(noticeHeaders, noticeHeader)
-		} 
 	}
 
 	return noticeHeaders, nil
