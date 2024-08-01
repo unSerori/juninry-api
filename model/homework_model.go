@@ -99,3 +99,13 @@ func CreateHW(record Homework) error {
 
 	return nil
 }
+
+// 教材ID,と時刻から相当月の課題一覧を取得
+func FindHomeworks(teachingMaterialUuids []string, targetMonth time.Time) ([]Homework, error) {
+	var homeworks []Homework
+	err := db.In("teaching_material_uuid", teachingMaterialUuids).Where("homework_limit between ? and ?", targetMonth, targetMonth.AddDate(0, 1, 0)).Asc("homework_limit").Find(&homeworks)
+	if err != nil {
+		return nil, err
+	}
+	return homeworks, nil
+}

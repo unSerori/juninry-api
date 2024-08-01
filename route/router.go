@@ -55,6 +55,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 宿題登録
 					homeworks.POST("/register", controller.RegisterHWHandler) // /v1/auth/users/homeworks/register
 
+					// 相当月の提出状況を取得　//TODO: 親と保護者をどうするか決めてないので一旦弾いてる
+					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
+
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 

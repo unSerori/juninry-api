@@ -1,10 +1,15 @@
 package model
 
+import (
+	"time"
+)
+
 // 宿題提出管理テーブル
 type HomeworkSubmission struct {
 	HomeworkUuid        string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
 	UserUuid            string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
 	ImageNameListString string `xorm:"TEXT" json:"imageNameListString"`                        // 画像ファイル名一覧 // TEXT型でUTF-8 21,845文字 // 一画像40文字と考えると最大546.125画像保存可能
+	SubmissionDate      time.Time `xorm:"DATETIME not null" json:"submissionDate"`              // 提出日時
 }
 
 // テーブル名
@@ -46,4 +51,14 @@ func StoreHomework(hwS *HomeworkSubmission) (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+// 課題提出状況の確認
+func CheckHomeworkSubmission(homeworkUuids []string) (int64, error) {
+	count,err := db.In("homework_uuid", homeworkUuids).Count(&HomeworkSubmission{})
+
+	if err != nil {
+		return -1, err
+	}
+	return count, nil
 }

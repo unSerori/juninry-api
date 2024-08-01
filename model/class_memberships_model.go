@@ -48,6 +48,20 @@ func CreateClassMembershipsTestData() {
 }
 
 // user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
+func FindClassMemberships(userUuid string) ([]ClassMembership, error) {
+	//ClassMemberships構造体のスライスを返すので定義
+	var classMemberships []ClassMembership
+
+	//uuidをWhere句で条件指定
+	err := db.Where("user_uuid = ?", userUuid).Find(&classMemberships)
+	if err != nil { //エラーハンドル
+		return nil, err
+	}
+
+	return classMemberships, nil
+}
+
+// user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
 func GetClassList(userUuids []string) ([]ClassMembership, error) {
 	//Class構造体のスライスを返すので定義
 	var classMemberships []ClassMembership
