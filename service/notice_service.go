@@ -14,7 +14,6 @@ import (
 
 type NoticeService struct{} // コントローラ側からサービスを実体として使うため。この構造体にレシーバ機能でメソッドを紐づける。
 
-
 // noticeの新規登録
 func (s *NoticeService) RegisterNotice(bNotice model.Notice) error {
 	//先生かのタイプチェック
@@ -68,7 +67,7 @@ type NoticeDetail struct { // typeで型の定義, structは構造体
 	ClassName         string    `json:"className"`         // どのクラスのお知らせか
 	ClassUuid         string    `json:"classUUID"`         // クラスUUID
 	QuotedNoticeUuid  *string   `json:"quotedNoticeUUID"`  // 引用お知らせUUID
-	ReadStatus        *int       `json:"readStatus"`        // 既読ステータス
+	ReadStatus        *int      `json:"readStatus"`        // 既読ステータス
 }
 
 // お知らせ詳細取得
@@ -80,7 +79,7 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	}
 
 	var ouchiUuid string
-	if user.OuchiUuid != nil {	// あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
+	if user.OuchiUuid != nil { // あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
 		ouchiUuid = *user.OuchiUuid
 	}
 
@@ -166,7 +165,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 		ClassUuid:         noticeDetail.ClassUuid,         // クラスUUID
 	}
 
-
 	//userUuidをuserNameに整形
 	teacherUuid := noticeDetail.UserUuid
 	teacher, nil := model.GetUser(teacherUuid)
@@ -184,7 +182,6 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	}
 	//整形後formatに追加
 	formattedNotice.ClassName = class.ClassName // どのクラスのお知らせか
-
 
 	// お家に所属している場合、お知らせの既読状況確認
 	if ouchiUuid != "" {
@@ -214,11 +211,11 @@ type NoticeHeader struct { // typeで型の定義, structは構造体
 	UserName    string    `json:"userName"`    // おしらせ発行ユーザ
 	ClassUuid   string    `json:"classUUID"`   // クラスUUID
 	ClassName   string    `json:"className"`   // どのクラスのお知らせか
-	ReadStatus  *int      `json:"readStatus"` //お知らせを確認しているか　お家に所属していない場合、既読情報は存在しないのでポインタを使いnilを許容する
+	ReadStatus  *int      `json:"readStatus"`  //お知らせを確認しているか　お家に所属していない場合、既読情報は存在しないのでポインタを使いnilを許容する
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
-func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]NoticeHeader, error) {
+func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sortReadStatus *int) ([]NoticeHeader, error) {
 
 	// 結果格納用変数
 	var userUuids []string
@@ -231,7 +228,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 	if err != nil { // エラーハンドル
 		return nil, err
 	}
-	if user.OuchiUuid != nil {	// あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
+	if user.OuchiUuid != nil { // あったらいいな、お家（なくても既読見えないだけだから別に関係ない）
 		ouchiUuid = *user.OuchiUuid
 	}
 
@@ -240,7 +237,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 		return nil, err
 	}
 
-	if isPatron { 	// ユーザーが親の場合は子供のIDを取得する必要
+	if isPatron { // ユーザーが親の場合は子供のIDを取得する必要
 		// 親の場合お家IDがなかったら話にならないので破壊
 		if ouchiUuid == "" {
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
@@ -257,7 +254,7 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 
-	} else {	// 親でない場合はそのまま自分のIDでと合わせることができる
+	} else { // 親でない場合はそのまま自分のIDでと合わせることができる
 		userUuids = append(userUuids, userUuid)
 	}
 
@@ -349,11 +346,28 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string) ([]
 				Unread := 0
 				noticeHeader.ReadStatus = &Unread
 			}
+
+
 		}
 
-		//宣言したスライスに追加していく
-		// formattedAllNotices = append(formattedAllNotices, notices)
-		noticeHeaders = append(noticeHeaders, noticeHeader)
+		// 直接nilとの比較ができないので条件がない時の値を定義nil
+		var noFilterStatus *int
+
+		if sortReadStatus != noFilterStatus {
+
+			// XXX:絞り込み条件が予測しない値の場合弾く
+			if *sortReadStatus != 0 && *sortReadStatus != 1 {
+				logging.ErrorLog("Do not have the necessary permissions", nil)
+				return []NoticeHeader{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+			}
+
+			// ソート条件があるなら、条件に合うものだけ追加していく
+			if *sortReadStatus == *noticeHeader.ReadStatus {	//　条件在り(0か1)
+				noticeHeaders = append(noticeHeaders, noticeHeader)
+			}
+		} else {		//　条件なし
+			noticeHeaders = append(noticeHeaders, noticeHeader)
+		}
 	}
 
 	return noticeHeaders, nil

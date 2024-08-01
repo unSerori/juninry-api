@@ -8,6 +8,7 @@ import (
 	"juninry-api/service"
 	"juninry-api/utility/custom"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -209,13 +210,25 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	idAdjusted := id.(string) // アサーション
 
 	var classUuids []string
+	// クエリパラメータに入力されているクラスIDを保存していく(複数)
 	if idsStr := ctx.QueryArray("classUUID[]"); len(idsStr) > 0 {
 		classUuids = append(classUuids, idsStr...)
 	}
 
 
+	var readStatus *int
+
+	// readStatus = ctx.Query("readStatus")
+	// Queryメソッドからの文字列を取得
+    readStatusStr := ctx.Query("readStatus")
+
+	if readStatusStr != "" {	// 値がから文字でない→送られてきているならば
+		readStatusInt, _ := strconv.Atoi(readStatusStr)
+		readStatus = &readStatusInt
+	}
+
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, readStatus)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
@@ -238,6 +251,17 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 				logging.ErrorLog("Not Found.", err)
 				// レスポンス
 				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
+			case custom.ErrTypeUnforeseenCircumstances:
+				//エラーログ
+				logging.ErrorLog("unforeseen circumstances", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
 				ctx.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},
@@ -270,8 +294,8 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 	resStatusCode := http.StatusOK
 	ctx.JSON(resStatusCode, gin.H{
 		"srvResData": gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"notices": notices,
+			"srvResMsg": http.StatusText(resStatusCode),
+			"notices":   notices,
 		},
 	})
 }
