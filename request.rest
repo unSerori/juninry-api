@@ -7,7 +7,7 @@
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 @ouchi_invite_code = 339841
 @readStatus = 1
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc4NzI1MjEsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiYmNmNjczMzQtMGE1Ny00MmI4LWE4ZDctYzRhNjkwZGEzNzcwIn0.eElZnF6-IlE0rehuItr9hoL4ub5ugMSL2oODz6WTU-4
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc5MTMzNDgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiMDViZjk0ZDctYzU1Mi00YWMwLWJiYzYtMGZkNGZiYzRkNTNmIn0.PkxJu4hU0pYB2QLMDB82WF20Oyrqqp_rxe-6NSzQXJU
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1

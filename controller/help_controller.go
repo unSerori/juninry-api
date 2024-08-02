@@ -1,11 +1,12 @@
 package controller
+
 import (
 	"errors"
 	"fmt"
-	"juninry-api/common"
-	"juninry-api/logging"
+	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
+	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,10 +35,10 @@ func GetHelpsHandler(c *gin.Context) {
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // // お家に子供いないよエラー
+			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
 
 			}
 		} else { // カスタムエラー以外の処理エラー
@@ -92,10 +93,10 @@ func CreateHelpHandler(c *gin.Context) {
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // // お家に子供いないよエラー
+			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
 
 			}
 		} else { // カスタムエラー以外の処理エラー
@@ -150,10 +151,10 @@ func HelpSubmittionHandler(c *gin.Context) {
 	if err != nil {
 		// エラーログ
 		logging.ErrorLog("Failed to get class list.", err)
-		var customErr *common.CustomErr
+		var customErr *custom.CustomErr
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
-			case common.ErrTypeNoResourceExist: // // お家に子供いないよエラー
+			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
 
 			}
 		} else { // カスタムエラー以外の処理エラー

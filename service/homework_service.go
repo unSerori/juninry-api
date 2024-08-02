@@ -425,3 +425,27 @@ func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (
 
 	return bHW.HomeworkUuid, nil
 }
+
+// 教材データを取得
+func (s *HomeworkService) GetTeachingMaterialData(userId string,classId string) ([]model.TeachingMaterial, error) {
+	// ユーザーが教員かな
+	isJunior, err := model.IsTeacher(userId)
+	if err != nil {
+		return nil, err
+	}
+	if !isJunior {
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// クラスIDをスライスに変換
+	var classUuids []string
+	classUuids = append(classUuids, classId)
+
+	// クラスIDから教材一覧を取得
+	teachingMaterials, err := model.FindTeachingMaterials(classUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	return teachingMaterials, nil
+}

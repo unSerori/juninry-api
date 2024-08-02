@@ -81,6 +81,22 @@ func CreateTeachingMaterialTestData() {
 		ClassUuid:                 "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
 	}
 	db.Insert(tm3)
+	tm4 := &TeachingMaterial{
+		TeachingMaterialUuid:      "978f9835-5a16-4ac0-8581-7affac06b4e",
+		TeachingMaterialName:      "計算ドリル",
+		SubjectId:                 2,
+		TeachingMaterialImageUuid: "a575f18c-d639-4b6d-ad5-a9d7a7f84575",
+		ClassUuid:                 "09eba495-fe09-4f54-a856-9bea9536b661",
+	}
+	db.Insert(tm4)
+	tm5 := &TeachingMaterial{
+		TeachingMaterialUuid:      "978f9835-5a16-4ac0-8581-7af8fac0b4e",
+		TeachingMaterialName:      "理科ワーク",
+		SubjectId:                 3,
+		TeachingMaterialImageUuid: "a575f18c-d639-4b6d-ad57a9d7a7f84575",
+		ClassUuid:                 "09eba495-fe09-4f54-a856-9bea9536b661",
+	}
+	db.Insert(tm5)
 }
 
 // クラスIDから教材一覧を取得
