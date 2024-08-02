@@ -22,11 +22,15 @@ func CreateSubjectTestData() {
 	}
 	db.Insert(subject2)
 	subject3 := &Subject{
-		SubjectName: "せいかつ",
+		SubjectName: "理科",
 	}
 	db.Insert(subject3)
 	subject4 := &Subject{
-		SubjectName: "数学",
+		SubjectName: "社会",
 	}
 	db.Insert(subject4)
+	subject5 := &Subject{
+		SubjectName: "英語",
+	}
+	db.Insert(subject5)
 }

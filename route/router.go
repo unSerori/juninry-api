@@ -66,6 +66,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 					// 宿題の提出
 					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
+
+					// 教材データを取得
+					homeworks.GET("/tmaterials/:classUuid", controller.GetMaterialDataHandler) // /v1/auth/users/homeworks/t-materials
 				}
 
 				// noticeグループ

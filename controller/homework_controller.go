@@ -399,3 +399,48 @@ func RegisterHWHandler(c *gin.Context) {
 		},
 	})
 }
+
+// 教材データを取得
+func GetMaterialDataHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+	classUuid := c.Param("classUuid")
+
+	//問い合わせ処理と失敗レスポンス
+	materialList, err := homeworkService.GetTeachingMaterialData(idAdjusted,classUuid)
+	if err != nil { //エラーハンドル
+		// エラーログ
+		logging.ErrorLog("SQL query failed.", err)
+		//レスポンス
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// 処理後の成功
+	// 成功ログ
+	logging.SuccessLog("Successful get material list.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"teachingItems": materialList,
+		},
+	})
+}
