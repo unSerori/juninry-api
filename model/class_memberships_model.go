@@ -103,7 +103,7 @@ func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembe
 	var user []ClassMembership
 	//classuuidで絞り込み
 	err := db.Where("class_uuid = ?", classUuid).
-		Where("user_uuid NOT IN (?)", userUuid).Find(&user)
+				Where("user_uuid NOT IN (?)", userUuid).OrderBy("student_number").Find(&user)
 	if err != nil { //エラーハンドル
 		return nil, err
 	}
