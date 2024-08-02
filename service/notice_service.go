@@ -418,10 +418,10 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 
 // 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
 type NoticeStatus struct {
-	StudentNo  int     // 出席番号
-	UserName   string  // ガキの名前
-	GenderCode *string // 性別コード(定義がないためnullにしてる)
-	ReadStatus int     // お知らせを確認しているか
+	StudentNumber  *int    `json:"studentNumber"` // 出席番号
+	UserName   string  `json:"userName"`      // ガキの名前
+	GenderId *int `json:"genderId"`      // 性別コード(定義がないためnullにしてる)
+	ReadStatus *int    `json:"readStatus"` // お知らせを確認しているか
 }
 
 // 特定のお知らせ既読済み一覧取得
@@ -448,77 +448,51 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 	//わかりやすよう、noticeのclassUuidだけ取ってきとく
 	classUuid := notice.ClassUuid
 
-	//お知らせの既読済おうち一覧を取ってくる(noticeReadStatus=ouchiuuidみたいなもん)
-	noticeReadStatus, err := model.GetNoticeStatusList(noticeUuid)
-	if err != nil {
-		return []NoticeStatus{}, err
-	}
-
-	// noticeReadStatusから既読済みガキ一覧を作る
-	var readList []model.User
-	for _, ouchi := range noticeReadStatus {
-		// ouchi.OuchiUuid としてフィールド名を大文字で始める
-		gaki, err := model.GetJunior(ouchi.OuchiUuid)
-		if err != nil {
-			return []NoticeStatus{}, err
-		}
-		// リストに追加していく
-		readList = append(readList, gaki)
-	}
-
-	//classUuidからクラス全員を取ってくる(先生は除外するためuserUuidでnotin)
+	// TODO:　教員が複数人いた時おかしくなりますよね
 	classMemberships, err := model.FindUserByClassMemberships(classUuid, userUuid)
 	if err != nil {
 		return []NoticeStatus{}, err
 	}
 
-	// もはや、レシピみたいに書いた方がわかりやすいのでわ(脳死)
-	// classMembershipsからガキ一覧を作る(ついでに返す奴にデータを突っ込む)
-	var juniorList []model.User
-	for _, junior := range classMemberships {
-		gaki, err := model.GetUser(junior.UserUuid)
+	// userUUIDをキーとしたマップを作成
+	studentList := make(map[string] NoticeStatus)
+	for _, membership := range classMemberships {
+		studentList[membership.UserUuid] = NoticeStatus{
+			StudentNumber:  membership.StudentNumber,
+		}
+	}
+
+	// 不足している項目をuserテーブルから取得
+	for userUuid, student := range studentList {
+		user, err := model.GetUser(userUuid)
 		if err != nil {
 			return []NoticeStatus{}, err
 		}
-
-		// リストに追加していく
-		juniorList = append(juniorList, gaki)
-	}
-
-	//既読済みガキ一覧でマップを作成
-	readMap := make(map[string]bool)
-	for _, junior := range readList {
-		readMap[junior.UserUuid] = true
-	}
-
-	var temp []NoticeStatus
-
-	//juniorlistをループしてマップ検索と整形
-	for _, junior := range juniorList {
-
-		// 整形用
-		noticeStatus := NoticeStatus{}
-
-		if readMap[junior.UserUuid] {
-			noticeStatus.ReadStatus = 1 //　既読済みフラグ
-		} else {
-			noticeStatus.ReadStatus = 0 //　未読
+		// student.GenderId = &user.GenderId			// 性別コード
+		student.UserName = user.UserName	// 名前を挿入
+		// 既読状況の取得
+		if user.OuchiUuid != nil {
+			result , err := model.IsRead(noticeUuid, *user.OuchiUuid)
+			if err != nil {
+				return []NoticeStatus{}, err
+			}
+			if result {									// 既読
+				read := 1
+				student.ReadStatus = &read
+			} else {
+				unRead := 0
+				student.ReadStatus = &unRead
+			}
 		}
 
-		noticeStatus.UserName = junior.UserName
-
-		temp = append(temp, noticeStatus)
+		studentList[userUuid] = student		// 更新したものを入れ直す
 	}
 
-	//fomat後のnotices格納用変数(複数返ってくるのでスライス)
-	var noticeStatus []NoticeStatus
-
-	// tempを逆順にしてformattedAllNoticesに追加する
-	for i := len(temp) - 1; i >= 0; i-- {
-		noticeStatus = append(noticeStatus, temp[i])
+	// Mapをスライスに変換
+	// HACK: 生徒0人だとnullが帰ってきてうざいのでからの長さ0のスライスを作成
+	noticeStatusList := []NoticeStatus{}
+	for _, student := range studentList {
+		noticeStatusList = append(noticeStatusList, student)
 	}
-
-	fmt.Println(noticeStatus)
-
-	return noticeStatus, err
+	return noticeStatusList, nil
 }

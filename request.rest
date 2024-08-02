@@ -7,7 +7,7 @@
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
 @ouchi_invite_code = 339841
 @readStatus = 1
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc5MTMzNDgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiMDViZjk0ZDctYzU1Mi00YWMwLWJiYzYtMGZkNGZiYzRkNTNmIn0.PkxJu4hU0pYB2QLMDB82WF20Oyrqqp_rxe-6NSzQXJU
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc5MjE3MzksImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiY2I0MWJmYTAtNTJlYy00OWRkLWFlMmEtNzAwN2IxMDY3YWVjIn0.gfLJAOwp_kwpyC5gSwM2Ea3PPu6tg5CAzu3G7N2NnmY
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -152,6 +152,10 @@ Authorization: {{jwt}}
 
 ### お知らせ一覧の取得(既読絞り込み)
 GET {{base_url}}{{api_v}}/auth/users/notices/notices?readStatus={{readStatus}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせの既読状況取得
+GET {{base_url}}{{api_v}}/auth/users/notices/status/{{notice_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### クラスメイト取得
