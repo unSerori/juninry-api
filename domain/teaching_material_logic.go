@@ -29,8 +29,8 @@ func NewTeachingMaterialLogic(r TeachingMaterialRepository) *TeachingMaterialLog
 // 教科作成用の構造体を作るために、ユーザーidとクラスidの整合性をとる
 func (l *TeachingMaterialLogic) IntegrityStruct(id string, bTM TeachingMaterial) (TeachingMaterial, error) {
 	// ユーザーの権限の確認
-	permission, isFound, err := l.r.GetPermissionInfoById(id)
-	if err != nil || !isFound {
+	permission, err := l.r.GetPermissionInfoById(id)
+	if err != nil {
 		return TeachingMaterial{}, err
 	}
 	if permission != 1 { // teacher, junior, patron
@@ -38,7 +38,7 @@ func (l *TeachingMaterialLogic) IntegrityStruct(id string, bTM TeachingMaterial)
 	}
 
 	// ユーザーがクラスに属していることを確認
-	isFound, err = l.r.IsUserInClass(bTM.ClassUuid, id)
+	isFound, err := l.r.IsUserInClass(bTM.ClassUuid, id)
 	if err != nil || !isFound {
 		return TeachingMaterial{}, err
 	}

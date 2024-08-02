@@ -5,14 +5,11 @@
 @class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
 @class_invite_code = 9946
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
-<<<<<<< HEAD
-@ouchi_invite_code = 006605
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc4OTc5NzgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiNDY0OTZjMjEtNjNlMy00YzhmLTg3MWQtN2JlMTExNjA2YjNhIn0.8ORNMoTC0loTq__-xWICKXsiKvKaIT4o6uIQS-YMSLI
-
-=======
 @ouchi_invite_code = 339841
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc1NzMyOTgsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiMDM3ZWVlNzAtM2ZmNy00YjlmLTlkZmEtYTQxZTViYzI4NDU4In0.ICQl7Nq_34KqSDwXw5ixt89j0mmEbAiEXc9UfUdoaos
->>>>>>> develop
+@get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
+@get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzc5MzA5NzEsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiMWIxYzIwZDQtOWFjYy00ZDg4LTg5YzAtMDA3YTJkMjI4NWFmIn0.5qZ_gu2OWRj_IQYv4ZHObYKH47GmXP0r8TCWBRJzciY
+
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
@@ -87,6 +84,18 @@ Authorization: {{jwt}}
 
 ### 課題一覧の取得
 GET {{base_url}}{{api_v}}/auth/users/homeworks/upcoming HTTP/1.1
+Authorization: {{jwt}}
+
+### 宿題の詳細情報を取得 教師
+GET {{base_url}}{{api_v}}/auth/users/homeworks/{{get_hw_homework_uuid}}?user_uuid={{get_hw_user_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 宿題の詳細情報を取得 生徒
+GET {{base_url}}{{api_v}}/auth/users/homeworks/{{get_hw_homework_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 宿題の詳細情報を取得 保護者
+GET {{base_url}}{{api_v}}/auth/users/homeworks/{{get_hw_homework_uuid}}?user_uuid={{get_hw_user_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### 宿題提出

@@ -109,3 +109,31 @@ func FindHomeworks(teachingMaterialUuids []string, targetMonth time.Time) ([]Hom
 	}
 	return homeworks, nil
 }
+
+// 教材idを取得
+func GetTmId(hwId string) (string, error) {
+	var hw Homework // 取得したデータをマッピングする構造体
+	isFound, err := db.Where("homework_uuid = ?", hwId).Get(&hw)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return "", custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return hw.TeachingMaterialUuid, nil
+}
+
+// 課題レコードの取得
+func GetHwRecord(hwId string) (Homework, error) {
+	var hw Homework // 取得したデータをマッピングする構造体
+	isFound, err := db.Where("homework_uuid = ?", hwId).Get(&hw)
+	if err != nil {
+		return Homework{}, err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return Homework{}, custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return hw, nil
+}

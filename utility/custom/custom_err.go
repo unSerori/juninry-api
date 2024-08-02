@@ -20,35 +20,39 @@ type ErrType int
 
 // エラーの種類を定義
 const ( // ========================ここに新しい独自のエラーを追加していく
-	ErrTypeCustom             ErrType = iota
-	ErrTypeHashingPassFailed          // ハッシュ化失敗
-	ErrTypeGenTokenFailed             // トークン作成失敗
-	ErrTypeNoResourceExist            // リソースが存在しない
-	ErrTypePassMismatch               // パスワードが一致しない
-	ErrTypePermissionDenied           // 権限がない
-	ErrTypeMaxAttemptsReached         // 最大試行回数に達した
-	ErrTypeInvalidFileFormat          // ファイル形式が無効
-	ErrTypeFileSizeTooLarge           // ファイルサイズがでか杉ます;~;
-	ErrTypeAlreadyExists              // すでに存在するので登録する必要がない&できない
+	ErrTypeCustom                   ErrType = iota
+	ErrTypeHashingPassFailed                // ハッシュ化失敗
+	ErrTypeGenTokenFailed                   // トークン作成失敗
+	ErrTypeNoResourceExist                  // リソースが存在しない
+	ErrTypePassMismatch                     // パスワードが一致しない
+	ErrTypePermissionDenied                 // 権限がない
+	ErrTypeMaxAttemptsReached               // 最大試行回数に達した
+	ErrTypeInvalidFileFormat                // ファイル形式が無効
+	ErrTypeFileSizeTooLarge                 // ファイルサイズがでか杉ます;~;
+	ErrTypeAlreadyExists                    // すでに存在するので登録する必要がない&できない
+	ErrTypeLackOfRequiredParameters         // 必要なパラメータ不足
+	ErrTypeUnexpectedSetPoints              // 想定していない設定値
 
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
 
-	ErrTypeZeroEffectCUD // CUD処理の第一引数が0だったときの独自エラー
-	ErrTypeNoFoundR      // R処理の第一引数がfalse時の独自エラー
+	ErrTypeZeroEffectCUD // CUD処理の第一返り血(:affected)が0だったときの独自エラー
+	ErrTypeNoFoundR      // R処理の第一返り血(:isFound)がfalse時の独自エラー
 )
 
 // エラーに対するデフォルトmsgを設定
 var errTypeMsg = map[ErrType]string{
-	ErrTypeHashingPassFailed:  "",
-	ErrTypeGenTokenFailed:     "",
-	ErrTypeNoResourceExist:    "could not find the relevant ID",
-	ErrTypePassMismatch:       "password does not match",
-	ErrTypePermissionDenied:   "do not have the necessary permissions",
-	ErrTypeMaxAttemptsReached: "maximum number of attempts reached",
-	ErrTypeInvalidFileFormat:  "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
-	ErrTypeFileSizeTooLarge:   "the file size exceeds the allowed limit",
-	ErrTypeAlreadyExists:      "no need to register as it already exists & cannot be done",
+	ErrTypeHashingPassFailed:        "",
+	ErrTypeGenTokenFailed:           "",
+	ErrTypeNoResourceExist:          "could not find the relevant ID",
+	ErrTypePassMismatch:             "password does not match",
+	ErrTypePermissionDenied:         "do not have the necessary permissions",
+	ErrTypeMaxAttemptsReached:       "maximum number of attempts reached",
+	ErrTypeInvalidFileFormat:        "", // 拡張子やバイナリなど特定方法が複数あるため逐一設定するほうがいい
+	ErrTypeFileSizeTooLarge:         "the file size exceeds the allowed limit",
+	ErrTypeAlreadyExists:            "no need to register as it already exists & cannot be done",
+	ErrTypeLackOfRequiredParameters: "parameters required for processing are not in the request",
+	ErrTypeUnexpectedSetPoints:      "500 error because an unexpected configuration value appeared",
 
 	ErrTypeOtherErrorsInTheORM:       "",
 	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",

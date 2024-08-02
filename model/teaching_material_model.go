@@ -1,6 +1,9 @@
 package model
 
-import "juninry-api/domain"
+import (
+	"juninry-api/domain"
+	"juninry-api/utility/custom"
+)
 
 // 教材テーブル
 type TeachingMaterial struct { // typeで型の定義, structは構造体
@@ -91,4 +94,34 @@ func FindTeachingMaterials(classUuids []string) ([]TeachingMaterial, error) {
 		return nil, err
 	}
 	return teachingMaterials, nil
+}
+
+// tmIdから教材がどのクラスで発行されたものか取得
+func GetClassId(tmId string) (string, error) {
+	var tm TeachingMaterial // 取得したデータをマッピングする構造体
+	isFound, err := db.Where("teaching_material_uuid = ?", tmId).Get(&tm)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return "", custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return tm.ClassUuid, nil
+
+}
+
+// 教材名取得
+func GetTmName(tmId string) (string, error) {
+	var tm TeachingMaterial // 取得したデータをマッピングする構造体
+	isFound, err := db.Where("teaching_material_uuid = ?", tmId).Get(&tm)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return "", custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return tm.TeachingMaterialName, nil
+
 }

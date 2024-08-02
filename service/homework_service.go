@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"juninry-api/common/logging"
 	"juninry-api/model"
@@ -22,9 +23,20 @@ type HomeworkService struct{} // コントローラ側からサービスを実�
 
 // 課題の提出履歴の構造体
 type SubmissionRecord struct {
-	LimitDate      	time.Time	`json:"limitDate"`			// 締め切り
-	SubmissionCount int			`json:"submissionCount"`	// 提出数
-	HomeworkCount  	int			`json:"homeworkCount"`		// 課題数
+	LimitDate       time.Time `json:"limitDate"`       // 締め切り
+	SubmissionCount int       `json:"submissionCount"` // 提出数
+	HomeworkCount   int       `json:"homeworkCount"`   // 課題数
+}
+
+// 特定の宿題に対する任意のユーザーの提出状況と宿題の詳細情報を返すための構造体
+type HwSubmissionInfo struct {
+	TeachingMaterialUuid string `json:"teachingMaterialUUID"`
+	TeachingMaterialName string `json:"teachingMaterialName"`
+	SubjectId            int    `json:"subjectId"`
+	StartPage            int    `json:"startPage"`
+	PageCount            int    `json:"pageCount"`
+	IsSubmitted          bool   `json:"isSubmitted"`
+	Images               string `json:"images"`
 }
 
 // 課題の提出履歴を取得
@@ -70,12 +82,12 @@ func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time
 	}
 
 	// 課題の日付をキーとしたMap
-	var homeworkUuidsMap = make(map[time.Time] []string)
+	var homeworkUuidsMap = make(map[time.Time][]string)
 
 	// 提出期限を1日でまとめたのキーに課題UUIDを追加
 	for _, v := range homeworks {
 		// 時間を24時間単位に切り捨てる
-		homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)] = append(homeworkUuidsMap[v.HomeworkLimit.Truncate(24 * time.Hour)], v.HomeworkUuid)
+		homeworkUuidsMap[v.HomeworkLimit.Truncate(24*time.Hour)] = append(homeworkUuidsMap[v.HomeworkLimit.Truncate(24*time.Hour)], v.HomeworkUuid)
 	}
 
 	// レスポンスの構造体
@@ -94,7 +106,6 @@ func (s *HomeworkService) GetHomeworkRecord(userId string, targetMonth time.Time
 
 	return submissionRecord, nil
 }
-
 
 // 課題データの構造体
 type HomeworkData struct {
@@ -136,7 +147,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	if err != nil {
 		return nil, err
 	}
-	if isPatron {	// 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
+	if isPatron { // 親が宿題一覧見ようとしないでね、何も情報とれないんだけどさ、、、
 		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
@@ -400,4 +411,98 @@ func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (
 	}
 
 	return bHW.HomeworkUuid, nil
+}
+
+// 宿題の詳細情報と、生徒は自分の提出状況の(:クエパラを無視)、教師はクエパラIDでクラス内の特定生徒の、保護者はクエパラIDで家庭内特定児童の、提出状況を取得。
+func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId string) (HwSubmissionInfo, error) {
+	// userIdByJwtからuser_typeを取得し、
+	userTypeId, err := model.GetUserTypeId(userId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+	// クエパラが空だとエラーのネスト関数を使って
+	checkExistQueryParam := func(juniorId string) error {
+		if juniorId == "" {
+			return custom.NewErr(custom.ErrTypeLackOfRequiredParameters)
+		}
+		return nil
+	}
+	// 3パターンそれぞれの生徒IDを取得。取得生徒本人以外の権限者はクエパラで生徒を指定するのでクエパラが空だとエラー、生徒がクラスメイトでなかったり、家庭内の生徒でないならエラー
+	var tgtJuniorId string
+	switch userTypeId {
+	case 1: // 教師
+		// クエパラが空だとエラー
+		fmt.Printf("userTypeId: %v\n", userTypeId)
+		if err := checkExistQueryParam(juniorId); err != nil {
+			return HwSubmissionInfo{}, err
+		}
+		// 生徒がクラスメイトでない
+
+		// バリデーションを潜り抜けたので指定したuserIdを使う
+		tgtJuniorId = juniorId
+	case 3: // 保護者
+		fmt.Printf("userTypeId: %v\n", userTypeId)
+		// クエパラが空だとエラー
+		if err := checkExistQueryParam(juniorId); err != nil {
+			return HwSubmissionInfo{}, err
+		}
+		// 生徒が家庭内でない
+
+		// バリデーションを潜り抜けたので指定したuserIdを使う
+		tgtJuniorId = juniorId
+	case 2: // 生徒
+		// 生徒は自分自身のid
+		tgtJuniorId = userId
+	default:
+		return HwSubmissionInfo{}, custom.NewErr(custom.ErrTypeUnexpectedSetPoints)
+	}
+
+	// ここまでのバリデーションで、生徒のuuidが正しいものであることを保証する(できてるはず)
+	// 次に、課題が、生徒が所属するクラスに配布されたものか確認する homework_uuid -> (homework) -> teaching_material_uuid -> (teaching_material) -> class_uuid -> (class_memberships) -> user_uuid
+
+	// homework_uuidから課題のtm_uuidを取得
+	tmId, err := model.GetTmId(hwId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+	// tmIdから教材がどのクラスで発行されたものか取得
+	classId, err := model.GetClassId(tmId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+	// homework_uuidから紆余曲折取得できたクラスに、生徒が所属しているなら、宿題が生徒が所属するクラスに配布されていることが保証できる
+	isMember, err := model.CheckUserClassMembership(classId, tgtJuniorId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+	if !isMember {
+		return HwSubmissionInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// 確認できたらhomework_uuidの行を取得する
+	hw, err := model.GetHwRecord(hwId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+
+	// 提出状況(:フラグと画像名スライス)を取得
+	hwS, err := model.GetHwSubmission(hwId, tgtJuniorId)
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+
+	// 課題詳細と提出状況を合体
+	var hwSubmissionInfo HwSubmissionInfo
+	utility.ConvertStructCopyMatchingFields(&hw, &hwSubmissionInfo) // hwが持つフィールドで一致するものをコピー
+	hwSubmissionInfo.IsSubmitted = true                             // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
+	hwSubmissionInfo.Images = hwS.ImageNameListString               // 画像一覧
+	// さらに教材名
+	hwSubmissionInfo.TeachingMaterialName, err = model.GetTmName(tmId) // 教材名
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
+
+	utility.CheckStruct(hwSubmissionInfo)
+
+	return hwSubmissionInfo, nil
 }

@@ -32,7 +32,6 @@ func GetHomeworkRecordHandler(c *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
-
 	// リクエストパラメータを取得
 	targetMonth := c.Query("targetMonth")
 	if targetMonth == "" {
@@ -397,5 +396,93 @@ func RegisterHWHandler(c *gin.Context) {
 		"srvResData": gin.H{
 			"homeworkUUID": hwId,
 		},
+	})
+}
+
+// 特定の宿題に対する任意のユーザーの提出状況と宿題の詳細情報を取得するエンドポイント
+func GetHWInfoHandler(c *gin.Context) {
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	// パスパラhomework_uuidの取得
+	homeworkUuid := c.Param("homework_uuid")
+	// クエパラuser_uuidの取得
+	userUuid := c.Query("user_uuid")
+
+	fmt.Printf("idAdjusted: %v\n", idAdjusted)
+	fmt.Printf("homeworkUuid: %v\n", homeworkUuid)
+	if userUuid == "" {
+		fmt.Println("emp string")
+	} else {
+		fmt.Printf("userUuid: %v\n", userUuid)
+	}
+
+	// 取得処理と失敗レスポンス
+	resData, err := homeworkService.GetHWInfoService(homeworkUuid, idAdjusted, userUuid)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case custom.ErrTypeNoResourceExist: // リソースがなく見つからない
+				// エラーログ
+				logging.ErrorLog("Not Found.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			case custom.ErrTypePermissionDenied: // 所属していないクラスのお知らせを取得しようとしているね
+				// エラーログ
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+		}
+		return
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful noticeDetail get.")
+	// レスポンス(StatusOK　成功200番)
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": resData,
 	})
 }

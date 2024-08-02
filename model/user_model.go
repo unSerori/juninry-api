@@ -208,6 +208,22 @@ func GetIdByMail(mail string) (string, error, bool) {
 	return user.UserUuid, nil, true
 }
 
+// IDからアカウントタイプを返す
+func GetUserTypeId(userId string) (int, error) {
+	var user User // 取得したデータをマッピングする構造体
+
+	// 該当ユーザーを列ごと取得
+	isFound, err := db.Where("user_uuid = ?", userId).Get(&user)
+	if err != nil { //エラーハンドル
+		return 0, err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return 0, custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return user.UserTypeId, nil // teacher, junior, patron
+}
+
 // アカウントタイプが教師かどうか判定して真偽値を返す
 func IsTeacher(userUuid string) (bool, error) {
 	var user User // 取得したデータをマッピングする構造体

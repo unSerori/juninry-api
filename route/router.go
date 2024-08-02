@@ -61,6 +61,12 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 期限がある課題一覧を取得
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
+					// 宿題の詳細情報を取得
+					homeworks.GET("/:homework_uuid", controller.GetHWInfoHandler) // /v1/auth/users/homeworks/{homework_uuid}
+
+					// 特定の提出済み宿題の画像を取得するエンドポイント
+					homeworks.GET("/:homework_uuid/images/:image_name", controller.CfmReq) // /v1/auth/users/homeworks/{homework_uuid}/images/{image_name}
+
 					// 次の日が期限の課題一覧を取得
 					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 

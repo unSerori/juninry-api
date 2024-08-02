@@ -16,7 +16,7 @@ type TeachingMaterialRepository interface {
 	UpLoadImage(filePath string, file multipart.File) error // ファイルをディレクトリに保存
 
 	// DB操作
-	GetPermissionInfoById(id string) (int, bool, error)        // idから権限情報を取得
+	GetPermissionInfoById(id string) (int, error)              // idから権限情報を取得
 	IsUserInClass(classId string, userId string) (bool, error) // ユーザーがクラスに属しているかどうか
 	IsSubjectExists(subjectId int) (bool, error)               // それが登録済みの教科かどうか
 	CreateTM(tm TeachingMaterial) error                        // 完成した教材構造体をインサート

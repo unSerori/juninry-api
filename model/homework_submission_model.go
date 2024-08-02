@@ -1,15 +1,17 @@
 package model
 
 import (
+	"fmt"
+	"juninry-api/utility/custom"
 	"time"
 )
 
 // 宿題提出管理テーブル
 type HomeworkSubmission struct {
-	HomeworkUuid        string `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
-	UserUuid            string `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
-	ImageNameListString string `xorm:"TEXT" json:"imageNameListString"`                        // 画像ファイル名一覧 // TEXT型でUTF-8 21,845文字 // 一画像40文字と考えると最大546.125画像保存可能
-	SubmissionDate      time.Time `xorm:"DATETIME not null" json:"submissionDate"`              // 提出日時
+	HomeworkUuid        string    `xorm:"varchar(36) pk" json:"homeworkUUID" form:"homeworkUUID"` // ユーザーID
+	UserUuid            string    `xorm:"varchar(36) pk" json:"userUUID"`                         // クラスID
+	ImageNameListString string    `xorm:"TEXT" json:"imageNameListString"`                        // 画像ファイル名一覧 // TEXT型でUTF-8 21,845文字 // 一画像40文字と考えると最大546.125画像保存可能
+	SubmissionDate      time.Time `xorm:"DATETIME not null" json:"submissionDate"`                // 提出日時
 }
 
 // テーブル名
@@ -55,10 +57,27 @@ func StoreHomework(hwS *HomeworkSubmission) (bool, error) {
 
 // 課題提出状況の確認
 func CheckHomeworkSubmission(homeworkUuids []string) (int64, error) {
-	count,err := db.In("homework_uuid", homeworkUuids).Count(&HomeworkSubmission{})
+	count, err := db.In("homework_uuid", homeworkUuids).Count(&HomeworkSubmission{})
 
 	if err != nil {
 		return -1, err
 	}
 	return count, nil
+}
+
+// 提出状況を取得
+func GetHwSubmission(hwId string, userId string) (HomeworkSubmission, error) {
+	var hwS HomeworkSubmission // 取得したデータをマッピングする構造体
+	isFound, err := db.
+		Where("homework_uuid = ?", hwId).
+		Where("user_uuid = ?", userId).Get(&hwS)
+	if err != nil {
+		fmt.Println("koko")
+		return HomeworkSubmission{}, err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return HomeworkSubmission{}, custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return hwS, nil
 }

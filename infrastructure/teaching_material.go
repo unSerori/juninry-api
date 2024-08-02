@@ -65,13 +65,17 @@ func (p *TeachingMaterialPersistence) UpLoadImage(filePath string, file multipar
 // DB操作
 
 // ユーザーのuuidからユーザー権限を取得
-func (p *TeachingMaterialPersistence) GetPermissionInfoById(id string) (int, bool, error) {
+func (p *TeachingMaterialPersistence) GetPermissionInfoById(id string) (int, error) {
 	var user model.User // 取得したデータをマッピングする構造体
 	isFound, err := p.db.Where("user_uuid = ?", id).Get(&user)
-	if err != nil || !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`err != nil || !isFound`で、影響を与えるSQL文の時は`err != nil || affected == 0`でハンドリング
-		return 0, false, err
+	if err != nil {
+		return 0, err
 	}
-	return user.UserTypeId, true, nil // teacher, junior, patron
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return 0, custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return user.UserTypeId, nil // teacher, junior, patron
 }
 
 // ユーザーがクラスに属しているかどうか
@@ -119,5 +123,6 @@ func (p *TeachingMaterialPersistence) CreateTM(tm domain.TeachingMaterial) error
 	if affected == 0 {
 		return custom.NewErr(custom.ErrTypeNoFoundR)
 	}
+
 	return nil
 }

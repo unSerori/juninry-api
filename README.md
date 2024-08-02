@@ -309,6 +309,67 @@ SSH URL:
 </details>
 
 <details>
+  <summary>特定の宿題に対する任意のユーザーの提出状況と宿題の詳細情報を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/{homework_uuid}`
+- **メソッド:** GET
+- **説明:** 特定の宿題の詳細情報を取得する。生徒はクエパラなしで自分の提出状況を、教師はクエパラ設定で特定生徒を、保護者は家庭内特定児童をクエパラで設定すると提出状況を見られる。
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+  - パラメーター
+    - パスパラメーター:
+      - `homework_uuid`: 宿題リソースを指定するパラメーター
+    - クエリパラメーター
+      - `user_uuid`: どの自動ユーザーの宿題状況を確認するかのクエパラ
+    - パラメーター例
+
+      ```url
+      /v1/auth/users/homeworks/a3579e71-3be5-4b4d-a0df-1f05859a7104?user_uuid=3cac1684-c1e0-47ae-92fd-6d7959759224
+      ```
+
+  リクエスト例
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "teachingMaterialUUID": "978f9835-5a16-4ac0-8581-7af8fac06b4e",
+          "teachingMaterialName": "漢字ドリル3",
+          "subjectId": 1,
+          "startPage": 2,
+          "pageCount": 8,
+          "isSubmitted": true,  // or false
+          "images": ["bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg, gggggggg-176f-4dea-bec0-21464f192869.jpg, rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg"]
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>特定の提出済み宿題の画像を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/images/{homework_uuid}`
+- **メソッド:** GET
+- **説明:** 特定の提出済み宿題に紐づいている画像を取得する。一枚取得なのでそれぞれの画像に対してGETすべき
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      画像
+
+</details>
+
+<details>
   <summary>終了した宿題を提出するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/homeworks/submit`
