@@ -192,8 +192,33 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 // userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
 func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
 
+	var children []string // useruuidを保管する配列
+	// 親かどうか
+	isPatron, _ := model.IsPatron(userUuid)
+	// 親であれば子どものUUIDを取得
+	if isPatron {
+		patron, err := model.GetUser(userUuid)
+		if patron.OuchiUuid == nil {
+			// 保護者さんおうちに所属してないよエラー
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		if err != nil {
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		children, err = model.GetChildrenUuids(*patron.OuchiUuid)
+		if err != nil {
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+		if len(children) == 0 {
+			// あなたのおうちにこどもはいないよ
+			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+		}
+	} else {
+		children = append(children, userUuid)
+	}
+
 	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
-	userHomeworkList, err := model.FindUserHomeworkforNextday(userUuid)
+	userHomeworkList, err := model.FindUserHomeworkforNextday(children)
 	if err != nil { //エラーハンドル エラーを上に投げるだけ
 		return nil, err
 	}
@@ -505,4 +530,28 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 	utility.CheckStruct(hwSubmissionInfo)
 
 	return hwSubmissionInfo, nil
+}
+
+// 教材データを取得
+func (s *HomeworkService) GetTeachingMaterialData(userId string, classId string) ([]model.TeachingMaterial, error) {
+	// ユーザーが教員かな
+	isJunior, err := model.IsTeacher(userId)
+	if err != nil {
+		return nil, err
+	}
+	if !isJunior {
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// クラスIDをスライスに変換
+	var classUuids []string
+	classUuids = append(classUuids, classId)
+
+	// クラスIDから教材一覧を取得
+	teachingMaterials, err := model.FindTeachingMaterials(classUuids)
+	if err != nil {
+		return nil, err
+	}
+
+	return teachingMaterials, nil
 }

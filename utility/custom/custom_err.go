@@ -32,6 +32,7 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypeAlreadyExists                    // すでに存在するので登録する必要がない&できない
 	ErrTypeLackOfRequiredParameters         // 必要なパラメータ不足
 	ErrTypeUnexpectedSetPoints              // 想定していない設定値
+	ErrTypeUnforeseenCircumstances          // 予期せぬ条件
 
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
@@ -53,6 +54,7 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypeAlreadyExists:            "no need to register as it already exists & cannot be done",
 	ErrTypeLackOfRequiredParameters: "parameters required for processing are not in the request",
 	ErrTypeUnexpectedSetPoints:      "500 error because an unexpected configuration value appeared",
+	ErrTypeUnforeseenCircumstances:  "unforeseen circumstances",
 
 	ErrTypeOtherErrorsInTheORM:       "",
 	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",

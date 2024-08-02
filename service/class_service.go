@@ -187,6 +187,7 @@ type JuniorData struct {
 	UserUUID string `json:"userUUID"`
 	UserName string `json:"userName"`
 	GenderId int    `json:"genderId"`
+	StudentNumber *int `json:"studentNumber"`
 }
 
 // クラスごとに児童のデータをまとめた構造体
@@ -265,13 +266,23 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 		for _, classmate := range classmates {
+			// ユーザーIDの一致する人の出席番号を拾ってくる
+			var studentNumber *int
+			for _, membership := range memberships{
+					if membership.UserUuid == classmate.UserUuid {
+						studentNumber = membership.StudentNumber
+						break
+					}
+			}
 			juniorData := JuniorData{
 				UserUUID: classmate.UserUuid,
 				UserName: classmate.UserName,
 				GenderId: classmate.GenderId,
+				StudentNumber: studentNumber,
 			}
 			transformedDataMap[class.ClassName] = append(transformedDataMap[class.ClassName], juniorData)
 		}
+
 	}
 	// つくったマップをさらに成形
 	var transformedDataList []TransFormData
@@ -315,7 +326,7 @@ func (s *ClassService) PermissionCheckedRefreshInviteCode(userUuid string, class
 }
 
 // クラスに参加させる
-func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode string) (string, error) {
+func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode string, studentNumber *int) (string, error) {
 
 	// クラス参加権限を持っているか確認
 	isPatron, err := model.IsPatron(userUuid)
@@ -341,6 +352,7 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 	classMembership := model.ClassMembership{
 		UserUuid:  userUuid,
 		ClassUuid: targetClass.ClassUuid,
+		StudentNumber: studentNumber,
 	}
 
 	// クラスに所属しようね
