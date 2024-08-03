@@ -354,7 +354,7 @@ SSH URL:
 <details>
   <summary>特定の提出済み宿題の画像を取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/homeworks/images/{homework_uuid}`
+- **URL:** `/v1/auth/users/homeworks/{homework_uuid}/images/{image_file_name}`
 - **メソッド:** GET
 - **説明:** 特定の提出済み宿題に紐づいている画像を取得する。一枚取得なのでそれぞれの画像に対してGETすべき
 - **リクエスト:**

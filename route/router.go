@@ -65,7 +65,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					homeworks.GET("/:homework_uuid", controller.GetHWInfoHandler) // /v1/auth/users/homeworks/{homework_uuid}
 
 					// 特定の提出済み宿題の画像を取得するエンドポイント
-					homeworks.GET("/:homework_uuid/images/:image_name", controller.CfmReq) // /v1/auth/users/homeworks/{homework_uuid}/images/{image_name}
+					homeworks.GET("/:homework_uuid/images/:image_file_name", controller.FetchSubmittedHwImageHandler) // /v1/auth/users/homeworks/{homework_uuid}/images/{image_name}
 
 					// 次の日が期限の課題一覧を取得
 					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming

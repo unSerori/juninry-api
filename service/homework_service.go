@@ -30,6 +30,7 @@ type SubmissionRecord struct {
 
 // 特定の宿題に対する任意のユーザーの提出状況と宿題の詳細情報を返すための構造体
 type HwSubmissionInfo struct {
+	HomeworkUuid         string `json:"homeworkUUID"`
 	TeachingMaterialUuid string `json:"teachingMaterialUUID"`
 	TeachingMaterialName string `json:"teachingMaterialName"`
 	SubjectId            int    `json:"subjectId"`
@@ -554,4 +555,31 @@ func (s *HomeworkService) GetTeachingMaterialData(userId string, classId string)
 	}
 
 	return teachingMaterials, nil
+}
+
+// 特定の提出済み宿題の画像を取得
+func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId string, path string) (string, error) {
+	fmt.Printf("userId: %v\n", userId)
+	fmt.Printf("hwId: %v\n", hwId)
+	fmt.Printf("path: %v\n", path)
+
+	// TODO: その課題へのアクセス権の確認
+
+	// 教師は自分の所属しているクラスかどうか
+
+	// 児童は自分の所属しているクラスかどうか
+	// 保護者はおうちに所属している児童が所属しているかどうか
+	// +
+	// 児童本人または児童の保護者のみ
+
+	// パスの生成
+	filePath := "./upload/homework/" + path
+
+	// 画像があるか確認
+	if _, err := os.Stat(filePath); err != nil {
+		logging.ErrorLog("Missing files", err)
+		return "", custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+
+	return filePath, nil
 }
