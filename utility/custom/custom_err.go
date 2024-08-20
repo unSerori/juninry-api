@@ -29,7 +29,7 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypeMaxAttemptsReached               // 最大試行回数に達した
 	ErrTypeInvalidFileFormat                // ファイル形式が無効
 	ErrTypeFileSizeTooLarge                 // ファイルサイズがでか杉ます;~;
-	ErrTypeAlreadyExists                    // すでに存在するので登録する必要がない&できない
+	ErrTypeAlreadyExists                    // すでに存在するので登録する必要がないorできない
 	ErrTypeLackOfRequiredParameters         // 必要なパラメータ不足
 	ErrTypeUnexpectedSetPoints              // 想定していない設定値
 	ErrTypeUnforeseenCircumstances          // 予期せぬ条件

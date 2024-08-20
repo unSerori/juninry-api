@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"juninry-api/utility/custom"
 	"time"
 )
@@ -72,7 +71,6 @@ func GetHwSubmission(hwId string, userId string) (HomeworkSubmission, error) {
 		Where("homework_uuid = ?", hwId).
 		Where("user_uuid = ?", userId).Get(&hwS)
 	if err != nil {
-		fmt.Println("koko")
 		return HomeworkSubmission{}, err
 	}
 	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
@@ -80,4 +78,20 @@ func GetHwSubmission(hwId string, userId string) (HomeworkSubmission, error) {
 	}
 
 	return hwS, nil
+}
+
+// 提出画像一覧を取得
+func GetImageNames(hwId string, userId string) (string, error) {
+	var hwS HomeworkSubmission // 取得したデータをマッピングする構造体
+	isFound, err := db.
+		Where("homework_uuid = ?", hwId).
+		Where("user_uuid = ?", userId).Get(&hwS)
+	if err != nil {
+		return "", err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return "", custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return hwS.ImageNameListString, nil
 }

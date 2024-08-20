@@ -563,14 +563,69 @@ func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId strin
 	fmt.Printf("hwId: %v\n", hwId)
 	fmt.Printf("path: %v\n", path)
 
-	// TODO: その課題へのアクセス権の確認
+	// その課題へのアクセス権の確認
 
-	// 教師は自分の所属しているクラスかどうか
+	// 宿題が発行されたクラスを特定
+	tmId, err := model.GetTmId(hwId)
+	if err != nil {
+		return "", err
+	}
+	classId, err := model.GetTmName(tmId) // 発行されたクラスのID
+	if err != nil {
+		return "", err
+	}
+	// ユーザータイプを取得
+	userTypeId, err := model.GetUserTypeId(userId)
+	if err != nil {
+		return "", err
+	}
 
-	// 児童は自分の所属しているクラスかどうか
-	// 保護者はおうちに所属している児童が所属しているかどうか
-	// +
-	// 児童本人または児童の保護者のみ
+	// TODO: 生徒IDと宿題IDから提出済み表の該当宿題行の画像名リスト（文字列）を取得、スライスに変換して探す
+	findImageByHwS := func(juniorId string, hwId string) (bool, error) {
+		// リストを取得
+		hwImageNames, err := model.GetImageNames(hwId, juniorId)
+		if err != nil {
+			return false, err
+		}
+		logging.InfoLog("got hwImageNames", hwImageNames)
+		// スライスに変換
+		hwImageNamesSlice := strings.Split(hwImageNames, ",")
+		logging.InfoLog("got hwImageNames", fmt.Sprintf("%v", hwImageNamesSlice))
+		// スライスから探す 個数が少なそうなので普通にfor回し
+
+		return true, nil
+	}
+
+	// ユーザータイプごとに処理
+	switch userTypeId {
+	case 1: // 教師は自分の所属しているクラスかどうか
+		isMember, err := model.CheckUserClassMembership(classId, userId)
+		if err != nil {
+			return "", err
+		}
+		if !isMember {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 2: // 児童は自分の提出した課題の画像かどうか
+		isProperty, err := findImageByHwS(userId, hwId)
+		if err != nil {
+			return "", err
+		}
+		if !isProperty {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 3: // 保護者はおうちに児童が在籍しているかどうかを確認、在籍している場合case 2: と同様に確認
+		// TODO: おうちに児童が在籍しているかどうか
+
+		// 該当児童の所持する画像かどうか
+		isProperty, err := findImageByHwS(userId, hwId)
+		if err != nil {
+			return "", err
+		}
+		if !isProperty {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	}
 
 	// パスの生成
 	filePath := "./upload/homework/" + path
