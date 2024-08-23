@@ -128,6 +128,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// おうちに所属
 					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 
+					// おうち情報取得
+					ouchies.GET("/info", controller.GetOuchiHandler)	// /v1/auth/users/ouchies/info
+
 					helps := ouchies.Group("/helps")
 					{
 
