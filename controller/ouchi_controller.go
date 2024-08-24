@@ -247,7 +247,7 @@ func JoinOuchiHandler(c *gin.Context) {
 func GetOuchiHandler(ctx *gin.Context) {
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
 	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
+	if !exists { // idがcに保存されていない。 
 		// エラーログ
 		logging.ErrorLog("The id is not stored.", nil)
 		// レスポンス
@@ -260,7 +260,7 @@ func GetOuchiHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
-	//　おうちの名前を取得してくる
+	//　おうちの情報を取得してくる
 	ouchiInfo, err := OuchiService.GetOuchi(idAdjusted)
 	if err != nil { // エラーハンドル
 		// カスタムエラーを仕分ける

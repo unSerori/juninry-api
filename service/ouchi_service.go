@@ -191,7 +191,7 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 	return ouchi.OuchiName, nil
 }
 
-// おうちメンバーテーブル
+// おうちメンバーテーブル　名前きしょい…
 type OuchiMembers struct {
 	UserUuid   string `json:"userUUID"`   //ID
 	UserName   string `json:"userName"`   //名前
