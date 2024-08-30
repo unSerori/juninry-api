@@ -885,6 +885,45 @@ SSH URL:
 </details>
 
 <details>
+  <summary>おうち情報取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/info`
+- **メソッド:** GET
+- **説明:** おうち名、おうちに所属している人全員を取得する
+- **リクエスト:**
+  - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200　OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResData": {
+          "ouchiUUID": "2e17a448-985b-421d-9b9f-62e5a4f28c49",
+          "ouchiName": "piyonaka家",
+          "ouchiMembers": [
+            {
+              "userUUID": "868c0804-cf1b-43e2-abef-08f7ef58fcd0",
+              "userName": "test parent",
+              "userTypeId": 3,
+              "genderId": 0
+            },
+            {
+              "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+              "userName": "test pupil",
+              "userTypeId": 2,
+              "genderId": 1
+            }
+          ]
+        },
+        "srvResMsg": "OK"
+      }      
+      ```
+
+</details>
+
+<details>
   <summary>教材を登録するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/t_materials/register`

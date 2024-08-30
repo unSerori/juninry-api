@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"time"
 
+	// "github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 )
@@ -188,4 +189,84 @@ func (s *OuchiService) PermissionCheckedJoinOuchi(userUuid string, inviteCode st
 
 	// エラーがない場合、おうち名返還
 	return ouchi.OuchiName, nil
+}
+
+// おうちメンバーテーブル　名前きしょい…
+type OuchiMembers struct {
+	UserUuid   string `json:"userUUID"`   //ID
+	UserName   string `json:"userName"`   //名前
+	UserTypeId int    `json:"userTypeId"` // ユーザータイプ
+	GenderId   int    `json:"genderId"`   // 性別
+}
+
+// おうちテーブル
+type OuchiInfo struct {
+	OuchiUuid    string         `json:"ouchiUUID"`    //おうちID
+	OuchiName    string         `json:"ouchiName"`    //おうちの名前
+	OuchiMembers []OuchiMembers `json:"ouchiMembers"` // 同じおうちの人一覧
+}
+
+// おうち取得
+func (s *OuchiService) GetOuchi(userUuid string) (OuchiInfo, error) {
+
+	// 取得権限を持っているか確認
+	isTeacher, err := model.IsTeacher(userUuid)
+	if err != nil { // エラーハンドル
+		return OuchiInfo{}, err
+	}
+	if isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return OuchiInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	//userUuidからouchiUuidをとってくる
+	user, err := model.GetUser(userUuid)
+	if err != nil {
+		return OuchiInfo{}, err
+	}
+
+	//おうちの所属確認
+	var ouchiUuid string
+	if user.OuchiUuid != nil {
+		ouchiUuid = *user.OuchiUuid
+	} else { //おうちないよエラー
+		logging.ErrorLog("ouchiUuid not found", nil)
+		return OuchiInfo{}, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+
+	//所属してたらおうちとってきて返す
+	ouchi, err := model.GetOuchi(ouchiUuid)
+	if err != err {
+		return OuchiInfo{}, err
+	}
+
+	// 同じouchiUuidのユーザを取得してくる
+	users, err := model.GetUserByOuchiUuid(ouchiUuid)
+	if err != nil {
+		return OuchiInfo{}, err
+	}
+
+	//返す値を格納する変数
+	var ouchiMembers []OuchiMembers
+	for _, user := range users {
+		// 必要な値だけを取り出して代入
+		ouchiMember := OuchiMembers{
+			UserUuid:   user.UserUuid,
+			UserName:   user.UserName,
+			UserTypeId: user.UserTypeId,
+			GenderId:   user.GenderId,
+		}
+
+		// スライスに追加
+		ouchiMembers = append(ouchiMembers, ouchiMember)
+	}
+
+	//宣言した構造体に情報を突っ込む
+	ouchiInfo := OuchiInfo{
+		OuchiUuid:    ouchiUuid,       //おうちID
+		OuchiName:    ouchi.OuchiName, //おうちの名前
+		OuchiMembers: ouchiMembers,    //おうちに所属している人一覧
+	}
+
+	return ouchiInfo, err
 }

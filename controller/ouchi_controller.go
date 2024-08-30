@@ -242,3 +242,79 @@ func JoinOuchiHandler(c *gin.Context) {
 	})
 
 }
+
+// おうち情報取得
+func GetOuchiHandler(ctx *gin.Context) {
+	// ユーザーを特定する(ctxに保存されているidを取ってくる)
+	id, exists := ctx.Get("id")
+	if !exists { // idがcに保存されていない。 
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		ctx.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	//　おうちの情報を取得してくる
+	ouchiInfo, err := OuchiService.GetOuchi(idAdjusted)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case custom.ErrTypeNoResourceExist: // おうちないよエラー
+				// エラーログ
+				logging.ErrorLog("not found.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			case custom.ErrTypePermissionDenied: // 非管理者ユーザーの場合
+				// エラーログ
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				ctx.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+		}
+		return
+	}
+
+	// 成功ログ
+	logging.SuccessLog("Successful ouchiInfo get.")
+	// レスポンス(StatusOK　成功200番)
+	resStatusCode := http.StatusOK
+	ctx.JSON(resStatusCode, gin.H{
+		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResData": ouchiInfo,
+	})
+
+}

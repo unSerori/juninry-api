@@ -350,3 +350,11 @@ func DecrementUpdatePoint(userUuid string, rewardUUID string) (int, error) {
 	}
 	return decrementedPoint, err
 }
+
+//同じouchiUuidの人を取得
+func GetUserByOuchiUuid(ouchiUuid string) ([]User, error) {
+	//ユーザを取得
+	var users []User
+	err := db.In("ouchi_uuid", ouchiUuid).OrderBy("user_type_id DESC").Find(&users)
+	return users, err
+}
