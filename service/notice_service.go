@@ -203,15 +203,22 @@ func (s *NoticeService) GetNoticeDetail(noticeUuid string, userUuid string) (Not
 	return formattedNotice, err
 }
 
+// 子ども情報テーブル
+type PupilInfo struct { // typeで型の定義, structは構造体
+	PupilUuid string `json:"pupilUUID"` // こどものUUID
+	PupilName string `json:"pupilName"` // こどもの名前
+}
+
 // おしらせテーブル(全件取得用)
 type NoticeHeader struct { // typeで型の定義, structは構造体
-	NoticeUuid  string    `json:"noticeUUID"`  // おしらせUUID
-	NoticeTitle string    `json:"noticeTitle"` //お知らせのタイトル
-	NoticeDate  time.Time `json:"noticeDate"`  //お知らせの作成日時
-	UserName    string    `json:"userName"`    // おしらせ発行ユーザ
-	ClassUuid   string    `json:"classUUID"`   // クラスUUID
-	ClassName   string    `json:"className"`   // どのクラスのお知らせか
-	ReadStatus  *int      `json:"readStatus"`  //お知らせを確認しているか　お家に所属していない場合、既読情報は存在しないのでポインタを使いnilを許容する
+	NoticeUuid  string      `json:"noticeUUID"`  // おしらせUUID
+	NoticeTitle string      `json:"noticeTitle"` //お知らせのタイトル
+	NoticeDate  time.Time   `json:"noticeDate"`  //お知らせの作成日時
+	UserName    string      `json:"userName"`    // おしらせ発行ユーザ
+	ClassUuid   string      `json:"classUUID"`   // クラスUUID
+	ClassName   string      `json:"className"`   // どのクラスのお知らせか
+	ReadStatus  *int        `json:"readStatus"`  //お知らせを確認しているか　お家に所属していない場合、既読情報は存在しないのでポインタを使いnilを許容する
+	PupilInfos  []PupilInfo `json:"pupilInfo"`   // お知らせのクラスに所属している子供一覧
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
@@ -330,6 +337,33 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 		//整形後formatに追加
 		noticeHeader.ClassName = class.ClassName // おしらせ発行ユーザ
 
+		//classUuidから子どもを特定する
+		pupils, err := model.GetUserByClassUuid(classUuid, userUuids)
+		if err != nil {
+			return []NoticeHeader{}, err
+		}
+
+		fmt.Println(pupils)
+		//返す値を格納する変数
+		var pupilInfos []PupilInfo
+		//infoに情報を入れていく
+		for _, pupil := range pupils {
+			user, err := model.GetUser(pupil.UserUuid)
+			if err != nil {
+				return []NoticeHeader{}, err
+			}
+			// 必要な値だけ取り出して代入
+			pupilInfo := PupilInfo{
+				PupilUuid: user.UserUuid,
+				PupilName: user.UserName,
+			}
+			// スライスに追加
+			pupilInfos = append(pupilInfos, pupilInfo)
+		}
+
+		//宣言した構造体に情報をいれる
+		noticeHeader.PupilInfos = pupilInfos
+
 		// リクエストしたユーザーがお家を持っている場合既読ステータスを取得
 		if ouchiUuid != "" {
 			// 確認しているか取得
@@ -346,8 +380,6 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 				Unread := 0
 				noticeHeader.ReadStatus = &Unread
 			}
-
-
 		}
 
 		// 直接nilとの比較ができないので条件がない時の値を定義nil
@@ -362,10 +394,10 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 			}
 
 			// ソート条件があるなら、条件に合うものだけ追加していく
-			if *sortReadStatus == *noticeHeader.ReadStatus {	//　条件在り(0か1)
+			if *sortReadStatus == *noticeHeader.ReadStatus { //　条件在り(0か1)
 				noticeHeaders = append(noticeHeaders, noticeHeader)
 			}
-		} else {		//　条件なし
+		} else { //　条件なし
 			noticeHeaders = append(noticeHeaders, noticeHeader)
 		}
 	}
@@ -418,10 +450,10 @@ func (s *NoticeService) ReadNotice(noticeUuid string, userUuid string) error {
 
 // 特定のお知らせ既読済み一覧 TODO:出席番号どうする？
 type NoticeStatus struct {
-	StudentNumber  *int    `json:"studentNumber"` // 出席番号
-	UserName   string  `json:"userName"`      // ガキの名前
-	GenderId *int `json:"genderId"`      // 性別コード(定義がないためnullにしてる)
-	ReadStatus *int    `json:"readStatus"` // お知らせを確認しているか
+	StudentNumber *int   `json:"studentNumber"` // 出席番号
+	UserName      string `json:"userName"`      // ガキの名前
+	GenderId      *int   `json:"genderId"`      // 性別コード(定義がないためnullにしてる)
+	ReadStatus    *int   `json:"readStatus"`    // お知らせを確認しているか
 }
 
 // 特定のお知らせ既読済み一覧取得
@@ -455,10 +487,10 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 	}
 
 	// userUUIDをキーとしたマップを作成
-	studentList := make(map[string] NoticeStatus)
+	studentList := make(map[string]NoticeStatus)
 	for _, membership := range classMemberships {
 		studentList[membership.UserUuid] = NoticeStatus{
-			StudentNumber:  membership.StudentNumber,
+			StudentNumber: membership.StudentNumber,
 		}
 	}
 
@@ -469,14 +501,14 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 			return []NoticeStatus{}, err
 		}
 		// student.GenderId = &user.GenderId			// 性別コード
-		student.UserName = user.UserName	// 名前を挿入
+		student.UserName = user.UserName // 名前を挿入
 		// 既読状況の取得
 		if user.OuchiUuid != nil {
-			result , err := model.IsRead(noticeUuid, *user.OuchiUuid)
+			result, err := model.IsRead(noticeUuid, *user.OuchiUuid)
 			if err != nil {
 				return []NoticeStatus{}, err
 			}
-			if result {									// 既読
+			if result { // 既読
 				read := 1
 				student.ReadStatus = &read
 			} else {
@@ -485,7 +517,7 @@ func (s *NoticeService) GetNoticeStatus(noticeUuid string, userUuid string) ([]N
 			}
 		}
 
-		studentList[userUuid] = student		// 更新したものを入れ直す
+		studentList[userUuid] = student // 更新したものを入れ直す
 	}
 
 	// Mapをスライスに変換
