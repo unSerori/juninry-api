@@ -426,7 +426,12 @@ SSH URL:
               "userName": "test teacher",
               "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
               "className": "3-2 ふたば学級",
-              "readStatus": 0 // 未読: 0, 既読: 1, 対象外: null
+              "readStatus": 0 ,// 未読: 0, 既読: 1, 対象外: null
+              "pupilInfo": [
+                {
+                  "pupilUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+                  "pupilName": "test pupil"
+                }]
             },,,
           ]
         },
