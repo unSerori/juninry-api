@@ -222,7 +222,7 @@ type NoticeHeader struct { // typeで型の定義, structは構造体
 }
 
 // ユーザの所属するクラスのお知らせ全件取得
-func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sortReadStatus *int) ([]NoticeHeader, error) {
+func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, pupilUuids []string, sortReadStatus *int) ([]NoticeHeader, error) {
 
 	// 結果格納用変数
 	var userUuids []string
@@ -250,10 +250,30 @@ func (s *NoticeService) FindAllNotices(userUuid string, classUuids []string, sor
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
 
-		// 同じお家IDの子供のユーザーIDを取得
-		userUuids, err = model.GetChildrenUuids(*user.OuchiUuid)
-		if err != nil { // エラーハンドル
-			return nil, err
+		// 絞り込み条件がなければ、同じおうちの子供全員を取得してくる
+		if len(pupilUuids) == 0 {
+			// 同じお家IDの子供のユーザーIDを取得
+			userUuids, err = model.GetChildrenUuids(*user.OuchiUuid)
+			if err != nil { // エラーハンドル
+				return nil, err
+			}
+		} else { // pupilUuidsがあれば同じおうちに所属しているのか調べる
+			// Uuidすべてを検索する
+			for _, pupilUuid := range pupilUuids {
+				pupil, err := model.GetUser(pupilUuid)
+				if err != nil {
+					return nil, err
+				}
+
+				fmt.Println("親", *user.OuchiUuid, ":子供", *pupil.OuchiUuid)
+				// 親のouchiUuidと比べて違うかったらえらーよね
+				if *user.OuchiUuid != *pupil.OuchiUuid {
+					// そんな子供いないよエラー
+					return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
+				}
+			}
+			// 絞込みの子供IDを保存(kisyoi,dogeza)
+			userUuids = pupilUuids
 		}
 
 		if len(userUuids) == 0 {
