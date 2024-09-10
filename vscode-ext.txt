@@ -23,5 +23,4 @@ chunsen.bracket-select
 rangav.vscode-thunder-client
 humao.rest-client
 nemesv.copy-file-name
-
 golang.Go
