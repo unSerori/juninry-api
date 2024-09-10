@@ -4,59 +4,155 @@
 
 ## 概要
 
-juninryのGo APIサーバ。
+[docker-juninry](https://github.com/unSerori/docker-juninry)のGo APIサーバ
 
 ### 環境
 
+macOS Sonoma version: 14.6.1
 Visual Studio Code: 1.88.1  
-golang.Go: v0.41.4  
-image Golang: go version go1.22.2 linux/amd64  
+Docker Desktop: 4.34.0: Engine: 27.2.0  
+image: golang:1.22.2-bullseye  
+image: mysql:latest
 
 ## 環境構築
 
-1. 以下のDocker環境を作成  
-[リポジトリURL](https://github.com/unSerori/docker-juninry)  
-SSH URL:  
+[docker-juninry](https://github.com/unSerori/docker-juninry)を使ってDokcerコンテナーで開発・デプロイする形を想定している  
+構築手順は[docker-juninryの環境構築項目](https://github.com/unSerori/docker-juninry/blob/main/README.md#環境構築)に記載  
+cloneしてスクリプト実行で、自動的にコンテナー作成と開発環境（: またはデプロイ）を行う  
+開発環境へのアタッチはVS CodeのDocker, DevContainer拡張機能の「Attach Visual Studio Code」を用いて、VS Codeの機能をそのまま使うことを想定している  
+詳しくは[docker-juninryのREADME.md](https://github.com/unSerori/docker-juninry/blob/main/README.md)に記載
 
-    ```SSH:SSH URL
-    git@github.com:unSerori/juninry-api.git
-    ```
+### ./vscode-ext.txt
 
-2. ここまでが1の内容（フォルダーをVScodeで開きgo_serverをVScodeアタッチ。）
-3. リポジトリをクローン
+Goのデバッグ用VS Code拡張機能や便利な拡張機能のリスト  
+VS Codeアタッチしたコンテナー内で、以下のコマンド実行で一括インストールできる
+
+```bash
+cat vscode-ext.txt | while read line; do code --install-extension $line; done
+```
+
+### 自前でのローカル環境構築
+
+想定はしていないが、ローカル環境にインストールすることも可能
+
+1. [Goのインストール](https://go.dev/doc/install)
+2. このリポジトリをclone
 
     ```bash
-    # カレントディレクトリにリポジトリの中身を展開
-    git clone git@github.com:unSerori/juninry-api.git .
-    
-    # developブランチに移動
-    git switch develop
+    git clone https://github.com/unSerori/juninry-api
     ```
 
-4. shareディレクトリ内で以下のコマンド。
+3. [.env](#env)ファイルをもらうか作成
+4. 必要なパッケージの依存関係など
 
-    ```bash:Build an environment
-    # vscode 拡張機能を追加　vscode-ext.txtにはプロジェクトごとに必要なものを追記している。  
-    cat vscode-ext.txt | while read line; do code --install-extension $line; done
+    ```bash
+    go mod tidy
     ```
 
-5. .envファイルをもらうか作成。[.envファイルの説明](#env)
+5. プロジェクトを起動
+
+    ```bash
+    # 実行(VSCodeならF5keyで実行)
+    go run .
+
+    # ワンファイルにビルド
+    go build -o output 
+
+    # ビルドで生成されたファイルを実行
+    ./output
+    ```
+
+#### おまけ: Goでプロジェクト作成時のコマンド
+
+```bash
+# goモジュールの初期化
+go mod init ddd
+
+# ginのインストール
+go get -u github.com/gin-gonic/gin
+
+# main.goの作成
+echo package main > main.go
+```
 
 ## ディレクトリ構成
 
+<details>
+  <summary>`tree -LFa 3 --dirsfirst`に加筆修正</summary>
+
+```txt
+./juninry-api
+|-- .git/
+|-- application/
+|-- asset/
+|-- common/
+|   `-- logging/
+|       |-- init.go
+|       |-- log.go
+|       `-- server.log
+|-- controller/
+|-- domain/
+|-- infrastructure/
+|   |-- model/
+|   `--/
+|-- middleware/
+|-- model/
+|-- presentation/
+|-- route/
+|   |-- dig.go
+|   `-- router.go
+|-- service/
+|-- upload/
+|   |-- homework/
+|   |-- t_material/
+|-- utility/
+|   |-- auth/
+|   |-- batch/
+|   |-- config/
+|   |-- custom/
+|   |-- dip/
+|   |-- scheduler/
+|   |-- security/
+|   `-- utility.go
+|-- view/
+|   `-- views/
+|       |-- scripts/
+|       |   `-- common.js
+|       |-- styles/
+|       |   `-- common.css
+|       `-- index.html
+|-- .env
+|-- .gitignore
+|-- README.md
+|-- go.mod
+|-- go.sum
+|-- init.go
+|-- main.go
+|-- request.rest
+`-- vscode-ext.txt
+```
+
+</details>
+
+現状アーキテクチャが一貫されていない  
+TODO: DDDに統合していく予定
+
+### 主要なディレクトリの説明
+
 - presentation, application, domain, infrastructure: DDDの4パッケージ
 - view: テスト用ページの静的ファイル
-- middleware: ミドルウェア。この中でDDD形式などに分割すべきかも。
+- middleware: ミドルウェアを置くが、この中でDDD形式などに分割すべきかを検討中
 - route: ルーティングや付随する初期設定
 - utility: 再利用性の高い単体の処理群
 - common: utilityの中でもより一般性の高い処理群
 - asset: サーバー自体が最初から持つリソースや画像送信テストなどで使うリソースを置いておく
 - upload: アップロードされたファイル
-- controller, service, model: 旧アーキテクチャの3パッケージ、DDD形式に変換したい。modelはテーブルモデル定義ファイルとしてinfrastructure/modelに移動したい
+- controller, service, model: 旧アーキテクチャの3パッケージで、DDD形式に変換したい  
+  modelはテーブルモデル定義ファイルとしてinfrastructure/modelに移動したい
 
 ## API仕様書
 
-エンドポイント、リクエストレスポンスの形式、その他情報のAPIの仕様書。
+エンドポイント、リクエストレスポンスの形式、その他情報のAPIの仕様書
 
 ### エンドポインツ
 
@@ -990,30 +1086,27 @@ SSH URL:
 
 APIがエラーを返す場合、詳細なエラーメッセージが含まれます。~~エラーに関する情報は[サーバーエラー]を参照してください。~~
 
-## SERVER ERROR MESSAGE
-
-サーバーレスポンスメッセージとして"srvResMsg"キーでメッセージを返す。  
-サーバーレスポンスステータスコードと合わせてデバックする。
-
 ## .ENV
 
 .evnファイルの各項目と説明
 
+- `./.env`: 実行時に必要だが、環境によって変わったり、リポジトリに含めたくない値
+
 ```env:.env
-MYSQL_USER=DBに接続する際のログインユーザ名
-MYSQL_PASSWORD=パスワード
-MYSQL_HOST=ログイン先のDBホスト名。dockerだとサービス名。
-MYSQL_PORT=ポート番号。dockerだとコンテナのポート。
-MYSQL_DATABASE=使用するdatabase名
-JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー。
-JWT_TOKEN_LIFETIME=JWTトークンの有効期限
-MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ。10MBなら10485760
-REQ_BODY_MAX_SIZE=リクエストボディのマックスサイズ。50MBなら52428800
+MYSQL_USER=DBに接続する際のログインユーザ名: juninry_user
+MYSQL_PASSWORD=パスワード: juninry_pass
+MYSQL_HOST=ログイン先のDBホスト名（dockerだとサービス名）: mysql-db-srv
+MYSQL_PORT=ポート番号（dockerだとコンテナのポート）: 3306
+MYSQL_DATABASE=使用するdatabase名: juninry_db
+JWT_SECRET_KEY="openssl rand -base64 32"で作ったJWTトークン作成用のキー
+JWT_TOKEN_LIFETIME=JWTトークンの有効期限: 315360000
+MULTIPART_IMAGE_MAX_SIZE=Multipart/form-dataの画像の制限サイズ（10MBなら10485760）: 10485760
+REQ_BODY_MAX_SIZE=リクエストボディのマックスサイズ（50MBなら52428800）: 52428800
 ```
 
 ## TODO
 
-- 三層アーキテクチャなエンドポイントをDDDにリファクタリング。現状はmodel層として使っていたものがinfrastructure層外に置き去りにされている。
+- 三層アーキテクチャなエンドポイントをDDDにリファクタリング（現状はmodel層として使っていたものがinfrastructure層外に置き去りにされている）
 
 ## 開発者
 
