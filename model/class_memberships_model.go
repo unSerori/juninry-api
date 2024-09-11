@@ -2,9 +2,9 @@ package model
 
 // ユーザのクラス所属中間テーブル
 type ClassMembership struct {
-	ClassUuid string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
-	UserUuid  string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
-	StudentNumber *int `xorm:"int" json:"classNumber"`  // クラス番号
+	ClassUuid     string `xorm:"varchar(36) pk" json:"classUUID"` // クラスID
+	UserUuid      string `xorm:"varchar(36) pk" json:"userUUID"`  // ユーザーID
+	StudentNumber *int   `xorm:"int" json:"classNumber"`          // クラス番号
 }
 
 // テーブル名
@@ -103,7 +103,7 @@ func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembe
 	var user []ClassMembership
 	//classuuidで絞り込み
 	err := db.Where("class_uuid = ?", classUuid).
-				Where("user_uuid NOT IN (?)", userUuid).OrderBy("student_number").Find(&user)
+		Where("user_uuid NOT IN (?)", userUuid).OrderBy("student_number").Find(&user)
 	if err != nil { //エラーハンドル
 		return nil, err
 	}
@@ -136,4 +136,14 @@ func CheckUserClassMembership(classId string, userId string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// userUuidの候補の中から指定しているクラスに所属している人を返す
+func GetUserByClassUuid(classUuid string, userUuids []string) ([]ClassMembership, error) {
+	var pupil []ClassMembership
+	err := db.In("user_uuid", userUuids).In("class_uuid", classUuid).Find(&pupil)
+	if err != nil {
+		return nil, err
+	}
+	return pupil, nil
 }

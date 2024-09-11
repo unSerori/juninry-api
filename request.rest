@@ -2,14 +2,15 @@
 @api_v = /v1
 @boundary = ----MyBoundary
 @notice_uuid = 51e6807b-9528-4a4b-bbe2-d59e9118a70d
-@class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
+@class_uuid = 817f600e-3109-47d7-ad8c-18b9d7dbdf8b
 @class_invite_code = 8871
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
+@pupil_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @ouchi_invite_code = 339841
 @readStatus = 1
 @get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzk3Njc1MjQsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNWQ0N2RiMDEtYTUzNC00NzcyLTg0OWEtMGUyN2RlODBmYWNiIn0.azR98zoU4YBQ29YJ_1zZPq4NAvQqGHBQT8OwAsxeMJU
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDExNjI2MjQsImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiZjQ0MDQ2NjMtMzNkMC00YWQzLWFlNWYtYmRlOWFhYmY5ZWY3In0.4Da2cAssgT1LzKyQgZoNqo8xTGoDTaDTHS12KvJFhmc
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
 
@@ -157,6 +158,14 @@ Authorization: {{jwt}}
 
 ### お知らせ一覧の取得(クラス絞り込み)
 GET {{base_url}}{{api_v}}/auth/users/notices/notices?classUUID[]={{class_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせ一覧の取得(子供絞り込み)
+GET {{base_url}}{{api_v}}/auth/users/notices/notices?pupilUUID[]={{pupil_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせ一覧の取得(両方)
+GET {{base_url}}{{api_v}}/auth/users/notices/notices?classUUID[]={{class_uuid}}&pupilUUID[]={{pupil_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### お知らせの詳細取得

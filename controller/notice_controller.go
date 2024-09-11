@@ -215,20 +215,25 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		classUuids = append(classUuids, idsStr...)
 	}
 
+	var pupilUuids []string
+	// クエリパラメータに入力されているクラスIDを保存していく(複数)
+	if idsStr := ctx.QueryArray("pupilUUID[]"); len(idsStr) > 0 {
+		pupilUuids = append(pupilUuids, idsStr...)
+	}
 
 	var readStatus *int
 
 	// readStatus = ctx.Query("readStatus")
 	// Queryメソッドからの文字列を取得
-    readStatusStr := ctx.Query("readStatus")
+	readStatusStr := ctx.Query("readStatus")
 
-	if readStatusStr != "" {	// 値がから文字でない→送られてきているならば
+	if readStatusStr != "" { // 値がから文字でない→送られてきているならば
 		readStatusInt, _ := strconv.Atoi(readStatusStr)
 		readStatus = &readStatusInt
 	}
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, readStatus)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, pupilUuids, readStatus)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
@@ -317,7 +322,6 @@ func NoticeReadHandler(ctx *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
-
 	// ここエラー出てたのでエラーが出ないようにする処置をしていたんですが、
 	// mergeで受け入れたらまたエラーが出てしまって、ううううううううううう　もうなにもわからない　たすけて；〜〜；
 	//notice_uuidの取得
@@ -326,7 +330,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 構造体にマッピング
 	bRead := model.NoticeReadStatus{
 		NoticeUuid: noticeUuid,
-		OuchiUuid:   idAdjusted,
+		OuchiUuid:  idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
