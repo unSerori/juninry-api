@@ -10,7 +10,7 @@
 @readStatus = 1
 @get_hw_homework_uuid = K2079e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MDg4MDUsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiOTlkNTQzMDYtZWNmOS00YjFhLTgyNmMtYmQwNGMyNjNjNjE3In0.oAJ66d3y8w-MNrl5Wpjjgw_MeYwizowmnoIDOIr1WjU
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MTcxOTMsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNTc2ZmI2OTgtODAwYi00NjdmLWE2YzUtZmM3ZTc3NDFkMzg3In0.opRrfG4rqyPY0I4tWWF90JmRGcW5fJNZ8W9NsaF38ws
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
