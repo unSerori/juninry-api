@@ -510,19 +510,10 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 		return HwSubmissionInfo{}, err
 	}
 
-	// 提出状況(:フラグと画像名スライス)を取得 TODO: ここを変更
-	hwS, err := model.GetHwSubmission(hwId, tgtJuniorId)
-	if err != nil {
-		return HwSubmissionInfo{}, err
-	} // BUG:
-
 	// 課題詳細と提出状況を合体
 	var hwSubmissionInfo HwSubmissionInfo
 	utility.ConvertStructCopyMatchingFields(&hw, &hwSubmissionInfo) // hwが持つフィールドで一致するものをコピー
-	hwSubmissionInfo.SubmitStatus = 1                               // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
-	hwSubmissionInfo.Images = hwS.ImageNameListString               // 画像一覧
 	// さらに教材名と教科idをセット // HACK: isFoundの確認は不要？
-	fmt.Printf("hwSubmissionInfo.SubjectId教材名登録前: %v\n", hwSubmissionInfo.SubjectId)
 	hwSubmissionInfo.TeachingMaterialName, err = model.GetTmName(tmId) // 教材名
 	if err != nil {
 		return HwSubmissionInfo{}, err
@@ -531,7 +522,21 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 	if err != nil {
 		return HwSubmissionInfo{}, err
 	}
-	fmt.Printf("hwSubmissionInfo.SubjectId教材名登録後: %v\n", hwSubmissionInfo.SubjectId)
+
+	// 提出状況(:フラグと画像名スライス)を取得
+	hwS, err := model.GetHwSubmission(hwId, tgtJuniorId)
+	if err != nil { // エラーハンドル
+		if err.Error() == custom.NewErr(custom.ErrTypeNoFoundR).Error() { // 見つからなかったときを明示的に
+			fmt.Println("未提出")
+
+			hwSubmissionInfo.SubmitStatus = 0 // 未提出
+		} else {
+			return HwSubmissionInfo{}, err // それ以外の処理エラー
+		}
+	} else { // 取得時のエラーなしなので提出済み
+		hwSubmissionInfo.SubmitStatus = 1                 // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
+		hwSubmissionInfo.Images = hwS.ImageNameListString // 画像一覧
+	}
 
 	utility.CheckStruct(hwSubmissionInfo) // check
 
