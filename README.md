@@ -439,7 +439,7 @@ TODO: DDDに統合していく予定
           "subjectId": 1,
           "startPage": 2,
           "pageCount": 8,
-          "isSubmitted": true,  // or false
+          "submitStatus": true,  // or false
           "images": ["bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg, gggggggg-176f-4dea-bec0-21464f192869.jpg, rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg"]
         },
       }

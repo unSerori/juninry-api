@@ -33,8 +33,8 @@ func FindUserHomework(userUuid string) ([]UserHomework, error) {
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
 		Join("LEFT", "homework_submissions", "homeworks.homework_uuid = homework_submissions.homework_uuid AND homework_submissions.user_uuid = ?", userUuid).
 		Where("class_memberships.user_uuid = ?", userUuid).
-		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_flag").
-		OrderBy("homework_limit, teaching_materials.class_uuid, submit_flag").
+		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_status").
+		OrderBy("homework_limit, teaching_materials.class_uuid, submit_status").
 		Find(&userHomeworkList)
 	if err != nil { //エラーハンドル ただエラー投げてるだけ
 		return nil, err
@@ -70,8 +70,8 @@ func FindUserHomeworkforNextday(userUuid []string) ([]UserHomework, error) {
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
 		Join("LEFT", "homework_submissions", "homeworks.homework_uuid = homework_submissions.homework_uuid AND homework_submissions.user_uuid IN (?)", uuidInterfaces...).
 		In("class_memberships.user_uuid", uuidInterfaces...).
-		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_flag").
-		OrderBy("homework_limit, teaching_materials.class_uuid, submit_flag").
+		Select("homework_limit, homeworks.homework_uuid, start_page, page_count, homework_note, teaching_material_name, subjects.subject_id, subject_name, teaching_material_image_uuid, class_name, if(homework_submissions.user_uuid IS NOT NULL, 1, 0) as submit_status").
+		OrderBy("homework_limit, teaching_materials.class_uuid, submit_status").
 		Find(&userHomeworkList)
 	if err != nil { //エラーハンドル ただエラー投げてるだけ
 		return nil, err
