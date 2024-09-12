@@ -72,6 +72,7 @@ func CreateUserTestData() {
 		OuchiUuid:   ouchiUUID,
 	}
 	db.Insert(user4)
+
 	user5 := &User{
 		UserUuid:    "9efeb117-1a34-4012-b57c-7f1a4033adb9",
 		UserName:    "test teacher",
@@ -82,6 +83,7 @@ func CreateUserTestData() {
 		JtiUuid:     "42c28ac4-0ba4-4f81-8813-814dc92e2f40",
 	}
 	db.Insert(user5)
+
 	user6 := &User{
 		UserUuid:    "868c0804-cf1b-43e2-abef-08f7ef58fcd0",
 		UserName:    "test parent",
@@ -92,6 +94,18 @@ func CreateUserTestData() {
 		OuchiUuid:   ouchiUUID,
 	}
 	db.Insert(user6)
+
+	user7 := &User{
+		UserUuid:    "cd09ac2f-4278-4fb0-a8bc-df7c2d9ef1fc",
+		UserName:    "test pupil2go",
+		UserTypeId:  2,
+		GenderId:    1,
+		MailAddress: "test-pupil2go@gmail.com",
+		Password:    "$2a$10$8hJGyU235UMV8NjkozB7aeHtgxh39wg/ocuRXW9jN2JDdO/MRz.fW", // C@tp
+		JtiUuid:     "b8595062-c70a-48ee-be8f-dce768d49675",
+		OuchiUuid:   ouchiUUID,
+	}
+	db.Insert(user7)
 }
 
 // 新規ユーザ登録

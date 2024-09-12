@@ -137,3 +137,13 @@ func CheckUserClassMembership(classId string, userId string) (bool, error) {
 
 	return true, nil
 }
+
+// userUuidの候補の中から指定しているクラスに所属している人を返す
+func GetUserByClassUuid(classUuid string, userUuids []string) ([]ClassMembership, error) {
+	var pupil []ClassMembership
+	err := db.In("user_uuid", userUuids).In("class_uuid", classUuid).Find(&pupil)
+	if err != nil {
+		return nil, err
+	}
+	return pupil, nil
+}
