@@ -394,7 +394,7 @@ TODO: DDDに統合していく予定
                   "subjectName": "国語",
                   "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
                   "className": "3-2 ふたば学級",
-                  "submitFlag": 1  // 提出フラグ 1 提出 0 未提出
+                  "submitStatus": 1  // 提出フラグ 1 提出 0 未提出
                 },,,
               ]
             },,,

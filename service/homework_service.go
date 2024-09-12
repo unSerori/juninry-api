@@ -119,7 +119,7 @@ type HomeworkData struct {
 	SubjectName               string `json:"subjectName"`               // 教科名
 	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
-	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
+	SubmitStatus              int    `json:"submitStatus"`              // 提出フラグ 1 提出 0 未提出
 }
 
 // 締め切りごとに課題データをまとめた構造体
@@ -171,7 +171,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.HomeworkLimit] = append(transformedDataMap[userHomework.HomeworkLimit], homeworkData)
 	}
@@ -237,7 +237,7 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
 	}
@@ -439,7 +439,7 @@ func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (
 	return bHW.HomeworkUuid, nil
 }
 
-// 宿題の詳細情報と、生徒は自分の提出状況の(:クエパラを無視)、教師はクエパラIDでクラス内の特定生徒の、保護者はクエパラIDで家庭内特定児童の、提出状況を取得。
+// 宿題の詳細情報と、生徒は自分の提出状況の(:クエパラを無視)、教師はクエパラIDでクラス内の特定生徒の、保護者はクエパラIDで家庭内特定児童の、提出状況を取得
 func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId string) (HwSubmissionInfo, error) {
 	// userIdByJwtからuser_typeを取得し、
 	userTypeId, err := model.GetUserTypeId(userId)

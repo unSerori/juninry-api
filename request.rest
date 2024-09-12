@@ -8,9 +8,9 @@
 @pupil_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @ouchi_invite_code = 339841
 @readStatus = 1
-@get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
+@get_hw_homework_uuid = K2079e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE0NzU5OTksImlkIjoiODY4YzA4MDQtY2YxYi00M2UyLWFiZWYtMDhmN2VmNThmY2QwIiwianRpIjoiOWExMzZiYWEtZWMzYS00YjgyLTllNzktZjA2ZmRjNjJhZTA0In0.fM9LN1oFmbzEJ4u2YAGXPr6KJ3tMrULWcVgzfPKZGkI
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MDMwMjgsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiMTUwMzI5NGItZDVhMS00OTZiLWJhMDUtNDI2NmJlY2M2MGEzIn0.IwdzCNEnA8cJgxMVjtmdQekJLl77fH4WbVr8dJdRRbY
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1

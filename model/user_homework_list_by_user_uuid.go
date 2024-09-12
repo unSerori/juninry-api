@@ -16,7 +16,7 @@ type UserHomework struct {
 	SubjectName               string    // 教科名
 	TeachingMaterialImageUuid string    // 画像ID どういう扱いになるのかな
 	ClassName                 string    // クラス名
-	SubmitFlag                int
+	SubmitStatus              int
 }
 
 // userUuidから課題データを取得、取得できなければエラーを返す
@@ -64,7 +64,7 @@ func FindUserHomeworkforNextday(userUuid []string) ([]UserHomework, error) {
 	//クソデカ構造体をとるすごいやつだよ
 	err := db.Table("homeworks").
 		Join("LEFT", "teaching_materials", "homeworks.teaching_material_uuid = teaching_materials.teaching_material_uuid").
-		Where("homework_limit BETWEEN ? AND ?", now,tomorrowMidnight).	// 今日の日付以降
+		Where("homework_limit BETWEEN ? AND ?", now, tomorrowMidnight). // 今日の日付以降
 		Join("LEFT", "subjects", "teaching_materials.subject_id = subjects.subject_id").
 		Join("LEFT", "class_memberships", "teaching_materials.class_uuid = class_memberships.class_uuid").
 		Join("LEFT", "classes", "teaching_materials.class_uuid = classes.class_uuid").
