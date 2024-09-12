@@ -8,9 +8,9 @@
 @pupil_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @ouchi_invite_code = 339841
 @readStatus = 1
-@get_hw_homework_uuid = K2079e71-3be5-4b4d-a0df-1f05859a7104
+@get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MDg4MDUsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiOTlkNTQzMDYtZWNmOS00YjFhLTgyNmMtYmQwNGMyNjNjNjE3In0.oAJ66d3y8w-MNrl5Wpjjgw_MeYwizowmnoIDOIr1WjU
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MzUyNzEsImlkIjoiOWVmZWIxMTctMWEzNC00MDEyLWI1N2MtN2YxYTQwMzNhZGI5IiwianRpIjoiZWE5YTgwMDctNmNjMy00ZTA3LTg0YzQtZTkwZjQ0YzdlNWY2In0.KfB5MJgqU45iiE5SJtGC0AZ0JggqsrSK8H_xTS_0cWQ
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
@@ -144,6 +144,10 @@ Content-Type: image/jpeg
 
 < ./asset/images/Crab_Nebula.jpg
 --{{boundary}}--
+
+### 生徒たちの宿題の進捗一覧を取得する
+GET {{base_url}}{{api_v}}/auth/users/homeworks/progress/a3579e71-3be5-4b4d-a0df-1f05859a7104 HTTP/1.1
+Authorization: {{jwt}}
 
 ### お知らせ投稿
 POST {{base_url}}{{api_v}}/auth/users/notices/register HTTP/1.1

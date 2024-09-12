@@ -47,7 +47,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 			users := auth.Group("/users")
 			{
 				// ユーザー自身のプロフィールを取得
-				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
+				users.GET("/user", controller.GetUserHandler) // /v1/auth/users/user
 
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
@@ -73,8 +73,11 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 宿題の提出
 					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 
-					// 教材データを取得
+					// 教材データを取得 TODO: /auth/users/t_materials/registerみたいに、users/下に宿題グループではなくt_materialsグループを作って欲しい 例: /auth/users/t_materials/:class_uuid
 					homeworks.GET("/tmaterials/:classUuid", controller.GetMaterialDataHandler) // /v1/auth/users/homeworks/t-materials
+
+					// 教師が特定の宿題に対するその宿題が配られたクラスの生徒の進捗一覧を取得
+					homeworks.GET("/progress/:homework_uuid", controller.GetStudentsHomeworkProgressHandler) // /v1/auth/users/homeworks/progress/:homework_uuid
 				}
 
 				// noticeグループ
@@ -129,7 +132,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 
 					// おうち情報取得
-					ouchies.GET("/info", controller.GetOuchiHandler)	// /v1/auth/users/ouchies/info
+					ouchies.GET("/info", controller.GetOuchiHandler) // /v1/auth/users/ouchies/info
 
 					helps := ouchies.Group("/helps")
 					{

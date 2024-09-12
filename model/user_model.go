@@ -183,6 +183,19 @@ func GetJtiById(userUuid string) (string, error) {
 	return user.JtiUuid, nil
 }
 
+// uuidから名前を取得
+func GetNameById(userId string) (string, error) {
+	var user User // 取得したデータをマッピングする構造体
+
+	// 該当ユーザの行を取得
+	_, err := db.Where("user_uuid = ?", userId).Get(&user)
+	if err != nil {
+		return "", err
+	}
+
+	return user.UserName, nil
+}
+
 // メアドからユーザーが存在するか確認
 func CheckUserExists(mail string) (error, bool) {
 	var user User // 取得したデータをマッピングする構造体
