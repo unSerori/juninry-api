@@ -697,3 +697,100 @@ func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId strin
 
 	return filePath, nil
 }
+
+// 生徒たちの提出状況を確認するための、生徒の情報構造体
+type StudentSubmissionInfo struct {
+	UserUuid     string `json:"userUUID"`     // ID
+	UserName     string `json:"userName"`     // 名前
+	ClassNumber  int    `json:"classNumber"`  // 出席番号
+	SubmitStatus int    `json:"submitStatus"` // 提出状況 1 提出 0 未提出
+}
+
+// 宿題が配布されたクラスの生徒たちの進捗状況を取得
+func (s *HomeworkService) GetStudentsHomeworkProgressService(userId string, hwId string) ([]StudentSubmissionInfo, error) {
+	fmt.Printf("userId: %v\n", userId)
+	fmt.Printf("hwId: %v\n", hwId)
+
+	// hwIdから宿題のクラスを取得しておく
+	tmId, err := model.GetTmId(hwId) // 教材id
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	classId, err := model.GetClassId(tmId) // クラス
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+
+	// userIdとclassIdから、このユーザーがこのクラスの教師であることを確認
+	isMember, err := model.CheckUserClassMembership(classId, userId) // クラスに属しているか
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	if !isMember {
+		return []StudentSubmissionInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	isTeacher, err := model.IsTeacher(userId) // 教師タイプか確認
+	if err != nil {                           // エラーハンドル
+		return []StudentSubmissionInfo{}, err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return []StudentSubmissionInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	// check
+	fmt.Printf("isMember: %v\n", isMember)
+	fmt.Printf("isTeacher: %v\n", isTeacher)
+
+	// クラスの生徒一覧を取得
+	classMemberships, err := model.FindJuniorsByClassMemberships(classId)
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	// check
+	for _, classMembership := range classMemberships {
+		utility.CheckStruct(classMembership)
+	}
+	for i, classMembership := range classMemberships {
+		if classMembership.StudentNumber != nil {
+			fmt.Printf("classMemberships[%d].StudentNumber: %v\n", i, *classMembership.StudentNumber)
+		} else {
+			fmt.Printf("classMemberships[%d].StudentNumber: %v\n", i, "<nil>")
+		}
+	}
+
+	// それぞれの生徒の提出状況を取得し値を設定
+	var studentSubmissionInfoSlice []StudentSubmissionInfo
+	for _, classMembership := range classMemberships {
+		// それぞれの生徒の提出状況構造体
+		var studentSubmissionInfo StudentSubmissionInfo
+
+		// 取得済みの生徒情報一覧のjuniorIdとclassNumberを追加
+		utility.ConvertStructCopyMatchingFields(&classMembership, &studentSubmissionInfo)
+		// 名前、
+		studentSubmissionInfo.UserName, err = model.GetNameById(classMembership.UserUuid)
+		if err != nil {
+			return []StudentSubmissionInfo{}, err
+		}
+		// 提出状況も追加
+		_, err := model.GetHwSubmission(hwId, classMembership.UserUuid)
+		if err != nil { // エラーハンドル
+			if err.Error() == custom.NewErr(custom.ErrTypeNoFoundR).Error() { // 見つからなかったときを明示的に
+				// 未提出
+				studentSubmissionInfo.SubmitStatus = 0
+			} else {
+				return []StudentSubmissionInfo{}, err // それ以外の処理エラー
+			}
+		} else { // 取得時のエラーなしなので提出済み
+			studentSubmissionInfo.SubmitStatus = 1 // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
+		}
+
+		// スライスに追加
+		studentSubmissionInfoSlice = append(studentSubmissionInfoSlice, studentSubmissionInfo)
+	}
+	// check
+	for _, studentSubmissionInfo := range studentSubmissionInfoSlice {
+		utility.CheckStruct(studentSubmissionInfo)
+	}
+
+	return studentSubmissionInfoSlice, err
+}

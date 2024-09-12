@@ -31,21 +31,28 @@ func InitClassMembershipFK() error {
 
 // テストデータ
 func CreateClassMembershipsTestData() {
+	user1StudentNumber := 1
 	classMemberships1 := &ClassMembership{
-		UserUuid:  "3cac1684-c1e0-47ae-92fd-6d7959759224",
-		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
+		UserUuid:      "3cac1684-c1e0-47ae-92fd-6d7959759224", // 生徒
+		ClassUuid:     "09eba495-fe09-4f54-a856-9bea9536b661",
+		StudentNumber: &user1StudentNumber,
 	}
 	db.Insert(classMemberships1)
 	classMemberships2 := &ClassMembership{
-		UserUuid:  "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		UserUuid:  "9efeb117-1a34-4012-b57c-7f1a4033adb9", // 先生
 		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
 	}
 	db.Insert(classMemberships2)
 	classMemberships3 := &ClassMembership{
 		UserUuid:  "3cac1684-c1e0-47ae-92fd-6d7959759224",
-		ClassUuid: "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+		ClassUuid: "817f600e-3109-47d7-ad8c-18b9d7dbdf8b", // 別のクラスにも所属している
 	}
 	db.Insert(classMemberships3)
+	classMemberships4 := &ClassMembership{
+		UserUuid:  "cd09ac2f-4278-4fb0-a8bc-df7c2d9ef1fc", // 生徒のクラスメイト追加
+		ClassUuid: "09eba495-fe09-4f54-a856-9bea9536b661",
+	}
+	db.Insert(classMemberships4)
 }
 
 // user_uuidで絞り込み、所属クラスの構造体のスライスとerrorを返す
@@ -109,6 +116,23 @@ func FindUserByClassMemberships(classUuid string, userUuid string) ([]ClassMembe
 	}
 
 	return user, nil
+}
+
+// クラスに所属しているおこさんだけを全権取得・改(userTypeIdで除外)
+func FindJuniorsByClassMemberships(classUuid string) ([]ClassMembership, error) {
+	// 取得したデータをマッピングする構造体
+	var juniors []ClassMembership
+	// class_uuidで絞り込むときに、usersテーブルと結合しおこさまID(:2)でも絞り込む
+	err := db.Table("class_memberships").
+		Join("INNER", "users", "class_memberships.user_uuid = users.user_uuid"). // user_uuid基準でusersテーブルと結合
+		Where("class_uuid = ?", classUuid).                                      // 該当クラスで絞り込み
+		Where("user_type_id = ?", 2).                                            // おこさまだけに絞り込み
+		OrderBy("student_number").Find(&juniors)                                 // 出席番号順でマッピング
+	if err != nil { //エラーハンドル
+		return []ClassMembership{}, err
+	}
+
+	return juniors, nil
 }
 
 func CheckClassMemberships(userUuids []string, classUuids []string) ([]ClassMembership, error) {

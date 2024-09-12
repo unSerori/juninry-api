@@ -608,3 +608,75 @@ func FetchSubmittedHwImageHandler(c *gin.Context) {
 	// 画像レスポンス
 	c.File(filePath)
 }
+
+// 教師が特定の宿題に対するその宿題が配られたクラスの生徒の進捗一覧を取得
+func GetStudentsHomeworkProgressHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, exists := c.Get("id")
+	if !exists { // idがcに保存されていない。
+		// エラーログ
+		logging.ErrorLog("The id is not stored.", nil)
+		// レスポンス
+		resStatusCode := http.StatusInternalServerError
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+	idAdjusted := id.(string) // アサーション
+
+	// パスパラの取得
+	hwId := c.Param("homework_uuid") // hwId
+
+	// 一覧取得処理と失敗レスポンス
+	studentSubmissionInfoSlice, err := homeworkService.GetStudentsHomeworkProgressService(idAdjusted, hwId)
+	if err != nil { // エラーハンドル
+		// カスタムエラーを仕分ける
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) { // errをcustomErrにアサーションできたらtrue
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case custom.ErrTypeUniqueConstraintViolation: // 一意性制約違反
+				// エラーログ
+				logging.ErrorLog("Conflict.", err)
+				// レスポンス
+				resStatusCode := http.StatusConflict
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			default: // カスタムエラーの仕分けにぬけがある可能性がある
+				// エラーログ
+				logging.WarningLog("There may be omissions in the CustomErr sorting.", fmt.Sprintf("{customErr.Type: %v, err: %v}", customErr.Type, err))
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			}
+		} else { // カスタムエラー以外の処理エラー
+			// エラーログ
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+		}
+		return
+	}
+
+	// 処理後の成功
+	// 成功ログ
+	logging.SuccessLog("Successful user registration.")
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"progress": studentSubmissionInfoSlice,
+		},
+	})
+}

@@ -497,6 +497,45 @@ TODO: DDDに統合していく予定
 </details>
 
 <details>
+  <summary>生徒たちの宿題の進捗一覧を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/progress/{homework_uuid}`
+- **メソッド:** GET
+- **説明:** 教師が自分のクラスの宿題に対する生徒たちの進捗状況を一覧で取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      // homework_uuid: a3579e71-3be5-4b4d-a0df-1f05859a7104
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "progress": [
+            {
+              "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224", // ID
+              "userName": "test pupil", // 名前
+              "classNumber": 1, // 出席番号
+              "submitStatus": 1 // 提出状況 1 提出 0 未提出
+            },
+            {
+              "userUUID": "cd09ac2f-4278-4fb0-a8bc-df7c2d9ef1fc", // ID
+              "userName": "test pupil2go", // 名前
+              "classNumber": , // 出席番号
+              "submitStatus": 0 // 提出状況 1 提出 0 未提出
+            },,,
+          ]
+        },
+      }
+      ```
+
+</details>
+
+<details>
   <summary>おてがみ情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/notice/notices`
