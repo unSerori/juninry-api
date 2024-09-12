@@ -119,7 +119,7 @@ type HomeworkData struct {
 	SubjectName               string `json:"subjectName"`               // 教科名
 	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
-	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
+	SubmitStatus              int    `json:"submitStatus"`              // 提出フラグ 1 提出 0 未提出
 }
 
 // 締め切りごとに課題データをまとめた構造体
@@ -171,7 +171,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.HomeworkLimit] = append(transformedDataMap[userHomework.HomeworkLimit], homeworkData)
 	}
@@ -237,7 +237,7 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
 	}
