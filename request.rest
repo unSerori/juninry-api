@@ -9,8 +9,10 @@
 @ouchi_invite_code = 339841
 @readStatus = 1
 @get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
+# K2079e71-3be5-4b4d-a0df-1f05859a7104 
+# a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MDUwMDQsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiMzAzZTRkOWUtMDY4ZS00OGMxLTkwMjktZmU5NDBiZDg1MjdmIn0.FwLVmwgI-_qCWdU-KqfPX741fxq2KW1MM8_5bA-oeYA
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDE1MDY2MDAsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiZjhjNjQzMzEtNTcxZS00NmI2LTlhOGYtYjU1NzZkNDUyOGEyIn0.kh4KWgkVqYbwagzt-8adY3KiW1-no5zMdfVSlCbPE4Y
 
 ### テスト
 GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1

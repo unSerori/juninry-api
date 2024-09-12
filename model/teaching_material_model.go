@@ -139,5 +139,18 @@ func GetTmName(tmId string) (string, error) {
 	}
 
 	return tm.TeachingMaterialName, nil
+}
 
+// 教科IDを取得
+func GetSubjectId(tmId string) (int, error) {
+	var tm TeachingMaterial // 取得したデータをマッピングする構造体
+	isFound, err := db.Where("teaching_material_uuid = ?", tmId).Get(&tm)
+	if err != nil {
+		return 0, err
+	}
+	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
+		return 0, custom.NewErr(custom.ErrTypeNoFoundR)
+	}
+
+	return tm.SubjectId, nil
 }
