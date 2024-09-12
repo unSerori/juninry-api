@@ -554,10 +554,6 @@ func FetchSubmittedHwImageHandler(c *gin.Context) {
 	homeworkUuid := c.Param("homework_uuid")    // クラス
 	imageFileName := c.Param("image_file_name") // 画像パス
 
-	fmt.Printf("idAdjusted: %v\n", idAdjusted)
-	fmt.Printf("homeworkUuid: %v\n", homeworkUuid)
-	fmt.Printf("imageFileName: %v\n", imageFileName)
-
 	// パス作成処理と失敗レスポンス
 	filePath, err := homeworkService.FetchSubmittedHwImageService(idAdjusted, homeworkUuid, imageFileName)
 	if err != nil { // エラーハンドル
@@ -570,6 +566,15 @@ func FetchSubmittedHwImageHandler(c *gin.Context) {
 				logging.ErrorLog("Not Found.", err)
 				// レスポンス
 				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+			case custom.ErrTypePermissionDenied: // 画像へのアクセスなし
+				// エラーログ
+				logging.ErrorLog("Forbidden.", err)
+				// レスポンス
+				resStatusCode := http.StatusForbidden
 				c.JSON(resStatusCode, gin.H{
 					"srvResMsg":  http.StatusText(resStatusCode),
 					"srvResData": gin.H{},

@@ -455,10 +455,10 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 	}
 	// 3パターンそれぞれの生徒IDを取得。取得生徒本人以外の権限者はクエパラで生徒を指定するのでクエパラが空だとエラー、生徒がクラスメイトでなかったり、家庭内の生徒でないならエラー
 	var tgtJuniorId string
+	logging.SimpleLog(fmt.Sprintf("value of userTypeId: %v\n", userTypeId))
 	switch userTypeId {
 	case 1: // 教師
 		// クエパラが空だとエラー
-		fmt.Printf("userTypeId: %v\n", userTypeId)
 		if err := checkExistQueryParam(juniorId); err != nil {
 			return HwSubmissionInfo{}, err
 		}
@@ -467,7 +467,6 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 		// バリデーションを潜り抜けたので指定したuserIdを使う
 		tgtJuniorId = juniorId
 	case 3: // 保護者
-		fmt.Printf("userTypeId: %v\n", userTypeId)
 		// クエパラが空だとエラー
 		if err := checkExistQueryParam(juniorId); err != nil {
 			return HwSubmissionInfo{}, err
@@ -563,18 +562,113 @@ func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId strin
 	fmt.Printf("hwId: %v\n", hwId)
 	fmt.Printf("path: %v\n", path)
 
-	// TODO: その課題へのアクセス権の確認
+	// hwIdから宿題のクラスを取得しておく
+	tmId, err := model.GetTmId(hwId) // 教材id
+	if err != nil {
+		return "", err
+	}
+	classId, err := model.GetClassId(tmId) // クラス
+	if err != nil {
+		return "", err
+	}
 
-	// 教師は自分の所属しているクラスかどうか
+	// 自分の提出した宿題の画像リストに存在するか確認する関数
+	checkImageExistsForHW := func(userId string, hwId string, path string) (bool, error) {
+		// 該当宿題を提出しているか
+		hwS, err := model.GetHwSubmission(hwId, userId)
+		if err != nil { // エラーハンドル
+			if err == custom.NewErr(custom.ErrTypeNoFoundR) { // 見つからなかったときを明示的に
+				return false, err
+			}
+			return false, err // それ以外の処理エラー
+		}
 
-	// 児童は自分の所属しているクラスかどうか
-	// 保護者はおうちに所属している児童が所属しているかどうか
-	// +
-	// 児童本人または児童の保護者のみ
+		// 提出状況の行の画像列を取り出し、
+		logging.InfoLog("hwS.ImageNameListString: ", hwS.ImageNameListString)
+		imageNameListSlice := strings.Split(hwS.ImageNameListString, ", ")
+		// 該当画像が存在するか線形探索で確認
+		for _, s := range imageNameListSlice {
+			if s == path {
+				// 見つかったら早期リターン
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	// その課題へのアクセス権の確認のためにuserTypeを取得し、
+	userTypeId, err := model.GetUserTypeId(userId)
+	if err != nil {
+		return "", err
+	}
+	logging.SimpleLog(fmt.Sprintf("value of userTypeId: %v\n", userTypeId))
+	switch userTypeId { // それぞれのバリデーションを行い、児童本人または児童の保護者のみ通す
+	case 1: // 教師
+		// 自分の所属しているクラスかどうか
+		isMember, err := model.CheckUserClassMembership(classId, userId)
+		if err != nil {
+			return "", err
+		}
+		if !isMember {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 2: // 児童: 自分の所属しているクラスかどうかかつ、自分の提出した宿題の画像リストに存在するか
+		// 自分の所属しているクラスかどうか
+		isMember, err := model.CheckUserClassMembership(classId, userId)
+		if err != nil {
+			return "", err
+		}
+		if !isMember {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+		// 自分の提出した宿題の画像リストに存在するか
+		isExist, err := checkImageExistsForHW(userId, hwId, path)
+		if err != nil {
+			return "", err
+		}
+		if !isExist {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 3: // 保護者: おうちに所属している児童が所属しているクラスかどうかかつ、児童が提出した宿題の画像リストに存在するか
+		// おうちに所属する児童一覧を取得し、
+		ouchiId, err := model.GetOuchiUuidById(userId) // 保護者が所属するおうちIDを取得
+		if err != nil {
+			return "", err
+		}
+		juniors, err := model.GetJuniorsByOuchiUuid(ouchiId)
+		if err != nil {
+			return "", err
+		}
+		// それぞれの児童に対して、
+		isFoundImage := false
+		for _, junior := range juniors {
+			isMember, err := model.CheckUserClassMembership(classId, junior.UserUuid) // 該当クラスに属してるか判定、
+			if err != nil {
+				return "", err
+			}
+			if !isMember {
+				return "", custom.NewErr(custom.ErrTypePermissionDenied)
+			}
+			// 提出した宿題の画像リストに存在するか
+			isExist, err := checkImageExistsForHW(junior.UserUuid, hwId, path)
+			if err != nil && err.Error() != custom.NewErr(custom.ErrTypeNoFoundR).Error() { // エラーハンドル、ただし、かつ見つからない旨の独自エラーを除く // エラーの内容と、新しいインスタンスの内容で比較: err.Error() != custom.NewErr(custom.ErrTypeNoFoundR).Error()  // もしErrTypeで比較したいならアサーションする必要がある
+				return "", err
+			}
+			logging.InfoLog("isExist", fmt.Sprint(isExist))
+			if isExist { // 見つかった場合
+				isFoundImage = true
+				break
+			}
+		}
+		if !isFoundImage {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	default:
+		return "", custom.NewErr(custom.ErrTypeUnexpectedSetPoints)
+	}
 
 	// パスの生成
 	filePath := "./upload/homework/" + path
-
 	// 画像があるか確認
 	if _, err := os.Stat(filePath); err != nil {
 		logging.ErrorLog("Missing files", err)

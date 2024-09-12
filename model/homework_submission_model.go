@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"juninry-api/utility/custom"
 	"time"
 )
@@ -72,7 +71,6 @@ func GetHwSubmission(hwId string, userId string) (HomeworkSubmission, error) {
 		Where("homework_uuid = ?", hwId).
 		Where("user_uuid = ?", userId).Get(&hwS)
 	if err != nil {
-		fmt.Println("koko")
 		return HomeworkSubmission{}, err
 	}
 	if !isFound { //エラーハンドル  // 影響を与えないSQL文の時は`!isFound`で、影響を与えるSQL文の時は`affected == 0`でハンドリング
