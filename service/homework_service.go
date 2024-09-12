@@ -36,7 +36,7 @@ type HwSubmissionInfo struct {
 	SubjectId            int    `json:"subjectId"`
 	StartPage            int    `json:"startPage"`
 	PageCount            int    `json:"pageCount"`
-	SubmitStatus         int    `json:"submit_status"`
+	SubmitStatus         int    `json:"submitStatus"`
 	Images               string `json:"images"`
 }
 
