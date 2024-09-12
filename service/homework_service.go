@@ -186,6 +186,15 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 		transformedDataList = append(transformedDataList, transformedData)
 	}
 
+	// ソートアルゴリズムを忘れてしまったので、クソアルゴリズムです
+	for i := 0; i < len(transformedDataList)-1; i++ {
+		for j := 0; j < len(transformedDataList)-i-1; j++ {
+			if transformedDataList[j].HomeworkLimit.After(transformedDataList[j+1].HomeworkLimit) {
+				transformedDataList[j], transformedDataList[j+1] = transformedDataList[j+1], transformedDataList[j]
+			}
+		}
+	}
+
 	//できたら返す
 	return transformedDataList, nil
 }
