@@ -2,6 +2,7 @@ package utility
 
 import (
 	"fmt"
+	"juninry-api/common/logging"
 	"reflect"
 )
 
@@ -51,14 +52,12 @@ func CopyMatchingFieldsRecursively(srcVal reflect.Value, tgtVal reflect.Value) {
 				}
 			}
 		}
-
 	}
-
 }
 
 // 構造体の中身をチェック
 func CheckStruct(src interface{}) {
-	fmt.Println("CheckStruct: start ============")
+	logging.SimpleLog("CheckStruct: start ============", "\n")
 
 	// src構造体の型と値を取得
 	sValue := reflect.ValueOf(src)    // 値を取得
@@ -73,11 +72,11 @@ func CheckStruct(src interface{}) {
 
 	// 構造体のフィールド数だけループ
 	for i := 0; i < sType.NumField(); i++ {
-		fieldName := sType.Field(i).Name                          // フィールド名を取得
-		fieldValue := sValue.Field(i)                             // フィールドの値を取得
-		fmt.Printf("%s: %v\n", fieldName, fieldValue.Interface()) // フィールド名と値を出力
+		fieldName := sType.Field(i).Name                                 // フィールド名を取得
+		fieldValue := sValue.Field(i)                                    // フィールドの値を取得
+		logging.SimpleLog(fieldName, ": ", fieldValue.Interface(), "\n") // フィールド名と値を出力
 	}
 
-	fmt.Println("CheckStruct: end============")
-	fmt.Println()
+	logging.SimpleLog("CheckStruct: end============", "\n")
+	logging.SimpleLog("\n")
 }

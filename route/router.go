@@ -4,6 +4,7 @@ import (
 	"juninry-api/common/logging"
 	"juninry-api/controller"
 	"juninry-api/middleware"
+	"juninry-api/presentation"
 	"juninry-api/utility/config"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +16,23 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	engine.Use(middleware.LoggingMid())
 
 	// endpoints
-	// root page
-	engine.GET("/", controller.ShowRootPage) // /
-	// json test
-	engine.GET("/test/json", controller.TestJson) // /test
 
-	// endpoints group
+	// root page
+	engine.GET("/", presentation.ShowRootPage) // /
+
+	// checkグループ
+	check := engine.Group("/check")
+	{
+		// confirmation and response json test // ex: /check/echo/path1/path2?query1=qVal1&query2=qVal2
+		check.POST("/echo/:path_param1/:path_params2", presentation.ConfirmationReq) // /check/echo
+
+		// sandbox
+		check.GET("/sandbox", presentation.Test) // /check/sandbox
+	}
+
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
-		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
-
 		// usersグループ
 		users := v1.Group("/users")
 		{
@@ -41,7 +47,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 		auth := v1.Group("/auth", middleware.MidAuthToken())
 		{
 			// 認証グループで、認証ができるかを確認するテスト用エンドポイント
-			auth.GET("/test/cfmreq", controller.CfmReq) // /v1/auth/test/cfmreq
+			auth.GET("/echo", presentation.ConfirmationReq) // /v1/auth/test/cfmreq
 
 			// usersグループ
 			users := auth.Group("/users")
@@ -58,7 +64,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 相当月の提出状況を取得　//TODO: 親と保護者をどうするか決めてないので一旦弾いてる
 					homeworks.GET("/record", controller.GetHomeworkRecordHandler) // /v1/auth/users/homeworks/record
 
-					// 期限がある課題一覧を取得
+					// 期限がある課題一覧を取得 TODO: /v1/auth/users/homeworks/{due}に":upcoming"として統合
 					homeworks.GET("/upcoming", controller.FindHomeworkHandler) // /v1/auth/users/homeworks/upcoming
 
 					// 宿題の詳細情報を取得
@@ -67,8 +73,8 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 特定の提出済み宿題の画像を取得するエンドポイント
 					homeworks.GET("/:homework_uuid/images/:image_file_name", controller.FetchSubmittedHwImageHandler) // /v1/auth/users/homeworks/{homework_uuid}/images/{image_name}
 
-					// 次の日が期限の課題一覧を取得
-					homeworks.GET("/nextday", controller.FindNextdayHomeworkHandler) // /v1/auth/users/homeworks/upcoming
+					// 下位パスで具体的な期限を指定し、課題一覧を取得
+					homeworks.GET("/due/:due", controller.FindUserHWsHandler) // /v1/auth/users/homeworks/due/{due} // tomorrow // upcoming? // 2024-10-13T20C58C55P09C00
 
 					// 宿題の提出
 					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB

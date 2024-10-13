@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -48,6 +49,15 @@ func WarningLog(title string, warning string) {
 }
 
 // 単純なprintf
-func SimpleLog(str string) {
-	log.Print(str)
+func SimpleLog(args ...interface{}) {
+	// 結合後の変数
+	var message string
+
+	// forで引数を接続
+	for _, arg := range args {
+		message += fmt.Sprintf("%v", arg)
+	}
+
+	// ログに書き込み
+	log.Print(message)
 }
