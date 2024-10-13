@@ -164,8 +164,8 @@ func FindHomeworkHandler(c *gin.Context) {
 	})
 }
 
-// 次の日の課題を取得
-func FindNextdayHomeworkHandler(c *gin.Context) {
+// 課題を取得
+func FindUserHWsHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, exists := c.Get("id")
 	if !exists { // idがcに保存されていない。
@@ -181,8 +181,11 @@ func FindNextdayHomeworkHandler(c *gin.Context) {
 	}
 	idAdjusted := id.(string) // アサーション
 
+	// 期限を取得
+	due := c.Param("due")
+
 	//問い合わせ処理と失敗レスポンス
-	homeworkList, err := homeworkService.FindClassHomework(idAdjusted)
+	homeworkList, err := homeworkService.FindUserHWsService(idAdjusted, due)
 	if err != nil { //エラーハンドル
 		// エラーログ
 		logging.ErrorLog("SQL query failed.", err)
@@ -201,10 +204,55 @@ func FindNextdayHomeworkHandler(c *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
-		"srvResMsg":  http.StatusText(resStatusCode),
-		"srvResData": homeworkList,
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"userTomorrowHWs": homeworkList,
+		},
 	})
 }
+
+// 取得コントローラが明日専用だった
+// // 次の日の課題を取得
+// func FindNextdayHomeworkHandler(c *gin.Context) {
+// 	// ユーザーを特定する
+// 	id, exists := c.Get("id")
+// 	if !exists { // idがcに保存されていない。
+// 		// エラーログ
+// 		logging.ErrorLog("The id is not stored.", nil)
+// 		// レスポンス
+// 		resStatusCode := http.StatusInternalServerError
+// 		c.JSON(resStatusCode, gin.H{
+// 			"srvResMsg":  http.StatusText(resStatusCode),
+// 			"srvResData": gin.H{},
+// 		})
+// 		return
+// 	}
+// 	idAdjusted := id.(string) // アサーション
+
+// 	//問い合わせ処理と失敗レスポンス
+// 	homeworkList, err := homeworkService.FindUserHWsNextDayService(idAdjusted)
+// 	if err != nil { //エラーハンドル
+// 		// エラーログ
+// 		logging.ErrorLog("SQL query failed.", err)
+// 		//レスポンス
+// 		resStatusCode := http.StatusBadRequest
+// 		c.JSON(resStatusCode, gin.H{
+// 			"srvResMsg":  http.StatusText(resStatusCode),
+// 			"srvResData": gin.H{},
+// 		})
+// 		return
+// 	}
+
+// 	// 処理後の成功
+// 	// 成功ログ
+// 	logging.SuccessLog("Successful get homework list.")
+// 	// レスポンス
+// 	resStatusCode := http.StatusOK
+// 	c.JSON(resStatusCode, gin.H{
+// 		"srvResMsg":  http.StatusText(resStatusCode),
+// 		"srvResData": homeworkList,
+// 	})
+// }
 
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {

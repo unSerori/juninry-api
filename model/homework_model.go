@@ -38,9 +38,11 @@ func InitHomeworkFK() error {
 
 // テストデータ
 func CreateHomeworkTestData() {
+	afterOneDay := time.Now().AddDate(0, 0, 1)
 	afterSixMonth := time.Now().AddDate(0, 6, 0)
 	afterOneYear := time.Now().AddDate(1, 0, 0)
 
+	fmt.Println(afterOneDay)
 	fmt.Println(afterSixMonth)
 	fmt.Println(afterOneYear)
 
@@ -74,6 +76,16 @@ func CreateHomeworkTestData() {
 		HomeworkNote:         "3こめ",
 	}
 	db.Insert(homework3)
+	homework4 := &Homework{
+		HomeworkUuid:         "356f695b-6d2b-4681-a770-de086c90d6cb",
+		HomeworkLimit:        afterOneDay,
+		TeachingMaterialUuid: "99cbb1be-5581-4607-b0ac-ab599edfd5d0",
+		StartPage:            25,
+		PageCount:            1,
+		HomeworkPosterUuid:   "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+		HomeworkNote:         "明日の宿題取得エンドポイントで、複数のクラスの宿題を与えられていた場合用",
+	}
+	db.Insert(homework4)
 }
 
 // 宿題登録
@@ -136,4 +148,13 @@ func GetHwRecord(hwId string) (Homework, error) {
 	}
 
 	return hw, nil
+}
+
+// 返却用の構造体
+type UserHWsNextDay struct {
+}
+
+// 宿題一覧をクラスIDと期限で絞り込む
+func FindHWsByClassDue(classId string, day string) ([]Homework, error) {
+	return []Homework{}, nil
 }

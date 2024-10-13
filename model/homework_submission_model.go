@@ -43,6 +43,12 @@ func CreateHomeworkSubmissionTestData() {
 		ImageNameListString: "bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg, gggggggg-176f-4dea-bec0-21464f192869.jpg, rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg",
 	}
 	db.Insert(hs1)
+	hs2 := &HomeworkSubmission{
+		HomeworkUuid:        "356f695b-6d2b-4681-a770-de086c90d6cb",
+		UserUuid:            "3cac1684-c1e0-47ae-92fd-6d7959759224",
+		ImageNameListString: "gggggggg-176f-4dea-bec0-21464f192869.jpg",
+	}
+	db.Insert(hs2)
 }
 
 // 提出構造体を登録

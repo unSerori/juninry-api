@@ -71,7 +71,7 @@ func CreateTeachingMaterialTestData() {
 	tm2 := &TeachingMaterial{
 		TeachingMaterialUuid:      "99cbb1be-5581-4607-b0ac-ab599edfd5d0",
 		TeachingMaterialName:      "リピート1",
-		SubjectId:                 4,
+		SubjectId:                 6,
 		TeachingMaterialImageUuid: "27fc9419-1673-4075-a73e-63ffa6c5d9f5",
 		ClassUuid:                 "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
 	}

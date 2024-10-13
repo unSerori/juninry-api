@@ -181,8 +181,6 @@ TODO: DDDに統合していく予定
 
 </details>
 
-</details>
-
 <details>
   <summary>ユーザを作成するエンドポイント</summary>
 
@@ -530,6 +528,91 @@ TODO: DDDに統合していく予定
             },,,
           ]
         },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>生徒の宿題を期限を指定して取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/due/{due}`
+- **メソッド:** GET
+- **説明:** 期限で絞り込んで宿題を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+  - パラメーター
+    - パスパラメーター:
+      - `due`: ＊説明＊
+    - パラメーター例
+
+      ```url
+      /v1/auth/users/homeworks/tomorrow # 期限指定: 明日
+      /v1/auth/users/homeworks/upcoming # 期限指定: これから先のものすべて（未実装）
+      /v1/auth/users/homeworks/2024-10-13T20C58C55P09C00 # 期限指定: 具体的な日付
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+            "userTomorrowHWs": [
+                {  // 例えば兄貴
+                    "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+                    "userName": "test pupil",
+                    "": "", // クライアント側でソートする必要がでてきたらここのレベルに追加する
+                    "homeworks": [
+                        {
+                            "homeworkUUID": "K2079e71-3be5-4b4d-a0df-1f05859a7104",
+                            "className": "3-2 ふたば学級",
+                            "subjectId": 1,
+                            "subjectName": "国語",
+                            "teachingMaterialName": "漢字ドリル3",
+                            "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
+                            "startPage": 2,
+                            "pageCount": 0,
+                            "homeworkNote": "",
+                            "submitStatus": 0,
+                        },
+                        {
+                            "homeworkUUID": "356f695b-6d2b-4681-a770-de086c90d6cb",
+                            "className": "3-2 ふたば学級",
+                            "subjectId": 6,
+                            "subjectName": "数学",
+                            "teachingMaterialName": "リピート1",
+                            "teachingMaterialImageUUID": "27fc9419-1673-4075-a73e-63ffa6c5d9f5",
+                            "startPage": 12,
+                            "pageCount": 1,
+                            "homeworkNote": "明日の宿題取得エンドポイントで、複数のクラスの宿題を与えられていた場合用",
+                            "submitStatus": 1,             
+                        },
+                    ],
+                },
+                {  // 例えば弟
+                    "userUUID": "",
+                    "userName": "",
+                    "homeworks": [
+                        {
+                            "homeworkUUID": "5bdf5fe8-aa13-4ff3-98ca-6b7ec9af06fe",
+                            "className": "3-2 ふたば学級",
+                            "subjectId": 1,
+                            "subjectName": "国語",
+                            "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
+                            "teachingMaterialName": "漢字ドリル3",
+                            "startPage": 2,
+                            "pageCount": 0,
+                            "homeworkNote": "",
+                            "submitStatus": 0,
+                        },
+                    ],
+                },
+            ]
+        }
       }
       ```
 
@@ -1107,6 +1190,17 @@ TODO: DDDに統合していく予定
 - **リクエスト:**
   - ヘッダー:
     - `＊HTTPヘッダー名＊`: ＊HTTPヘッダー値＊
+  - パラメーター
+    - パスパラメーター:
+      - `＊パスパラ名＊`: ＊説明＊
+    - クエリパラメーター
+      - `＊クエパラ名＊`: ＊説明＊
+    - パラメーター例
+
+      ```url
+      /v1/パスパラ名?クエパラ名=値
+      ```
+
   - ボディ:
     ＊さまざまな形式のボディ値＊
 

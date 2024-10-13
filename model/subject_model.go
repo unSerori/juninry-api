@@ -33,4 +33,8 @@ func CreateSubjectTestData() {
 		SubjectName: "英語",
 	}
 	db.Insert(subject5)
+	subject6 := &Subject{
+		SubjectName: "数学",
+	}
+	db.Insert(subject6)
 }

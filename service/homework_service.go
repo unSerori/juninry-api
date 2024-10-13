@@ -199,14 +199,35 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 	return transformedDataList, nil
 }
 
-// userUuidをuserHomeworkモデルに投げて、次の日が期限の課題データを整形して返す
-func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSummary, error) {
+// 返り血DTO
+type FindUserHW struct {
+	UserUuid string `json:"userUUID"`
+	UserName string `json:"userName"`
+	// その他、クライアント側がソートに使う情報などが増えたら追加
+	Homeworks []UserNextDayHWResDTO `json:"homeworks"`
+}
+type UserNextDayHWResDTO struct { // 宿題ごとの値
+	HomeworkUuid              string `json:"homeworkUUID"`
+	ClassName                 string `json:"className"`
+	SubjectId                 string `json:"subjectId"`
+	SubjectName               string `json:"subjectName"`
+	TeachingMaterialName      string `json:"teachingMaterialName"`
+	TeachingMaterialImageUUID string `json:"teachingMaterialImageUUID"`
+	StartPage                 int    `json:"startPage"`
+	PageCount                 int    `json:"pageCount"`
+	HomeworkNote              string `json:"homeworkNote"`
+	SubmitStatus              int    `json:"submitStatus"`
+}
 
-	var children []string // useruuidを保管する配列
+// 指定された期限までの宿題を、userUuidから検索し整形し返す
+func (s *HomeworkService) FindUserHWsService(userUuid string, due string) ([]FindUserHW, error) {
+	var children []string // リクエストクライアントが保護者の場合、お子さん一覧を保管する配列
 	// 親かどうか
 	isPatron, _ := model.IsPatron(userUuid)
+	fmt.Printf("isPatron: %v\n", isPatron)
 	// 親であれば子どものUUIDを取得
 	if isPatron {
+		// おうちに所属しているかどうか
 		patron, err := model.GetUser(userUuid)
 		if patron.OuchiUuid == nil {
 			// 保護者さんおうちに所属してないよエラー
@@ -223,46 +244,123 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 			// あなたのおうちにこどもはいないよ
 			return nil, custom.NewErr(custom.ErrTypeNoResourceExist)
 		}
-	} else {
+	} else { // HACK: 教師の場合？
 		children = append(children, userUuid)
 	}
 
-	//user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
-	userHomeworkList, err := model.FindUserHomeworkforNextday(children)
-	if err != nil { //エラーハンドル エラーを上に投げるだけ
-		return nil, err
-	}
+	fmt.Printf("children: %v\n", children)
 
-	// クラス名をキー、バリューを課題データのマップにする
-	transformedDataMap := make(map[string][]HomeworkData)
-	for _, userHomework := range userHomeworkList {
-		homeworkData := HomeworkData{
-			HomeworkUuid:              userHomework.HomeworkUuid,
-			StartPage:                 userHomework.StartPage,
-			PageCount:                 userHomework.PageCount,
-			HomeworkNote:              userHomework.HomeworkNote,
-			TeachingMaterialName:      userHomework.TeachingMaterialName,
-			SubjectId:                 userHomework.SubjectId,
-			SubjectName:               userHomework.SubjectName,
-			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
-			ClassName:                 userHomework.ClassName,
-			SubmitStatus:              userHomework.SubmitStatus,
+	// 期限を取得し、処理を分ける
+	switch due {
+	case "tomorrow": // 明日までの課題
+		// 現在の日付を取得
+		now := time.Now()
+		// 現在の日付から時間部分を0時にリセットし、次の日を取得
+		tomorrowMidnight := time.Date(
+			now.Year(), now.Month(), now.Day()+2, 0, 0, 0, 0, now.Location(),
+		)
+		// TODO: 文字列にする
+		var tomorrowMidnightAdjusted string
+
+		fmt.Printf("tomorrowMidnight: %v\n", tomorrowMidnight)
+
+		// 返り血のスライスを宣言
+		childHWs := make([]FindUserHW, len(children))
+
+		// ひとりずつ処理する
+		for index, child := range children {
+			// ひとりずつの構造体宣言
+			var childHW FindUserHW
+
+			// TODO: childが属するクラスを特定し、
+			fmt.Printf("child: %v\n", child)
+
+			// TODO: クラスIDと期限で宿題を絞り込む
+			hws, err := model.FindHWsByClassDue("classID", tomorrowMidnightAdjusted)
+			if err != nil {
+				// TODO:
+				return []FindUserHW{}, err
+			}
+
+			// TODO: 取得した値は複数行のスライスのため、これをforでそれぞれDTOスライスにいれる
+			for _, hw := range hws {
+				// 宿題DTOを初期化
+				var hwDTO UserNextDayHWResDTO
+
+				// 取得した情報から設定
+				hwDTO.HomeworkUuid = hw.HomeworkPosterUuid
+				// TODO: 必要なものは全部
+
+				// TODO: さらに必要な追加情報を取得
+
+				// 宿題をスライスに追加
+				childHWs[index].Homeworks = append(childHWs[index].Homeworks, hwDTO)
+			}
+
+			// TODO: おこさんの情報を設定
+			//childHW.UserName
+			// その他、クライアント側がソートに使う情報などが増えたらchildHWに追加
+
+			// スライスに追加
+			childHWs = append(childHWs, childHW)
 		}
-		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
-	}
 
-	//作ったマップをさらに整形
-	var transformedDataList []ClassHomeworkSummary
-	for className, homeworkData := range transformedDataMap {
-		transformedData := ClassHomeworkSummary{
-			ClassName:    className,
-			HomeworkData: homeworkData,
+		// 返す
+		return childHWs, nil
+	default: // キーワードではなく具体的な日付で指定されていた場合
+		// 日付が使える形かバリデーション
+		date := "2024-10-13T20C58C55P09C00"
+		fmt.Printf("date: %v\n", date)
+		dateAdjusted := strings.ToUpper(date)
+		dateAdjusted = strings.Replace(dateAdjusted, "C", ":", -1) // :をURLで送りたくないため
+		dateAdjusted = strings.Replace(dateAdjusted, "M", "-", -1) // UTCからの負方向の時差
+		dateAdjusted = strings.Replace(dateAdjusted, "P", "+", -1) // UTCからの正方向の時差
+		fmt.Printf("dateAdjusted: %v\n", dateAdjusted)
+		dueDate, err := time.Parse(time.RFC3339, dateAdjusted) // RFC3339: "2006-01-02T15:04:05Z07:00"
+		if err != nil {                                        // エラー=日付でもなかった場合はエラー
+			return []FindUserHW{}, custom.NewErr(custom.ErrTypeUnexpectedSetPoints)
 		}
-		transformedDataList = append(transformedDataList, transformedData)
+		fmt.Printf("dateTT: %v\n", dueDate)
 	}
 
-	//できたら返す
-	return transformedDataList, nil
+	return []FindUserHW{}, nil
+
+	// //user_uuidを絞り込み条件にクソデカ構造体のスライスを受け取る
+	// userHomeworkList, err := model.FindUserHomeworkforNextday(children)
+	// if err != nil { //エラーハンドル エラーを上に投げるだけ
+	// 	return nil, err
+	// }
+
+	// // クラス名をキー、バリューを課題データのマップにする
+	// transformedDataMap := make(map[string][]HomeworkData)
+	// for _, userHomework := range userHomeworkList {
+	// 	homeworkData := HomeworkData{
+	// 		HomeworkUuid:              userHomework.HomeworkUuid,
+	// 		StartPage:                 userHomework.StartPage,
+	// 		PageCount:                 userHomework.PageCount,
+	// 		HomeworkNote:              userHomework.HomeworkNote,
+	// 		TeachingMaterialName:      userHomework.TeachingMaterialName,
+	// 		SubjectId:                 userHomework.SubjectId,
+	// 		SubjectName:               userHomework.SubjectName,
+	// 		TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
+	// 		ClassName:                 userHomework.ClassName,
+	// 		SubmitStatus:              userHomework.SubmitStatus,
+	// 	}
+	// 	transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
+	// }
+
+	// //作ったマップをさらに整形
+	// var transformedDataList []ClassHomeworkSummary
+	// for className, homeworkData := range transformedDataMap {
+	// 	transformedData := ClassHomeworkSummary{
+	// 		ClassName:    className,
+	// 		HomeworkData: homeworkData,
+	// 	}
+	// 	transformedDataList = append(transformedDataList, transformedData)
+	// }
+
+	// //できたら返す
+	// return transformedDataList, nil
 }
 
 // 宿題登録処理
