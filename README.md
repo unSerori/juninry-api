@@ -254,7 +254,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ユーザー情報を取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/auth/users/user`
+- **URL:** `/v1/auth/users/user`
 - **メソッド:** GET
 - **説明:** jwtから取得したidからユーザーを検索して情報を返す
 - **リクエスト:**
