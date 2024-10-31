@@ -647,8 +647,8 @@ TODO: DDDに統合していく予定
             "NoticeTitle": "【持ち物】習字道具必要です",
             "NoticeDate": "2024-06-11T03:23:39Z",
             "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
-            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+            "UserUUID": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "ClassUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
         }},
       }
     ```
@@ -1089,12 +1089,177 @@ TODO: DDDに統合していく予定
       {
         "srvResMsg":  "Created.",
         "srvResData": {
-          "teachingMaterialUuid": "95af0199-3692-40af-b68f-a76e46cfad95"
+          "teachingMaterialUUID": "95af0199-3692-40af-b68f-a76e46cfad95"
         },
       }
       ```
 
 </details>
+
+<details>
+  <summary>宝箱の初期設定するエンドポイント</summary>
+
+- **URL:** `/v1/hardwares/initalize`
+- **メソッド:** POST
+- **説明:** 宝箱の端末を登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "Created",
+        "srvResData": {
+          "hardUUID": "ad82143b-a53e-436a-9f27-cfa04db541a5"
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の状態を同期するエンドポイント</summary>
+
+- **URL:** `/v1/auth/hardwares/boxes/sync`
+- **メソッド:** PUT
+- **説明:** ロングポーリングで宝箱の状態確認し、変更があったら更新する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+- **リクエスト:**
+  - ボディ:
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "deposit": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: ＊200 OK＊
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "hardUUID": ,
+          "hardName": ,
+          "iconId": ,
+          "deposit": ,
+          "status": ,
+          "rewardPoint": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の情報一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** 宝箱の中身を取得する
+- **説明:** GET
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "hardUUID": ,
+          "hardName": ,
+          "deposit": ,
+          "status": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントを貯金するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** ポイントを箱に貯める
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+    ```json
+      {
+        "addPint": ,
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>箱の中身を更新するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes/{hard_uuid}`
+- **メソッド:** 箱の中身を更新する
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        
+        },
+      }
+      ```
+
+</details>
+
+
 
 ### API仕様書てんぷれ
 
