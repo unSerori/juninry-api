@@ -19,6 +19,7 @@ func GetRewardsHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
+	
 	// ご褒美を取得
 	rewards, err := rewardService.GetRewards(idAdjusted)
 	if err != nil {
