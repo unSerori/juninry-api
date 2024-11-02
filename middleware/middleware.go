@@ -150,3 +150,27 @@ func LimitReqBodySize(maxBytesSize int64) gin.HandlerFunc {
 		ctx.Next() // エンドポイントの処理に移行
 	}
 }
+
+// ユーザ情報を特定する
+func ValidateUserIdMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// ユーザーを特定する
+		id, exists := ctx.Get("id")
+		fmt.Printf("id: %v\n", id)
+		if !exists { // idがcに保存されていない。
+			// エラーログ
+			logging.ErrorLog("The id is not stored.", nil)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			ctx.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("id", id)
+		ctx.Next()
+	}
+}

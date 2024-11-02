@@ -17,19 +17,9 @@ var helpService = service.HelpService{} // サービスの実体を作る。
 // おてつだいを取得
 func GetHelpsHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
+
 	// おてつだいを取得
 	helps, err := helpService.GetHelps(idAdjusted)
 	if err != nil {
@@ -67,18 +57,7 @@ func GetHelpsHandler(c *gin.Context) {
 // おてつだい追加
 func CreateHelpHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド
@@ -125,18 +104,7 @@ func CreateHelpHandler(c *gin.Context) {
 // おてつだいを消化
 func HelpSubmittionHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド

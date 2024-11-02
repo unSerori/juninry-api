@@ -85,18 +85,7 @@ func RegisterUserHandler(c *gin.Context) {
 // ユーザ情報取得
 func GetUserHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体にマッピング

@@ -17,18 +17,7 @@ var OuchiService = service.OuchiService{}
 // おうち新規作成
 func RegisterOuchiHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//構造体に値をバインド
@@ -93,19 +82,7 @@ func RegisterOuchiHandler(ctx *gin.Context) {
 // おうちの招待コード更新
 func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// おうちUUIDを取得
@@ -166,19 +143,7 @@ func GenerateOuchiInviteCodeHandler(ctx *gin.Context) {
 // おうち参加処理
 func JoinOuchiHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 	// 招待コードを取得
 	inviteCode := c.Param("invite_code")
@@ -246,18 +211,7 @@ func JoinOuchiHandler(c *gin.Context) {
 // おうち情報取得
 func GetOuchiHandler(ctx *gin.Context) {
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。 
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//　おうちの情報を取得してくる

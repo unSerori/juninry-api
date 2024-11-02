@@ -115,18 +115,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 func GetNoticeDetailHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 	fmt.Println(idAdjusted)   //　アサーションの確認
 
@@ -308,18 +297,7 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 // お知らせ既読処理
 func NoticeReadHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// ここエラー出てたのでエラーが出ないようにする処置をしていたんですが、
@@ -397,18 +375,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 func GetNoticestatusHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//notice_uuidの取得

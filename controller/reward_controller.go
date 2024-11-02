@@ -17,18 +17,7 @@ var rewardService = service.RewardService{} // サービスの実体を作る。
 // ごほうびを取得
 func GetRewardsHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 	// ご褒美を取得
 	rewards, err := rewardService.GetRewards(idAdjusted)
@@ -67,18 +56,7 @@ func GetRewardsHandler(c *gin.Context) {
 // ごほうびを作成
 func CreateRewardHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド
@@ -125,18 +103,7 @@ func CreateRewardHandler(c *gin.Context) {
 // ごほうびを削除
 func DeleteRewardsHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// reward_UUIDを取得
@@ -180,18 +147,7 @@ func DeleteRewardsHandler(c *gin.Context) {
 // ごほうびを交換
 func RewardsExchangeHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド
@@ -238,18 +194,7 @@ func RewardsExchangeHandler(c *gin.Context) {
 // ごほうびを消化
 func RewardDigestionHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// reward_UUIDを取得
@@ -294,18 +239,7 @@ func RewardDigestionHandler(c *gin.Context) {
 // 交換されたごほうび一覧を取得
 func GetExchangedRewardsHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 交換されたご褒美を取得
