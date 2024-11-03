@@ -1096,6 +1096,292 @@ TODO: DDDに統合していく予定
 
 </details>
 
+<details>
+  <summary>スタンプ獲得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/stamps/acquisiton`
+- **メソッド:** PUT
+- **説明:** スタンプを獲得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+         "stampCount": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプの数を返還するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/stamps`
+- **メソッド:** GET
+- **説明:** 現在のスタンプの数を返す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+         "stampCount": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントでガチャを回すエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/points/gacha`
+- **メソッド:** GET
+- **説明:** ポイントでガチャを回す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+    ```json
+    {
+      "times": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプでガチャを回すエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/points/gacha`
+- **メソッド:** GET
+- **説明:** スタンプでガチャを回す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持アイテム一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/items`
+- **メソッド:** GET
+- **説明:** 所持しているアイテム一覧を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持ニャリオット一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots`
+- **メソッド:** GET
+- **説明:** 所持しているニャリオット一覧を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持アイテム詳細取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/itmes/{item_uuid}`
+- **メソッド:** GET
+- **説明:** パスパラメーターで指定したアイテムの詳細情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持ニャリオット詳細取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots/{nariot_uuid}`
+- **メソッド:** GET
+- **説明:** パスパラメーターで指定したニャリオットの詳細情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ごはんエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/meal`
+- **メソッド:** PUT
+- **説明:** ニャリオットの満腹度を増加させる
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+    ```json
+    {
+      "itemUUID": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "satityDegrees": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>メインニャリオットの変更エンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots/chang`
+- **メソッド:** PUT
+- **説明:** 所持しているニャリオットの中から表示するニャリオットを変更する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+    ```json
+    {
+      "nariotUUID": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+      ```json
+      {
+        "srvResMsg":  "changed",
+        "srvResData": {
+          "nariotUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+
 ### API仕様書てんぷれ
 
 <details>
