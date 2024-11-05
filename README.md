@@ -1099,7 +1099,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプ獲得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/stamps/acquisiton`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps/acquisiton`
 - **メソッド:** PUT
 - **説明:** スタンプを獲得する
 - **リクエスト:**
@@ -1123,7 +1123,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプの数を返還するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/stamps`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/stamps`
 - **メソッド:** GET
 - **説明:** 現在のスタンプの数を返す
 - **リクエスト:**
@@ -1147,7 +1147,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ポイントでガチャを回すエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/points/gacha`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/points/gacha`
 - **メソッド:** GET
 - **説明:** ポイントでガチャを回す
 - **リクエスト:**
@@ -1182,7 +1182,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプでガチャを回すエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/points/gacha`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyairot/stamps/gacha`
 - **メソッド:** GET
 - **説明:** スタンプでガチャを回す
 - **リクエスト:**
@@ -1210,7 +1210,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>所持アイテム一覧取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/items`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/items`
 - **メソッド:** GET
 - **説明:** 所持しているアイテム一覧を取得する
 - **リクエスト:**
@@ -1229,6 +1229,7 @@ TODO: DDDに統合していく予定
           "itemImg": ,
           "rarity": ,
           "detail": ,
+          "satityDegrees": ,
         },
       }
       ```
@@ -1238,7 +1239,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>所持ニャリオット一覧取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots`
 - **メソッド:** GET
 - **説明:** 所持しているニャリオット一覧を取得する
 - **リクエスト:**
@@ -1257,6 +1258,7 @@ TODO: DDDに統合していく予定
           "itemImg": ,
           "rarity": ,
           "detail": ,
+          "talk": ,
         },
       }
       ```
@@ -1266,7 +1268,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>所持アイテム詳細取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/itmes/{item_uuid}`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/itmes/{item_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したアイテムの詳細情報を取得する
 - **リクエスト:**
@@ -1285,6 +1287,7 @@ TODO: DDDに統合していく予定
           "itemImg": ,
           "rarity": ,
           "detail": ,
+          "satityDegrees": ,
         },
       }
       ```
@@ -1294,7 +1297,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>所持ニャリオット詳細取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots/{nariot_uuid}`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したニャリオットの詳細情報を取得する
 - **リクエスト:**
@@ -1313,6 +1316,7 @@ TODO: DDDに統合していく予定
           "itemImg": ,
           "rarity": ,
           "detail": ,
+          "talk": ,
         },
       }
       ```
@@ -1322,7 +1326,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ごはんエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/meal`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/meal`
 - **メソッド:** PUT
 - **説明:** ニャリオットの満腹度を増加させる
 - **リクエスト:**
@@ -1344,6 +1348,7 @@ TODO: DDDに統合していく予定
         "srvResMsg":  "OK",
         "srvResData": {
           "satityDegrees": ,
+          "talk": ,
         },
       }
       ```
@@ -1353,7 +1358,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>メインニャリオットの変更エンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/gachagacha/nariots/chang`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/chang`
 - **メソッド:** PUT
 - **説明:** 所持しているニャリオットの中から表示するニャリオットを変更する
 - **リクエスト:**
@@ -1363,7 +1368,7 @@ TODO: DDDに統合していく予定
   - ボディ:
     ```json
     {
-      "nariotUUID": ,
+      "nyariotUUID": ,
     }
     ```
 
@@ -1374,7 +1379,7 @@ TODO: DDDに統合していく予定
       {
         "srvResMsg":  "changed",
         "srvResData": {
-          "nariotUUID": ,
+          "nyariotUUID": ,
         },
       }
       ```
