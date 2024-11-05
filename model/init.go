@@ -32,6 +32,12 @@ func MigrationTable() error {
 			new(Reward),
 			new(HelpSubmittion),
 			new(RewardExchanging),
+			new(Nyariot),
+			new(Item),
+			new(ItemBox),
+			new(NyariotInventory),
+			new(Stamp),
+			new(HungryStatus),
 		)
 		if err != nil {
 			logging.ErrorLog("Failed to sync database.", err)
@@ -109,7 +115,26 @@ func initFK() error {
 	if err != nil {
 		return err
 	}
-
+	// ItemBox
+	err = InitItemBoxFK()
+	if err != nil {
+		return err
+	}
+	// NyariotInventory
+	err = InitNyariotInventoryFK()
+	if err != nil {
+		return err
+	}	
+	// Stamp
+	err = InitStampFK()
+	if err != nil {
+		return err
+	}
+	// HungryStatus
+	err = InitHungryStatusFK()
+	if err != nil {
+		return err
+	}
 	return err
 }
 
