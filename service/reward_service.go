@@ -2,7 +2,10 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"juninry-api/common/logging"
 	"juninry-api/model"
+	"juninry-api/utility/custom"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,6 +42,56 @@ func (s *RewardService) GetRewards(userUUID string) ([]model.Reward, error) {
 		return []model.Reward{}, err
 	}
 	return rewards, nil
+}
+
+type BoxReward struct {
+	HardwareUuid string `json:"hardwareUUID"`
+	RewardName   string `json:"rewardName"`
+	RewardPoint  int    `json:"rewardPoint"`
+	RewardTitle  string `json:"rewardTitle"`
+	IconId       int    `json:"iconId"`
+	DepositPoint int    `json:"depositPoint"`
+}
+
+func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
+	// ユーザーが教員であれば返す
+	result, err := model.IsTeacher(userUUID)
+	if result || err != nil {
+		return nil, errors.New("user is not a teacher")
+	}
+	// ユーザー情報の取得
+	bUser, err := model.GetUser(userUUID)
+	if err != nil {
+		return nil, err
+	}
+	// ユーザー情報のouchiUUIDでご褒美を取得
+	rewards, err := model.GetBoxRewards(*bUser.OuchiUuid)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(rewards)
+
+	// レスポンスの形式変換
+	var boxRewards []BoxReward
+
+	for _, reward := range rewards {
+		// ハードウェアUUIDから現在のポイントを取得
+		depositPoint, err := model.GetBoxDepositPoint(*reward.HardwareUuid)
+		if err != nil {
+			return nil, err
+		}
+
+		boxRewards = append(boxRewards, BoxReward{
+			HardwareUuid: *reward.HardwareUuid,
+			RewardName:   reward.RewardTitle,
+			RewardPoint:  reward.RewardPoint,
+			RewardTitle:  reward.RewardTitle,
+			IconId:       reward.IconId,
+			DepositPoint: depositPoint,
+		})
+
+	}
+	return boxRewards, nil
 }
 
 // ごほうびを追加
@@ -209,4 +262,83 @@ func (s *RewardService) GetRewardExchanging(userUUID string) ([]RewardExchangeHi
 		rewardExchangeHistories = append(rewardExchangeHistories, rewardExchangeHistory)
 	}
 	return rewardExchangeHistories, nil
+}
+
+
+
+// 宝箱にポイントを追加
+func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid string) (int, error) {
+	// ユーザーが子供であることを確認
+	result, err := model.IsJunior(userUUID)
+	if err != nil {
+		return 0, err
+	}
+	if !result { // 子供以外は403
+		return 0, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// 宝箱が自身のものであることを確認
+	// ユーザーの詳細を取得
+	user, err := model.GetUser(userUUID)
+	if err != nil {
+		return 0, err
+	}
+	if user.OuchiUuid == nil { // おうちのuuidを取得できなければ400
+		return 0, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+	ouchiUuid := *user.OuchiUuid // おうちのuuid
+
+	// 現在のポイントを取得
+	havePoint := user.OuchiPoint
+	if havePoint < addPoint { // ポイント不足
+		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+	}
+
+	// 自身の所有する箱のごほうびを取得
+	reward, err := model.GetBoxReward(ouchiUuid, hardUuid)
+	if err != nil {
+		return 0, err
+	}
+	if reward.RewardPoint == 0 { // 結果がなければ403
+		logging.ErrorLog("Could not find the reward.", nil)
+		return 0, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	boxMaxPoint := reward.RewardPoint // 宝箱に必要なポイント
+
+	// ボックスの現在のポイントを取得
+	boxCurrentPoint, err := model.GetBoxDepositPoint(hardUuid)
+	if err != nil {
+		return 0, err
+	}
+
+	// ポイントを追加しすぎてないかを確認
+	if boxCurrentPoint+addPoint > boxMaxPoint { // ボックスのポイント上限を超えてる
+		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+	}
+
+	fmt.Println("宝箱にポイントを追加しました")
+	fmt.Println("宝箱のポイント:", boxCurrentPoint)
+	fmt.Println("追加するポイント:", addPoint)
+	fmt.Println("宝箱のポイント上限:", boxMaxPoint)
+
+	// ボックスのポイントを更新
+	err = model.UpdateBoxDepositPoint(hardUuid, boxCurrentPoint+addPoint)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("ボックスのポイントを更新に失敗しました")
+		return 0, err
+	}
+
+	// ユーザーのポイントを更新
+	err = model.UpdateOuchiPoint(userUUID, havePoint-addPoint)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("ユーザーのポイントを更新に失敗しました")
+		return 0, err
+	}
+
+	
+	// 更新が完了したらtrueを返す
+	return boxCurrentPoint + addPoint, nil
 }

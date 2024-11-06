@@ -32,6 +32,9 @@ func MigrationTable() error {
 			new(Reward),
 			new(HelpSubmittion),
 			new(RewardExchanging),
+			new(HardwareType),
+			new(Hardware),
+			new(Box),
 		)
 		if err != nil {
 			logging.ErrorLog("Failed to sync database.", err)
@@ -109,6 +112,16 @@ func initFK() error {
 	if err != nil {
 		return err
 	}
+	// Hardware
+	err = InitHardwareFK()
+	if err != nil {
+		return err
+	}
+	// Boxes
+	err = InitBoxesFK()
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -123,7 +136,6 @@ func RegisterSample() {
 	CreateSubjectTestData()
 	CreateTeachingMaterialTestData()
 	CreateHelpTestData()
-	CreateRewardTestData()
 	// テスト用データ作成
 	CreateUserTestData()
 	CreateClassMembershipsTestData()
@@ -131,6 +143,11 @@ func RegisterSample() {
 	CreateNoticeReadStatusTestData()
 	CreateHomeworkTestData()
 	CreateHomeworkSubmissionTestData()
+	CreateHardwareTypeTestData()
+	CreateHardwareTestData()
+	CreateBoxesTestData()
+	CreateRewardTestData()
+
 }
 
 // SQL接続とテーブル作成
