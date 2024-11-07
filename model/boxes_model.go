@@ -1,9 +1,9 @@
 package model
 
 type Box struct {
-	HardwareUuid string `xorm:"varchar(36) default pk" json:"hardwareUUID"`
+	HardwareUuid string `xorm:"varchar(36) pk" json:"hardwareUUID"`
 	DepositPoint int    `xorm:"int default 0 not null" json:"depositPoint"`
-	BoxStatus    int    `xorm:"int default 0 not null" json:"boxStatus"`	// 0: 何も登録されていない状態　1: ポイント貯めたりできる状態　2: メンテナンス中
+	BoxStatus    int    `xorm:"int default 0 not null" json:"boxStatus"` // 0: 何も登録されていない状態　1: ポイント貯めたりできる状態　2: メンテナンス中
 }
 
 // テーブル名
