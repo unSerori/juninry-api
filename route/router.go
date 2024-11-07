@@ -1,10 +1,11 @@
 package route
 
 import (
+	"juninry-api/common/config"
 	"juninry-api/common/logging"
 	"juninry-api/controller"
 	"juninry-api/middleware"
-	"juninry-api/utility/config"
+	"juninry-api/presentation"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,18 +16,25 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	engine.Use(middleware.LoggingMid())
 
 	// endpoints
+
 	// root page
 	engine.GET("/", controller.ShowRootPage) // /
-	// json test
-	engine.GET("/test/json", controller.TestJson) // /test
+
+	// checkグループ
+	check := engine.Group("/check")
+	{
+		// confirmation and response json test
+		check.GET("/echo", presentation.ConfirmationReq) // /check/echo
+
+		// sandbox
+		check.GET("/sandbox", presentation.Test) // /check/sandbox
+	}
 
 	// endpoints group
+
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
-		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
-
 		// usersグループ
 		users := v1.Group("/users")
 		{
