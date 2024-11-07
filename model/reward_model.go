@@ -104,20 +104,6 @@ func GetRewards(ouchiUuid string) ([]Reward, error) {
 	return rewards, nil
 }
 
-// 複数のごほうびを取得
-func GetBoxRewards(ouchiUuid string) ([]Reward, error) {
-	//結果格納用変数
-	var rewards []Reward
-	//ouchiUuidで絞り込んで全取得
-	err := db.Where("ouchi_uuid =? and hardware_uuid is not null", ouchiUuid).Find(
-		&rewards,
-	)
-	// データが取得できなかったらerrを返す
-	if err != nil {
-		return []Reward{}, err
-	}
-	return rewards, nil
-}
 
 // TODO:ごほうびを更新
 
