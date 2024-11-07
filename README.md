@@ -1314,6 +1314,7 @@ TODO: DDDに統合していく予定
 
 </details>
 
+<details>
   <summary>宝箱の情報一覧取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
