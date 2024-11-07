@@ -164,6 +164,16 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 						// 交換されたご褒美を消化
 						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+						// 宝箱関連のグループ
+						boxes := rewards.Group("/boxes")
+						{
+							// 宝箱にポイントを貯める
+							boxes.PUT("/points/:hardware_uuid", controller.DepositPointHandler)
+
+							// 宝箱一覧取得
+							boxes.GET("/", controller.GetBoxRewardsHandler)
+						}
 					}
 
 				}
