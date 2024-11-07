@@ -124,7 +124,7 @@ func initFK() error {
 	err = InitNyariotInventoryFK()
 	if err != nil {
 		return err
-	}	
+	}
 	// Stamp
 	err = InitStampFK()
 	if err != nil {
@@ -156,6 +156,9 @@ func RegisterSample() {
 	CreateNoticeReadStatusTestData()
 	CreateHomeworkTestData()
 	CreateHomeworkSubmissionTestData()
+	CreateStampTestData()
+	CreateItemTestData()
+	CreateNyariotTestData()
 }
 
 // SQL接続とテーブル作成

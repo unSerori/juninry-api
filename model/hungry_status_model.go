@@ -4,12 +4,12 @@ import (
 	"time"
 )
 
-// スタンプテーブル
+// 満腹度テーブル
 type HungryStatus struct {
-	UserUuid      string    `xorm:"varchar(36) pk" json:"userUUID"`         // ユーザのUUID
-	SatityDegrees string    `xorm:"int" json:"satityDegrees"`               // 現在の空腹度
-	NyariotUuid   string    `xorm:"varchar(36)" json:"nyariotUUID"`         // ニャリオットUUID
-	LastGohanTime time.Time `xorm:"DATETIME not null" json:"lastGohanTime"` // 最後にご飯を食べた時間
+	UserUuid      string    `xorm:"varchar(36) pk" json:"userUUID"`                                                          // ユーザのUUID
+	SatityDegrees int       `xorm:"int not null default(100)" json:"satityDegrees"`                                          // 現在の空腹度
+	NyariotUuid   string   `xorm:"varchar(36) not null default('c0768960-eb5f-4a60-8327-4171fd4b8a46')" json:"nyariotUUID"` // ニャリオットUUID
+	LastGohanTime time.Time `xorm:"DATE not null" json:"lastGohanTime"`                                                      // 最後にご飯を食べた時間
 }
 
 // テーブル名
@@ -30,4 +30,9 @@ func InitHungryStatusFK() error {
 		return err
 	}
 	return nil
+}
+
+func CreateHungryStatus(record HungryStatus) (int64, error) {
+	affected, err := db.Insert(record)
+	return affected, err
 }
