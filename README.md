@@ -1122,31 +1122,6 @@ TODO: DDDに統合していく予定
 </details>
 
 <details>
-  <summary>スタンプ獲得するエンドポイント</summary>
-
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps/acquisiton`
-- **メソッド:** PUT
-- **説明:** スタンプを獲得する
-- **リクエスト:**
-  - ヘッダー:
-    - `Authorization`: (string) 認証トークン
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "OK",
-        "srvResData": {
-         "stampCount": ,
-        },
-      }
-      ```
-
-</details>
-
-<details>
   <summary>宝箱の状態を同期するエンドポイント</summary>
 
 - **URL:** `/v1/auth/hardwares/boxes/sync`
@@ -1186,6 +1161,127 @@ TODO: DDDに統合していく予定
           "status": ,
           "rewardPoint": ,
           "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の情報一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** 宝箱の中身を取得する
+- **説明:** GET
+- **リクエスト:**
+  - ヘッダー:
+  - ボディ:
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "hardUUID": ,
+          "hardName": ,
+          "deposit": ,
+          "status": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントを貯金するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** ポイントを箱に貯める
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+      {
+        "addPint": ,
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>箱の中身を更新するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes/{hard_uuid}`
+- **メソッド:** 箱の中身を更新する
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプ獲得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps/acquisiton`
+- **メソッド:** PUT
+- **説明:** スタンプを獲得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+         "stampCount": ,
         },
       }
       ```
@@ -1267,6 +1363,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
 
       {
@@ -1315,35 +1412,6 @@ TODO: DDDに統合していく予定
 </details>
 
 <details>
-  <summary>宝箱の情報一覧取得するエンドポイント</summary>
-
-- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
-- **メソッド:** 宝箱の中身を取得する
-- **説明:** GET
-- **リクエスト:**
-  - ヘッダー:
-  - ボディ:
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "OK",
-        "srvResData": {
-          "hardUUID": ,
-          "hardName": ,
-          "deposit": ,
-          "status": ,
-          "rewardUUID": ,
-        },
-      }
-      ```
-
-</details>
-
-<details>
   <summary>所持ニャリオット一覧取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/ouchies/rewards/nyariots`
@@ -1366,37 +1434,6 @@ TODO: DDDに統合していく予定
           "rarity": ,
           "detail": ,
           "talk": ,
-        },
-      }
-      ```
-
-</details>
-
-<details>
-  <summary>ポイントを貯金するエンドポイント</summary>
-
-- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
-- **メソッド:** ポイントを箱に貯める
-- **説明:** PUT
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: application/json
-  - ボディ:
-
-    ```json
-      {
-        "addPint": ,
-      }
-    ```
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "OK",
-        "srvResData": {
         },
       }
       ```
@@ -1457,42 +1494,6 @@ TODO: DDDに統合していく予定
           "rarity": ,
           "detail": ,
           "talk": ,
-        },
-      }
-      ```
-
-</details>
-
-<details>
-  <summary>箱の中身を更新するエンドポイント</summary>
-
-- **URL:** `/v1/auth/users/ouchies/rewaord/boxes/{hard_uuid}`
-- **メソッド:** 箱の中身を更新する
-- **説明:** PUT
-- **リクエスト:**
-  - ヘッダー:
-    - `Content-Type`: application/json
-  - ボディ:
-
-      ```json
-      {
-        "hardUUID": ,
-        "hardName": ,
-        "iconId": ,
-        "status": ,
-        "rewardPoint": ,
-        "rewardUUID": ,
-      }
-      ```
-
-- **レスポンス:**
-  - ステータスコード: 200 OK
-    - ボディ:
-
-      ```json
-      {
-        "srvResMsg":  "OK",
-        "srvResData": {
         },
       }
       ```
