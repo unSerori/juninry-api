@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +19,7 @@ func GetRewardsHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
-	
+
 	// ご褒美を取得
 	rewards, err := rewardService.GetRewards(idAdjusted)
 	if err != nil {
@@ -423,7 +423,7 @@ func DepositPointHandler(c *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
-		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			"depositPoint": result,
 		},

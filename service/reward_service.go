@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
-	"juninry-api/utility/custom"
 	"time"
 
 	"github.com/google/uuid"
@@ -98,8 +98,6 @@ func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
 		if err != nil {
 			return nil, err
 		}
-
-
 
 		// レスポンスの形式変換
 		boxRewards = append(boxRewards, BoxReward{
@@ -318,8 +316,6 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 	if havePoint < addPoint { // ポイント不足
 		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
-
-
 
 	// 自身の所有する箱のごほうびを取得
 	reward, err := model.GetBoxReward(ouchiUuid, hardUuid)

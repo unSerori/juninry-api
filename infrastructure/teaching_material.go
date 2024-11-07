@@ -5,9 +5,9 @@ package infrastructure
 import (
 	"errors"
 	"io"
+	"juninry-api/common/custom"
 	"juninry-api/domain"
 	"juninry-api/model"
-	"juninry-api/utility/custom"
 	"mime/multipart"
 	"os"
 

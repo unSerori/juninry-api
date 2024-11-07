@@ -2,8 +2,8 @@ package model
 
 import (
 	"errors"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
-	"juninry-api/utility/custom"
 
 	"github.com/go-sql-driver/mysql"
 )

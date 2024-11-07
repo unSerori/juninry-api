@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -261,7 +261,6 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	})
 }
 
-
 func JoinClassHandler(c *gin.Context) {
 	// ユーザーを特定する
 	id, _ := c.Get("id")
@@ -271,7 +270,7 @@ func JoinClassHandler(c *gin.Context) {
 	inviteCode := c.Param("invite_code")
 
 	// 出席番号受け取りマン
-	var studentNumberJSON  struct {
+	var studentNumberJSON struct {
 		StudentNumber *int `json:"studentNumber"`
 	}
 
