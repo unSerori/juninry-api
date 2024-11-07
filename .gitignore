@@ -77,6 +77,7 @@ memo.*
 # ライブラリなどリポジトリに含める必要のないディレクトリ
 
 # デバッグ時のファイル
+__debug_bin*
 
 # asset direcotry
 /asset/*/*
