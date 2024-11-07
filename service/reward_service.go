@@ -51,43 +51,65 @@ type BoxReward struct {
 	RewardTitle  string `json:"rewardTitle"`
 	IconId       int    `json:"iconId"`
 	DepositPoint int    `json:"depositPoint"`
+	BoxStatus    int    `json:"boxStatus"`
 }
 
 func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
 	// ユーザーが教員であれば返す
 	result, err := model.IsTeacher(userUUID)
 	if result || err != nil {
-		return nil, errors.New("user is not a teacher")
+		return nil, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
+
+	// ユーザーが児童であればレスポンスの種類を制限する
+	isJunior, err := model.IsJunior(userUUID)
+	if err != nil {
+		return nil, err
+	}
+
 	// ユーザー情報の取得
 	bUser, err := model.GetUser(userUUID)
 	if err != nil {
 		return nil, err
 	}
+
 	// ユーザー情報のouchiUUIDでご褒美を取得
-	rewards, err := model.GetBoxRewards(*bUser.OuchiUuid)
+	boxes, err := model.GetBoxes(*bUser.OuchiUuid)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(rewards)
+	// rewards, err := model.GetBoxRewards(*bUser.OuchiUuid)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// fmt.Println(rewards)
 
 	// レスポンスの形式変換
 	var boxRewards []BoxReward
 
-	for _, reward := range rewards {
+	for _, box := range boxes {
+		// 自動であればステータスが1であるもののみを返す
+		if isJunior && box.BoxStatus != 1 {
+			continue
+		}
+
 		// ハードウェアUUIDから現在のポイントを取得
-		depositPoint, err := model.GetBoxDepositPoint(*reward.HardwareUuid)
+		reward, err := model.GetBoxReward(*bUser.OuchiUuid, box.HardwareUuid)
 		if err != nil {
 			return nil, err
 		}
 
+
+
+		// レスポンスの形式変換
 		boxRewards = append(boxRewards, BoxReward{
 			HardwareUuid: *reward.HardwareUuid,
 			RewardName:   reward.RewardTitle,
 			RewardPoint:  reward.RewardPoint,
 			RewardTitle:  reward.RewardTitle,
 			IconId:       reward.IconId,
-			DepositPoint: depositPoint,
+			DepositPoint: box.DepositPoint,
+			BoxStatus:    box.BoxStatus,
 		})
 
 	}
@@ -264,8 +286,6 @@ func (s *RewardService) GetRewardExchanging(userUUID string) ([]RewardExchangeHi
 	return rewardExchangeHistories, nil
 }
 
-
-
 // 宝箱にポイントを追加
 func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid string) (int, error) {
 	// ユーザーが子供であることを確認
@@ -275,6 +295,11 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 	}
 	if !result { // 子供以外は403
 		return 0, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// ポイントの下限を確認
+	if addPoint <= 0 {
+		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
 
 	// 宝箱が自身のものであることを確認
@@ -293,6 +318,8 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 	if havePoint < addPoint { // ポイント不足
 		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
+
+
 
 	// 自身の所有する箱のごほうびを取得
 	reward, err := model.GetBoxReward(ouchiUuid, hardUuid)
@@ -338,7 +365,6 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 		return 0, err
 	}
 
-	
 	// 更新が完了したらtrueを返す
 	return boxCurrentPoint + addPoint, nil
 }
