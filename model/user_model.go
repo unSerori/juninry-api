@@ -418,3 +418,27 @@ func GetJuniorsByOuchiUuid(ouchiId string) ([]User, error) {
 	}
 	return juniors, nil // エラーなければnilが返る
 }
+
+// 消費可能な最大ポイントを取得
+func GetOuchiPointByUserUuid(userUuid string) (int, error) {
+
+	// 結果格納用変数
+	var user User
+
+	// 消費可能な最大ポイントを取得
+	_, err := db.Where("user_uuid = ?", userUuid).Get(&user)
+	if err != nil {
+		return 0, err
+	}
+
+	return user.OuchiPoint, nil
+}
+
+// ポイントを更新
+func UpdateOuchiPoint(userUuid string, point int) error {
+	_, err := db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: point})
+	if err != nil {
+		return err
+	}
+	return nil
+}
