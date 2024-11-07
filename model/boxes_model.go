@@ -33,6 +33,13 @@ func CreateBoxesTestData() {
 		OuchiUuid:    "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
 	db.Insert(boxes1)
+
+	boxes2 := &Box{
+		HardwareUuid: "d611d471-5eb2-46a2-abaf-f758205f0d5f",
+		OuchiUuid:    "2e17a448-985b-421d-9b9f-62e5a4f28c49",
+	}
+	db.Insert(boxes2)
+
 }
 
 // ボックスの現在のポイントを取得
@@ -83,3 +90,5 @@ func UpdateBoxDepositPoint(hardwareUUID string, depositPoint int) error {
 	}
 	return nil
 }
+
+//

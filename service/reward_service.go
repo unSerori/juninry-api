@@ -46,12 +46,13 @@ func (s *RewardService) GetRewards(userUUID string) ([]model.Reward, error) {
 
 type BoxReward struct {
 	HardwareUuid string `json:"hardwareUUID"`
-	RewardName   string `json:"rewardName"`
-	RewardPoint  int    `json:"rewardPoint"`
-	RewardTitle  string `json:"rewardTitle"`
-	IconId       int    `json:"iconId"`
-	DepositPoint int    `json:"depositPoint"`
-	BoxStatus    int    `json:"boxStatus"`
+	// RewardName   string `json:"rewardName"`
+	// RewardPoint  int    `json:"rewardPoint"`
+	// RewardTitle  string `json:"rewardTitle"`
+	// IconId       int    `json:"iconId"`
+	DepositPoint int           `json:"depositPoint"`
+	BoxStatus    int           `json:"boxStatus"`
+	Reward       *model.Reward `json:"reward"`
 }
 
 func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
@@ -78,39 +79,40 @@ func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
 	if err != nil {
 		return nil, err
 	}
-	// rewards, err := model.GetBoxRewards(*bUser.OuchiUuid)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// fmt.Println(rewards)
 
 	// レスポンスの形式変換
 	var boxRewards []BoxReward
 
 	for _, box := range boxes {
+		// レスポンスの形式変換
+		boxReward := BoxReward{
+			HardwareUuid: box.HardwareUuid,
+			DepositPoint: box.DepositPoint,
+			BoxStatus:    box.BoxStatus,
+		}
+
 		// 自動であればステータスが1であるもののみを返す
 		if isJunior && box.BoxStatus != 1 {
 			continue
 		}
 
-		// ハードウェアUUIDから現在のポイントを取得
-		reward, err := model.GetBoxReward(*bUser.OuchiUuid, box.HardwareUuid)
+		// ボックスに対してご褒美が設定されているかを確認
+		exist, err := model.BoxRewardExists(box.HardwareUuid)
 		if err != nil {
 			return nil, err
 		}
+		if exist {
+			// ボックスのごほうびを取得
+			reward, err := model.GetBoxReward(*bUser.OuchiUuid, box.HardwareUuid)
+			if err != nil {
+				return nil, err
+			}
 
-
+			boxReward.Reward = &reward
+		}
 
 		// レスポンスの形式変換
-		boxRewards = append(boxRewards, BoxReward{
-			HardwareUuid: *reward.HardwareUuid,
-			RewardName:   reward.RewardTitle,
-			RewardPoint:  reward.RewardPoint,
-			RewardTitle:  reward.RewardTitle,
-			IconId:       reward.IconId,
-			DepositPoint: box.DepositPoint,
-			BoxStatus:    box.BoxStatus,
-		})
+		boxRewards = append(boxRewards, boxReward)
 
 	}
 	return boxRewards, nil
@@ -318,8 +320,6 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 	if havePoint < addPoint { // ポイント不足
 		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
-
-
 
 	// 自身の所有する箱のごほうびを取得
 	reward, err := model.GetBoxReward(ouchiUuid, hardUuid)

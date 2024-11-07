@@ -104,7 +104,6 @@ func GetRewards(ouchiUuid string) ([]Reward, error) {
 	return rewards, nil
 }
 
-
 // TODO:ごほうびを更新
 
 // ごほうびを削除
@@ -132,4 +131,15 @@ func GetBoxReward(ouchiUuid string, hardwareUuid string) (Reward, error) {
 	return reward, nil
 }
 
-//
+// 引数のハードウェアUUIDが設定されたご褒美があるか取得
+func BoxRewardExists(hardwareUuid string) (bool, error) {
+	// 結果格納用変数
+	var box Reward
+	// ouchiUuidとhardwareUuidで絞り込んで一致するレコードを取得
+	result, err := db.Where("hardware_uuid =?", hardwareUuid).Exist(&box)
+	if err != nil {
+		return false, err
+	}
+
+	return result, nil
+}
