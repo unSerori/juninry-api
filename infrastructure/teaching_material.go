@@ -1,6 +1,6 @@
 // サービスから呼び出される具体的な処理関数
 
-package infrastructure
+package infrastructure_old
 
 import (
 	"errors"
