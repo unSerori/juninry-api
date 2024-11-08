@@ -171,10 +171,10 @@ func routing(engine *gin.Engine, handlers Handlers) {
 						nyariot := rewards.Group("/nyariots")
 						{
 							// 所持ニャリオット一覧を取得
-							// nyariot.GET("/nyariots", controller.****)	// /v1/auth/users/ouchies/rewards/nyariots
+							nyariot.GET("/nyariots", controller.GetUserNyariotInventoryHandler)	// /v1/auth/users/ouchies/rewards/nyariots/nyariots
 
 							// ニャリオット詳細を取得
-							// nyariot.GET("/nyariots/:nyariot_uuid", controller.****)	// /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
+							nyariot.GET("/:nyariot_uuid", controller.GetNyariotDetail)	// /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
 
 							// 所持アイテム一覧を取得
 							nyariot.GET("/items", controller.GetUserItemBoxHandler) // /v1/auth/users/ouchies/rewards/nyariots/items
@@ -186,16 +186,19 @@ func routing(engine *gin.Engine, handlers Handlers) {
 							nyariot.GET("/stamps", controller.GetStampsHandler) // /v1/auth/users/ouchies/rewards/nyariots/stamps
 
 							// // ポイントでガチャを取得
-							// nyariot.GET("/points/gacha", controller.***) // /v1/auth/users/ouchies/rewards/nyariot/points/gacha
+							// nyariot.GET("/points/gacha", controller.***) // /v1/auth/users/ouchies/rewards/nyariots/points/gacha
 
-							// // スタンプでガチャを取得
-							// nyariot.GET("/stamps/gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairot/stamps/gacha
+							// スタンプでガチャを取得
+							// nyariot.GET("/stamps/gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamps/gacha
 
 							// // 空腹度の更新（ごはん）
-							// nyariot.GET("/meal", controller.****)	// /v1/auth/users/ouchies/rewards/nyariot/meal
+							// nyariot.PUT("/meal", controller.****)	// /v1/auth/users/ouchies/rewards/nyariots/meal
+
+							// // メインニャリオットの取得
+							// nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
 
 							// // メインニャリオット更新
-							// nyariot.GET("/change", controller.****) // /v1/auth/users/ouchies/rewards/nyariots/chang
+							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang
 
 						}
 

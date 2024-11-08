@@ -91,6 +91,54 @@ func CreateItemTestData() {
 	}
 	db.Insert(item6)
 
+	item7 := &Item{
+		ItemUuid:      "04de16b4-a7d2-4488-b609-0e5e3108bbc0",
+		ItemName:      "132453",
+		ImagePath:     "asset/images/item/IMG_7.PNG",
+		ItemNumber:    7,
+		Detail:        "hayakunetai",
+		Talk:          "turatanienn",
+		SatityDegrees: 10,
+		Rarity:        1,
+	}
+	db.Insert(item7)
+
+	item8 := &Item{
+		ItemUuid:      "05e50669-a2a7-428e-a243-95f3a2e5f98d",
+		ItemName:      "あああああああ",
+		ImagePath:     "asset/images/item/IMG_8.PNG",
+		ItemNumber:    8,
+		Detail:        "hutonngakoisii",
+		Talk:          "makuragakoisii",
+		SatityDegrees: 10,
+		Rarity:        1,
+	}
+	db.Insert(item8)
+
+	item9 := &Item{
+		ItemUuid:      "cce677c2-423d-4049-9775-8dacc0d97cf1",
+		ItemName:      "67890",
+		ImagePath:     "asset/images/item/IMG_9.PNG",
+		ItemNumber:    9,
+		Detail:        "iiiiii",
+		Talk:          "uuuuuu",
+		SatityDegrees: 20,
+		Rarity:        2,
+	}
+	db.Insert(item9)
+
+	item10 := &Item{
+		ItemUuid:      "af9a9b0c-fbaf-4e4d-b0bb-0f2b9288ce50",
+		ItemName:      "12345",
+		ImagePath:     "asset/images/item/IMG_10.PNG",
+		ItemNumber:    10,
+		Detail:        "qwert",
+		Talk:          "qwert",
+		SatityDegrees: 10,
+		Rarity:        1,
+	}
+	db.Insert(item10)
+
 }
 
 // 全アイテム取得

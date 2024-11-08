@@ -54,8 +54,8 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 
 		// 現在の日時を取得
 		now := time.Now()
-		// 1日前の日付を取得
-		yesterday := now.AddDate(0, 0, -1)
+		// 2日前の日付を取得
+		yesterday := now.AddDate(0, 0, -2)
 		fmt.Printf("yesterday: %v\n", yesterday)
 		// 日付部分だけを取得（時間は00:00:00）
 		dateOnly := time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, yesterday.Location())
@@ -64,7 +64,7 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 		bStamp.UserUuid = bUser.UserUuid
 		bStamp.LastLoginTime = dateOnly
 
-		// インサート
+		// スタンプカード作る
 		_, err := model.CreateStampCard(bStamp)
 		if err != nil {
 			return "", err
@@ -72,10 +72,22 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 
 		fmt.Println("junia's stamp cards are ready!!!!")
 
-		// インサート
+		// ニャリオット所持テーブルに値入れる
+		_, err = model.CreateNyariotInventory(model.NyariotInventory{
+			UserUuid:     bStamp.UserUuid,
+			NyariotUuid:  "c0768960-eb5f-4a60-8327-4171fd4b8a46",
+			ConvexNumber: 1,
+		})
+		if err != nil {
+			return "", err
+		}
+		fmt.Print("Nyariot possession registration completed!!!!")
+
+		// ハングリーテーブル作る
 		_, err = model.CreateHungryStatus(model.HungryStatus{
 			UserUuid:      bStamp.UserUuid,
-			LastGohanTime: time.Now().Truncate(-24 * time.Hour),
+			SatityDegrees: 100,
+			LastGohanTime: time.Now(),
 			NyariotUuid:   "c0768960-eb5f-4a60-8327-4171fd4b8a46",
 		})
 		if err != nil {
