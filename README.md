@@ -1100,12 +1100,21 @@ TODO: DDDに統合していく予定
 <details>
   <summary>宝箱の初期設定するエンドポイント</summary>
 
-- **URL:** `/v1/hardwares/initalize`
+- **URL:** `/v1/hardwares/initialize`
 - **メソッド:** POST
 - **説明:** 宝箱の端末を登録する
 - **リクエスト:**
   - ヘッダー:
+    - `Content-Type`: application/json
   - ボディ:
+
+      ```json
+      {
+        "hardwareTypeId": "",
+        "ouchiUUID": "",
+      }
+      ```
+
 - **レスポンス:**
   - ステータスコード: 201 Created
     - ボディ:
@@ -1114,7 +1123,7 @@ TODO: DDDに統合していく予定
       {
         "srvResMsg":  "Created",
         "srvResData": {
-          "hardUUID": "ad82143b-a53e-436a-9f27-cfa04db541a5"
+          "hardwareUUID": "ad82143b-a53e-436a-9f27-cfa04db541a5",
         },
       }
       ```
