@@ -1,11 +1,13 @@
 package service
 
 import (
+	"fmt"
 	"juninry-api/common/auth"
 	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/common/security"
 	"juninry-api/model"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -38,6 +40,61 @@ func (s *UserService) RegisterUser(bUser model.User) (string, error) {
 	token, err := auth.GenerateToken(bUser.UserUuid) // トークンを取得
 	if err != nil {
 		return "", custom.NewErr(custom.ErrTypeGenTokenFailed, custom.WithMsg(err.Error()))
+	}
+
+	// TODO: userTypeをそのまま取ってこれるのに、生徒チェックする必要ある？こっちの書き方の方が見たとき分かりやすよね
+	isJunior, err := model.IsJunior(bUser.UserUuid)
+	if err != nil {
+		return "", err
+	}
+	// 生徒だったらスタンプカードを作成する＋メインにゃいおっとを生成
+	if isJunior {
+		// insert用のレコード作成(Stamp)
+		var bStamp model.Stamp
+
+		// 現在の日時を取得
+		now := time.Now()
+		// 2日前の日付を取得
+		yesterday := now.AddDate(0, 0, -2)
+		fmt.Printf("yesterday: %v\n", yesterday)
+		// 日付部分だけを取得（時間は00:00:00）
+		dateOnly := time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, yesterday.Location())
+
+		//　userUuid,quentity,loginTimeを追加
+		bStamp.UserUuid = bUser.UserUuid
+		bStamp.LastLoginTime = dateOnly
+
+		// スタンプカード作る
+		_, err := model.CreateStampCard(bStamp)
+		if err != nil {
+			return "", err
+		}
+
+		fmt.Println("junia's stamp cards are ready!!!!")
+
+		// ニャリオット所持テーブルに値入れる
+		_, err = model.CreateNyariotInventory(model.NyariotInventory{
+			UserUuid:     bStamp.UserUuid,
+			NyariotUuid:  "c0768960-eb5f-4a60-8327-4171fd4b8a46",
+			ConvexNumber: 1,
+		})
+		if err != nil {
+			return "", err
+		}
+		fmt.Print("Nyariot possession registration completed!!!!")
+
+		// ハングリーテーブル作る
+		_, err = model.CreateHungryStatus(model.HungryStatus{
+			UserUuid:      bStamp.UserUuid,
+			SatityDegrees: 100,
+			LastGohanTime: time.Now(),
+			NyariotUuid:   "c0768960-eb5f-4a60-8327-4171fd4b8a46",
+		})
+		if err != nil {
+			return "", err
+		}
+
+		fmt.Print("completed the Nyariot setup!!!!")
 	}
 
 	return token, nil

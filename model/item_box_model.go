@@ -4,7 +4,7 @@ package model
 type ItemBox struct {
 	UserUuid string `xorm:"varchar(36) pk" json:"userUUID"`    // ユーザのUUID
 	ItemUuid string `xorm:"varchar(36) pk" json:"nyariotUUID"` // アイテムUUID
-	Quentity string `xorm:"int" json:"quentity"`               // アイテム所持数
+	Quantity int `xorm:"int" json:"quantity"`               // アイテム所持数
 }
 
 // テーブル名
@@ -26,3 +26,25 @@ func InitItemBoxFK() error {
 	}
 	return nil
 }
+
+func GetUserItemBox(userUuid string, itemUuid string) (int, bool, error) {
+	//結果格納用変数
+	var itemBox ItemBox
+
+	// userUuid, itemUuid で絞り込んだ結果
+	found, err := db.Where("user_uuid = ? AND item_uuid = ?", userUuid, itemUuid).Get(&itemBox)
+
+	// クエリ実行でエラーが発生した場合
+	if err != nil {
+		return 0, false, err
+	}
+
+	// アイテムが見つかった場合
+	if found {
+		return itemBox.Quantity, true, nil
+	}
+
+	// アイテムが見つからなかった場合
+	return 0, false, nil
+}
+

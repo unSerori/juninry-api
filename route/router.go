@@ -51,6 +51,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 			// 認証グループで、認証ができるかを確認するテスト用エンドポイント
 			auth.GET("/test/cfmreq", controller.CfmReq) // /v1/auth/test/cfmreq
 
+			// // ログボTODO: 仮にミドルウェアにしてもこっちに直すべき？
+			auth.GET("/login_stamps", controller.LoginStampHandler) // /v1/auth/login_stamps
+
 			// usersグループ
 			users := auth.Group("/users")
 			{
@@ -92,7 +95,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
+					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notices/{notice_uuid}
@@ -182,10 +185,43 @@ func routing(engine *gin.Engine, handlers Handlers) {
 							// 宝箱一覧取得
 							boxes.GET("/", controller.GetBoxRewardsHandler)
 						}
+
+						// ニャリオットグループ
+						nyariot := rewards.Group("/nyariots")
+						{
+							// 所持ニャリオット一覧を取得
+							nyariot.GET("/nyariots", controller.GetUserNyariotInventoryHandler) // /v1/auth/users/ouchies/rewards/nyariots/nyariots
+
+							// ニャリオット詳細を取得
+							nyariot.GET("/:nyariot_uuid", controller.GetNyariotDetail) // /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
+
+							// 所持アイテム一覧を取得
+							nyariot.GET("/items", controller.GetUserItemBoxHandler) // /v1/auth/users/ouchies/rewards/nyariots/items
+
+							// アイテム詳細を取得
+							nyariot.GET("/items/:item_uuid", controller.GetItemDetail) // /v1/auth/users/ouchies/rewards/nyariots/items/{item_uuid}
+
+							// 現在のスタンプを取得
+							nyariot.GET("/stamps", controller.GetStampsHandler) // /v1/auth/users/ouchies/rewards/nyariots/stamps
+
+							// // ポイントでガチャを取得
+							// nyariot.GET("/points/gacha", controller.***) // /v1/auth/users/ouchies/rewards/nyariots/points/gacha
+
+							// スタンプでガチャを取得
+							// nyariot.GET("/stamps/gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamps/gacha
+
+							// // 空腹度の更新（ごはん）
+							// nyariot.PUT("/meal", controller.****)	// /v1/auth/users/ouchies/rewards/nyariots/meal
+
+							// // メインニャリオットの取得
+							// nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
+
+							// // メインニャリオット更新
+							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang
+
+						}
 					}
-
 				}
-
 			}
 		}
 	}
@@ -205,6 +241,7 @@ func loadingStaticFile(engine *gin.Engine) {
 	engine.Static("/styles", "./view/views/styles") // クライアントがアクセスするURL, サーバ上のパス
 	engine.Static("/scripts", "./view/views/scripts")
 	logging.SuccessLog("Routing completed, start the server.")
+	engine.Static("/items", "asset/images/item") // TODO:こここここここここ
 
 }
 
