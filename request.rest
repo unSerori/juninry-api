@@ -11,7 +11,10 @@
 @get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @hardware_uuid = df2b1f4c-b49a-4068-80c5-3120dceb14c8
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDYyMTUyNTMsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiZWE3MmY3MzUtNzFiYy00MGJiLTg1MTQtYzg2MjllZDI5YWM1In0.HBYyTyrINmpLVXsvbri0QsVDM3w5KatGIJWa1E9fKXY
+@nyariot_uuid = c0768960-eb5f-4a60-8327-4171fd4b8a46
+@item_uuid = 563c5110-3441-4cb0-9764-f32c4385e975
+
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDY0MTY2NjEsImlkIjoiMDdkNjc5NTUtMDE0Yy00NjRjLThhNmMtY2FkODc4MmNmZjgwIiwianRpIjoiYWNlMDBhM2ItZDA0Ni00ZWJiLTg0ODYtM2QzYzU2ZTJjZDE4In0.f4rAPODucLqBTHUtwb7w_YvZNbLyHkME3Mxt8CPj4sE
 
 ### テスト
 GET {{base_url}}/check/echo HTTP/1.1
@@ -23,7 +26,7 @@ Content-Type: :application/json
 {
     "userName": "hogeta hogenaka",
     "userTypeId": 2,
-    "mailAddress": "hogeta@gmail.com",
+    "mailAddress": "hogeta1@gmail.com",
     "password": "C@h"
 }
 
@@ -244,6 +247,38 @@ Authorization: {{jwt}}
 
 ### おうち情報取得
 GET {{base_url}}{{api_v}}/auth/users/ouchies/info HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット一覧取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/nyariots HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット詳細取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/{{nyariot_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 所持アイテム一覧取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/items HTTP/1.1
+Authorization: {{jwt}}
+
+### 所持アイテム詳細取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/items/{{item_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### スタンプ獲得
+GET {{base_url}}{{api_v}}/auth/login_stamps HTTP/1.1
+Authorization: {{jwt}}
+
+### 現在のスタンプ数取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/stamps HTTP/1.1
+Authorization: {{jwt}}
+
+### メインニャリオット取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/main HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット更新取得
+GET {{base_url}}{{api_v}}/v1/auth/users/ouchies/rewards/nyariots/chang/{{nyariot_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### 教材登録
