@@ -2,10 +2,10 @@ package route
 
 import (
 	"juninry-api/common/config"
-	"juninry-api/common/logging"
 	"juninry-api/controller"
 	"juninry-api/middleware"
 	"juninry-api/presentation"
+	"juninry-api/view"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +27,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 		check.GET("/echo", presentation.ConfirmationReq) // /check/echo
 
 		// sandbox
-		check.GET("/sandbox", presentation.Test) // /check/sandbox
+		check.GET("/sandbox", presentation.Try) // /check/sandbox
 	}
 
 	// endpoints group
@@ -35,6 +35,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
+		// 宝箱の初期設定するエンドポイント　TODO: JWTを返す
+		v1.POST("/hardwares/initialize", handlers.HardHandler.InitHardHandler) // /v1/hardwares/initialize
+
 		// usersグループ
 		users := v1.Group("/users")
 		{
@@ -234,30 +237,22 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	}
 }
 
-// ファイルを設定
-func loadingStaticFile(engine *gin.Engine) {
-	// テンプレートと静的ファイルを読み込む
-	engine.LoadHTMLGlob("view/views/*.html")
-	engine.Static("/styles", "./view/views/styles") // クライアントがアクセスするURL, サーバ上のパス
-	engine.Static("/scripts", "./view/views/scripts")
-	logging.SuccessLog("Routing completed, start the server.")
-	engine.Static("/items", "asset/images/item") // TODO:こここここここここ
-
-}
-
 // エンジンを作成して返す
 func SetupRouter(handlers Handlers) (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
+
+	// 静的ファイル設定
+	err := view.LoadingStaticFile(engine)
+	if err != nil {
+		return nil, err
+	}
 
 	// マルチパートフォームのメモリ使用制限を設定
 	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
 	routing(engine, handlers)
-
-	// 静的ファイル設定
-	loadingStaticFile(engine)
 
 	// router設定されたengineを返す。
 	return engine, nil
