@@ -3,7 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
-	"juninry-api/utility/custom"
+	"juninry-api/common/custom"
 	"time"
 
 	"github.com/go-sql-driver/mysql"

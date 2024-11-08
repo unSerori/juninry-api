@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,18 +17,7 @@ var ClassService = service.ClassService{}
 // クラス一覧取得
 func GetAllClassesHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// サービスに投げるよ
@@ -88,18 +77,7 @@ func GetAllClassesHandler(c *gin.Context) {
 // クラス作成
 func RegisterClassHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//構造体に値をバインド
@@ -167,18 +145,7 @@ func RegisterClassHandler(c *gin.Context) {
 // ユーザーIDから参加しているクラスを取得し、生徒一覧を返す
 func GetClasssmaitesHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// idからクラスメイトの情報を取得
@@ -235,19 +202,7 @@ func GetClasssmaitesHandler(c *gin.Context) {
 
 func GenerateInviteCodeHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
-
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// クラスUUIDを取得
@@ -306,28 +261,16 @@ func GenerateInviteCodeHandler(c *gin.Context) {
 	})
 }
 
-
 func JoinClassHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// クラスUUIDを取得
 	inviteCode := c.Param("invite_code")
 
 	// 出席番号受け取りマン
-	var studentNumberJSON  struct {
+	var studentNumberJSON struct {
 		StudentNumber *int `json:"studentNumber"`
 	}
 

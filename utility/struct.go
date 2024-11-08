@@ -51,9 +51,7 @@ func CopyMatchingFieldsRecursively(srcVal reflect.Value, tgtVal reflect.Value) {
 				}
 			}
 		}
-
 	}
-
 }
 
 // 構造体の中身をチェック

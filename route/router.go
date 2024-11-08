@@ -1,10 +1,11 @@
 package route
 
 import (
+	"juninry-api/common/config"
 	"juninry-api/common/logging"
 	"juninry-api/controller"
 	"juninry-api/middleware"
-	"juninry-api/utility/config"
+	"juninry-api/presentation"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,18 +16,25 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	engine.Use(middleware.LoggingMid())
 
 	// endpoints
+
 	// root page
 	engine.GET("/", controller.ShowRootPage) // /
-	// json test
-	engine.GET("/test/json", controller.TestJson) // /test
+
+	// checkグループ
+	check := engine.Group("/check")
+	{
+		// confirmation and response json test
+		check.GET("/echo", presentation.ConfirmationReq) // /check/echo
+
+		// sandbox
+		check.GET("/sandbox", presentation.Test) // /check/sandbox
+	}
 
 	// endpoints group
+
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
-		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
-
 		// usersグループ
 		users := v1.Group("/users")
 		{
@@ -168,13 +176,24 @@ func routing(engine *gin.Engine, handlers Handlers) {
 						// 交換されたご褒美を消化
 						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
 
+						// 宝箱関連のグループ
+						boxes := rewards.Group("/boxes")
+						{
+							// 宝箱にポイントを貯める
+							boxes.PUT("/points/:hardware_uuid", controller.DepositPointHandler)
+
+							// 宝箱一覧取得
+							boxes.GET("/", controller.GetBoxRewardsHandler)
+						}
+
+						// ニャリオットグループ
 						nyariot := rewards.Group("/nyariots")
 						{
 							// 所持ニャリオット一覧を取得
-							nyariot.GET("/nyariots", controller.GetUserNyariotInventoryHandler)	// /v1/auth/users/ouchies/rewards/nyariots/nyariots
+							nyariot.GET("/nyariots", controller.GetUserNyariotInventoryHandler) // /v1/auth/users/ouchies/rewards/nyariots/nyariots
 
 							// ニャリオット詳細を取得
-							nyariot.GET("/:nyariot_uuid", controller.GetNyariotDetail)	// /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
+							nyariot.GET("/:nyariot_uuid", controller.GetNyariotDetail) // /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
 
 							// 所持アイテム一覧を取得
 							nyariot.GET("/items", controller.GetUserItemBoxHandler) // /v1/auth/users/ouchies/rewards/nyariots/items
@@ -201,11 +220,8 @@ func routing(engine *gin.Engine, handlers Handlers) {
 							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang
 
 						}
-
 					}
-
 				}
-
 			}
 		}
 	}

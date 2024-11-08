@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/model"
-	"juninry-api/utility/custom"
 	"time"
 )
 

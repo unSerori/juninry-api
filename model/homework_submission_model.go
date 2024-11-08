@@ -1,7 +1,7 @@
 package model
 
 import (
-	"juninry-api/utility/custom"
+	"juninry-api/common/custom"
 	"time"
 )
 

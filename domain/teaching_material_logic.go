@@ -3,8 +3,8 @@
 package domain
 
 import (
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
-	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"

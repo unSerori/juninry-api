@@ -1,3 +1,5 @@
+## Pasted from gitignore.io
+
 # Created by https://www.toptal.com/developers/gitignore/api/go
 # Edit at https://www.toptal.com/developers/gitignore?templates=go
 
@@ -25,25 +27,57 @@
 go.work
 
 # End of https://www.toptal.com/developers/gitignore/api/go
-SmaSurf Quick Search
+
+## Environment-specific items
+
+# Linux/Unix specific temporary files
+.nfs*
+
+# macOS specific system files
+.DS_Store
+.AppleDouble
+__MACOSX
+
+# Windows specific system files
+Desktop.ini
+
+# Editor and IDE specific temporary or configuration files
+*.swp
+*.swo
+.idea/
+.vscode/
+
+## Generic items
+
+# env file
+.env
+*.env*
+
+# log
+*.log
+
+# back up
+*.bak
+
+# temp
+*.tmp
 
 # todo
 TODO*
 
-# メモファイル
+# memo
 memo.*
 
-# .vscode
-.vscode/
+## Docker-related items
 
-# envファイル
-.env
+# volumes
+
+## Project-specific items
+
+# ライブラリなどリポジトリに含める必要のないディレクトリ
 
 # デバッグ時のファイル
 __debug_bin*
-
-# logging
-server.log
 
 # asset direcotry
 /asset/*/*
@@ -54,6 +88,8 @@ server.log
 /upload/homework/bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg
 /upload/homework/gggggggg-176f-4dea-bec0-21464f192869.jpg
 /upload/homework/rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg
+
+## Others items
 
 # empty directory
 !.gitignore

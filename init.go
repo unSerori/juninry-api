@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"juninry-api/common/auth"
 	"juninry-api/common/logging"
+	"juninry-api/common/scheduler"
 	"juninry-api/route"
-	"juninry-api/utility/auth"
-	"juninry-api/utility/scheduler"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/dig"

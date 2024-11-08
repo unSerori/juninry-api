@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 	"time"
 
@@ -18,18 +18,7 @@ var homeworkService = service.HomeworkService{}
 // 課題の提出履歴を取得
 func GetHomeworkRecordHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// リクエストパラメータを取得
@@ -112,18 +101,7 @@ func GetHomeworkRecordHandler(c *gin.Context) {
 // 課題全件取得
 func FindHomeworkHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//問い合わせ処理と失敗レスポンス
@@ -167,18 +145,7 @@ func FindHomeworkHandler(c *gin.Context) {
 // 次の日の課題を取得
 func FindNextdayHomeworkHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//問い合わせ処理と失敗レスポンス
@@ -209,18 +176,7 @@ func FindNextdayHomeworkHandler(c *gin.Context) {
 // 宿題提出
 func SubmitHomeworkHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// form fields 構造体にマッピング
@@ -319,18 +275,7 @@ func SubmitHomeworkHandler(c *gin.Context) {
 // 宿題登録
 func RegisterHWHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体にマッピング
@@ -402,18 +347,7 @@ func RegisterHWHandler(c *gin.Context) {
 // 特定の宿題に対する任意のユーザーの提出状況と宿題の詳細情報を取得するエンドポイント
 func GetHWInfoHandler(c *gin.Context) {
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// パスパラhomework_uuidの取得
@@ -490,18 +424,7 @@ func GetHWInfoHandler(c *gin.Context) {
 // 教材データを取得
 func GetMaterialDataHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	classUuid := c.Param("classUuid")
@@ -536,18 +459,7 @@ func GetMaterialDataHandler(c *gin.Context) {
 // 特定の提出済み宿題の画像を取得する
 func FetchSubmittedHwImageHandler(c *gin.Context) {
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// パスパラの取得
@@ -612,18 +524,7 @@ func FetchSubmittedHwImageHandler(c *gin.Context) {
 // 教師が特定の宿題に対するその宿題が配られたクラスの生徒の進捗一覧を取得
 func GetStudentsHomeworkProgressHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// パスパラの取得
