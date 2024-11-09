@@ -28,4 +28,10 @@ func CreateHardwareTestData() {
 		HardwareTypeId: 1,
 	}
 	db.Insert(hardware1)
+
+	hardware2 := &Hardware{
+		HardwareUuid:   "d611d471-5eb2-46a2-abaf-f758205f0d5f",
+		HardwareTypeId: 1,
+	}
+	db.Insert(hardware2)
 }

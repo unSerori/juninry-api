@@ -33,6 +33,13 @@ func CreateBoxesTestData() {
 		OuchiUuid:    "2e17a448-985b-421d-9b9f-62e5a4f28c49",
 	}
 	db.Insert(boxes1)
+
+	boxes2 := &Box{
+		HardwareUuid: "d611d471-5eb2-46a2-abaf-f758205f0d5f",
+		OuchiUuid:    "2e17a448-985b-421d-9b9f-62e5a4f28c49",
+	}
+	db.Insert(boxes2)
+
 }
 
 // ボックスの現在のポイントを取得
@@ -78,6 +85,15 @@ func GetBoxes(ouchiUuid string) ([]Box, error) {
 // ボックスのポイントを更新
 func UpdateBoxDepositPoint(hardwareUUID string, depositPoint int) error {
 	_, err := db.Where("hardware_uuid = ?", hardwareUUID).Update(&Box{DepositPoint: depositPoint})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ボックスのステータスを更新
+func UpdateBoxStatus(hardwareUUID string, boxStatus int) error {
+	_, err := db.Where("hardware_uuid = ?", hardwareUUID).Cols("box_status").Update(&Box{BoxStatus: boxStatus})
 	if err != nil {
 		return err
 	}

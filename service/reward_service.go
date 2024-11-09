@@ -46,12 +46,13 @@ func (s *RewardService) GetRewards(userUUID string) ([]model.Reward, error) {
 
 type BoxReward struct {
 	HardwareUuid string `json:"hardwareUUID"`
-	RewardName   string `json:"rewardName"`
-	RewardPoint  int    `json:"rewardPoint"`
-	RewardTitle  string `json:"rewardTitle"`
-	IconId       int    `json:"iconId"`
-	DepositPoint int    `json:"depositPoint"`
-	BoxStatus    int    `json:"boxStatus"`
+	// RewardName   string `json:"rewardName"`
+	// RewardPoint  int    `json:"rewardPoint"`
+	// RewardTitle  string `json:"rewardTitle"`
+	// IconId       int    `json:"iconId"`
+	DepositPoint int           `json:"depositPoint"`
+	BoxStatus    int           `json:"boxStatus"`
+	Reward       *model.Reward `json:"reward"`
 }
 
 func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
@@ -78,37 +79,40 @@ func (s *RewardService) GetBoxRewards(userUUID string) ([]BoxReward, error) {
 	if err != nil {
 		return nil, err
 	}
-	// rewards, err := model.GetBoxRewards(*bUser.OuchiUuid)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// fmt.Println(rewards)
 
 	// レスポンスの形式変換
 	var boxRewards []BoxReward
 
 	for _, box := range boxes {
-		// 自動であればステータスが1であるもののみを返す
-		if isJunior && box.BoxStatus != 1 {
+		// レスポンスの形式変換
+		boxReward := BoxReward{
+			HardwareUuid: box.HardwareUuid,
+			DepositPoint: box.DepositPoint,
+			BoxStatus:    box.BoxStatus,
+		}
+
+		// 児童であればステータスが1でも2でもない場合はスキップ
+		if isJunior && box.BoxStatus != 1 && box.BoxStatus != 2 {
 			continue
 		}
 
-		// ハードウェアUUIDから現在のポイントを取得
-		reward, err := model.GetBoxReward(*bUser.OuchiUuid, box.HardwareUuid)
+		// ボックスに対してご褒美が設定されているかを確認
+		exist, err := model.BoxRewardExists(box.HardwareUuid)
 		if err != nil {
 			return nil, err
 		}
+		if exist {
+			// ボックスのごほうびを取得
+			reward, err := model.GetBoxReward(*bUser.OuchiUuid, box.HardwareUuid)
+			if err != nil {
+				return nil, err
+			}
+
+			boxReward.Reward = &reward
+		}
 
 		// レスポンスの形式変換
-		boxRewards = append(boxRewards, BoxReward{
-			HardwareUuid: *reward.HardwareUuid,
-			RewardName:   reward.RewardTitle,
-			RewardPoint:  reward.RewardPoint,
-			RewardTitle:  reward.RewardTitle,
-			IconId:       reward.IconId,
-			DepositPoint: box.DepositPoint,
-			BoxStatus:    box.BoxStatus,
-		})
+		boxRewards = append(boxRewards, boxReward)
 
 	}
 	return boxRewards, nil
@@ -139,6 +143,11 @@ func (s *RewardService) CreateRewards(userUUID string, reward model.Reward) (mod
 		return model.Reward{}, err
 	}
 	reward.RewardUuid = rewardUuid.String() // uuidを文字列に変換してバインド
+
+	// 宝箱と紐づいたご褒美であればボックスのステータスを1に変更
+	if reward.HardwareUuid != nil {
+		model.UpdateBoxStatus(*reward.HardwareUuid, 1)
+	}
 
 	// ごほうび作成
 	// エラーが出なければコミットして追加したごほうびを返す
@@ -340,27 +349,95 @@ func (s *RewardService) BoxAddPoint(userUUID string, addPoint int, hardUuid stri
 		return 0, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
 
-	fmt.Println("宝箱にポイントを追加しました")
-	fmt.Println("宝箱のポイント:", boxCurrentPoint)
-	fmt.Println("追加するポイント:", addPoint)
-	fmt.Println("宝箱のポイント上限:", boxMaxPoint)
-
 	// ボックスのポイントを更新
 	err = model.UpdateBoxDepositPoint(hardUuid, boxCurrentPoint+addPoint)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("ボックスのポイントを更新に失敗しました")
 		return 0, err
+	}
+
+	// ポイントがマックスであれば、ボックスの状態を変更する
+	if boxCurrentPoint+addPoint == boxMaxPoint {
+		err = model.UpdateBoxStatus(hardUuid, 2)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	// ユーザーのポイントを更新
 	err = model.UpdateOuchiPoint(userUUID, havePoint-addPoint)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("ユーザーのポイントを更新に失敗しました")
 		return 0, err
 	}
 
 	// 更新が完了したらtrueを返す
 	return boxCurrentPoint + addPoint, nil
+}
+
+// ボックスのロック状態を入れ替える
+func (s *RewardService) ChangeBoxLockStatus(userUUID string, hardUuid string) (int, error) {
+	// ユーザーが保護者以外であれば返す
+	result, err := model.IsPatron(userUUID)
+	if err != nil {
+		return 0, err
+	}
+	if !result {
+		return 0, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+
+	// 宝箱がおうちのものであることを確認
+	// ユーザーの詳細を取得
+	user, err := model.GetUser(userUUID)
+	if err != nil {
+		return 0, err
+	}
+	if user.OuchiUuid == nil { // おうちのuuidを取得できなければ400
+		return 0, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+	ouchiUuid := *user.OuchiUuid // おうちのuuid
+
+	// ボックスの詳細を取得
+	box, err := model.GetBox(hardUuid)
+	if err != nil {
+		return 0, err
+	}
+
+	// ボックスがおうちのものであることを確認
+	if box.OuchiUuid != ouchiUuid { // おうちのuuidを取得できなければ400
+		return 0, custom.NewErr(custom.ErrTypeNoResourceExist)
+	}
+
+
+	var updateStatusNum int
+	// ボックスのロック状態を入れ替える
+	if box.BoxStatus == 1 || box.BoxStatus == 2 {
+		updateStatusNum = 3
+	} else if box.BoxStatus == 3 {
+		result, err := model.BoxRewardExists(hardUuid)
+		if err != nil {
+			return 0, err
+		}
+		if result {
+			reward, err := model.GetBoxReward(ouchiUuid, hardUuid)
+			if err != nil {
+				return 0, err
+			}
+			if reward.RewardPoint > box.DepositPoint {
+				updateStatusNum = 1
+			} else {
+				updateStatusNum = 2
+			}
+		}
+	}
+	fmt.Println("box.BoxStatus")
+	fmt.Println(box.BoxStatus)
+	fmt.Println(updateStatusNum)
+	// ボックスのロック状態を入れ替える
+	err = model.UpdateBoxStatus(hardUuid, updateStatusNum)
+	if err != nil {
+		fmt.Println("UpdateBoxStatus error")
+		fmt.Println(err)
+		return 0, err
+	}
+
+	return updateStatusNum, nil
 }
