@@ -33,6 +33,7 @@ const ( // ========================ここに新しい独自のエラーを追加
 	ErrTypeLackOfRequiredParameters         // 必要なパラメータ不足
 	ErrTypeUnexpectedSetPoints              // 想定していない設定値
 	ErrTypeUnforeseenCircumstances          // 予期せぬ条件
+	ErrTypeResourceUnavailable              // 実行に必要なリソース不足
 
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
@@ -55,6 +56,7 @@ var errTypeMsg = map[ErrType]string{
 	ErrTypeLackOfRequiredParameters: "parameters required for processing are not in the request",
 	ErrTypeUnexpectedSetPoints:      "500 error because an unexpected configuration value appeared",
 	ErrTypeUnforeseenCircumstances:  "unforeseen circumstances",
+	ErrTypeResourceUnavailable:      "insufficient resources required to run",
 
 	ErrTypeOtherErrorsInTheORM:       "",
 	ErrTypeUniqueConstraintViolation: "Unique columns have been matched.",

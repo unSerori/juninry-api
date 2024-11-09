@@ -139,6 +139,64 @@ func CreateItemTestData() {
 	}
 	db.Insert(item10)
 
+	items := []*Item{
+		{
+			ItemUuid:      "04de16b4-a7d2-4488-b609-0e5e3108bbc0",
+			ItemName:      "Item 11",
+			ImagePath:     "asset/images/item/IMG_11.PNG",
+			ItemNumber:    11,
+			Detail:        "Detail of item 11",
+			Talk:          "Talk for item 11",
+			SatityDegrees: 20,
+			Rarity:        2,
+		},
+		{
+			ItemUuid:      "f1e96b6d-1de4-4c82-8df5-2a10a1ab2f3f",
+			ItemName:      "Item 12",
+			ImagePath:     "asset/images/item/IMG_12.PNG",
+			ItemNumber:    12,
+			Detail:        "Detail of item 12",
+			Talk:          "Talk for item 12",
+			SatityDegrees: 10,
+			Rarity:        1,
+		},
+		{
+			ItemUuid:      "bb58c5e7-3a17-4987-b8e2-fb60b6d8979c",
+			ItemName:      "Item 13",
+			ImagePath:     "asset/images/item/IMG_13.PNG",
+			ItemNumber:    13,
+			Detail:        "Detail of item 13",
+			Talk:          "Talk for item 13",
+			SatityDegrees: 50,
+			Rarity:        3,
+		},
+		{
+			ItemUuid:      "5c2906b3-e759-4c5b-bd5d-3d848b91298e",
+			ItemName:      "Item 14",
+			ImagePath:     "asset/images/item/IMG_14.PNG",
+			ItemNumber:    14,
+			Detail:        "Detail of item 14",
+			Talk:          "Talk for item 14",
+			SatityDegrees: 10,
+			Rarity:        1,
+		},
+		{
+			ItemUuid:      "2d7b6377-3474-4a8c-a10c-b714ed3d9e11",
+			ItemName:      "Item 15",
+			ImagePath:     "asset/images/item/IMG_15.PNG",
+			ItemNumber:    15,
+			Detail:        "Detail of item 15",
+			Talk:          "Talk for item 15",
+			SatityDegrees: 20,
+			Rarity:        2,
+		},
+	}
+
+	// データベースに一括インサート
+	for _, item := range items {
+		db.Insert(item)
+	}
+
 }
 
 // 全アイテム取得

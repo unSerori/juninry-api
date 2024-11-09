@@ -37,7 +37,7 @@ func GetUserNyariotInbentory(userUuid string, nyariotUuid string) (int, bool, er
 	var nyariotInventory NyariotInventory
 
 	// userUuid, itemUuid で絞り込んだ結果
-	found, err := db.Where("user_uuid = ? AND nyariot_uuid = ?", userUuid, nyariotUuid).Get(&nyariotInventory)
+	isFound, err := db.Where("user_uuid = ? AND nyariot_uuid = ?", userUuid, nyariotUuid).Get(&nyariotInventory)
 
 	// クエリ実行でエラーが発生した場合
 	if err != nil {
@@ -45,10 +45,21 @@ func GetUserNyariotInbentory(userUuid string, nyariotUuid string) (int, bool, er
 	}
 
 	// アイテムが見つかった場合
-	if found {
+	if isFound {
 		return nyariotInventory.ConvexNumber, true, nil
 	}
 
 	// アイテムが見つからなかった場合
 	return 0, false, nil
+}
+
+func UpdateNyariotConvexNumber(userUuid string, nyariotUuid string) (int64, error) {
+
+	affected, err := db.Where("user_uuid = ? AND nyariot_uuid = ?", userUuid, nyariotUuid).
+		Incr("convex_number", 1). // convex_numberを1増加
+		Update(&NyariotInventory{})
+	if err != nil {
+		return 0, err
+	}
+	return affected, err
 }

@@ -37,6 +37,7 @@ func MigrationTable() error {
 			new(ItemBox),
 			new(NyariotInventory),
 			new(Stamp),
+			new(GachaItem),
 			new(HungryStatus),
 			new(HardwareType),
 			new(Hardware),
@@ -171,6 +172,7 @@ func RegisterSample() {
 	CreateStampTestData()
 	CreateItemTestData()
 	CreateNyariotTestData()
+	CreateGachaItemTestData()
 	CreateHardwareTypeTestData()
 	CreateHardwareTestData()
 	CreateBoxesTestData()

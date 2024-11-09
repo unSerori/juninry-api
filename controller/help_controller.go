@@ -29,7 +29,15 @@ func GetHelpsHandler(c *gin.Context) {
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
 			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
-
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{ // お家に子供いないよエラー
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
 			}
 		} else { // カスタムエラー以外の処理エラー
 			// エラーログ

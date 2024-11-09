@@ -3,7 +3,7 @@ package model
 // 所持アイテムテーブル
 type ItemBox struct {
 	UserUuid string `xorm:"varchar(36) pk" json:"userUUID"`    // ユーザのUUID
-	ItemUuid string `xorm:"varchar(36) pk" json:"nyariotUUID"` // アイテムUUID
+	ItemUuid string `xorm:"varchar(36) pk" json:"itemUUID"` // アイテムUUID
 	Quantity int `xorm:"int" json:"quantity"`               // アイテム所持数
 }
 
@@ -48,3 +48,29 @@ func GetUserItemBox(userUuid string, itemUuid string) (int, bool, error) {
 	return 0, false, nil
 }
 
+// アイテム減らす
+func ReduceItemQuantity(userUuid string, itemUuid string, quantity int) (int64, error) {
+	// 更新する構造体のインスタンスを作成
+	itemQuantity := ItemBox{Quantity: quantity}
+
+	// ニャリオットを更新する
+	affected, err := db.Where("user_uuid = ?", userUuid).Cols("quantity").Update(&itemQuantity)
+	return affected, err
+}
+
+//増やす
+func UpdateItemQuantity(userUuid string, itmeUuid string) (int64, error) {
+
+	affected, err := db.Where("user_uuid = ? AND item_uuid = ?", userUuid, itmeUuid).
+		Incr("quantity", 1).
+		Update(&ItemBox{})
+	if err != nil {
+		return 0, err
+	}
+	return affected, err
+}
+
+func CreateItemBox(record ItemBox) (int64, error) {
+	affected, err := db.Insert(record)
+	return affected, err
+}

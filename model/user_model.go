@@ -442,3 +442,22 @@ func UpdateOuchiPoint(userUuid string, point int) error {
 	}
 	return nil
 }
+
+// ガチャで使った分のポイントを減らす
+func PointUseGacha(userUuid string, gachapoint int) (*int, error) {
+
+	// 現在のポイントを取得
+	user, err := GetUser(userUuid)
+	if err != nil {
+		return nil, err
+	}
+
+	incrementedPoint := user.OuchiPoint - gachapoint
+	// ポイントを更新
+	_, err = db.Cols("ouchi_point").Where("user_uuid = ?", userUuid).Update(&User{OuchiPoint: incrementedPoint})
+	if err != nil {
+		return nil, err
+	}
+	ouchiPoint := &incrementedPoint
+	return ouchiPoint, err
+}

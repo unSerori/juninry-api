@@ -204,17 +204,20 @@ func routing(engine *gin.Engine, handlers Handlers) {
 							// 現在のスタンプを取得
 							nyariot.GET("/stamps", controller.GetStampsHandler) // /v1/auth/users/ouchies/rewards/nyariots/stamps
 
-							// // ポイントでガチャを取得
-							// nyariot.GET("/points/gacha", controller.***) // /v1/auth/users/ouchies/rewards/nyariots/points/gacha
+							// ポイントでガチャを取得
+							nyariot.GET("/points_gacha/:count", controller.GetGachaByPointHandler) // /v1/auth/users/ouchies/rewards/nyariots/points_gacha
 
 							// スタンプでガチャを取得
-							// nyariot.GET("/stamps/gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamps/gacha
+							nyariot.GET("/stamp_gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamp_gacha
 
-							// // 空腹度の更新（ごはん）
-							// nyariot.PUT("/meal", controller.****)	// /v1/auth/users/ouchies/rewards/nyariots/meal
+							// 空腹度の更新（ごはん）
+							nyariot.PUT("/meal/:item_uuid", controller.UpdateHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/meal
 
-							// // メインニャリオットの取得
-							// nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
+							// 空腹度の取得
+							nyariot.GET("/hungry", controller.GetHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/hungry
+
+							// メインニャリオットの取得
+							nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
 
 							// // メインニャリオット更新
 							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang

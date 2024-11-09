@@ -8,8 +8,8 @@ import (
 type HungryStatus struct {
 	UserUuid      string    `xorm:"varchar(36) pk" json:"userUUID"`                                                          // ユーザのUUID
 	SatityDegrees int       `xorm:"int not null default(100)" json:"satityDegrees"`                                          // 現在の空腹度
-	NyariotUuid   string   `xorm:"varchar(36) not null default('c0768960-eb5f-4a60-8327-4171fd4b8a46')" json:"nyariotUUID"` // ニャリオットUUID
-	LastGohanTime time.Time `xorm:"DATETIME not null" json:"lastGohanTime"`                                                      // 最後にご飯を食べた時間
+	NyariotUuid   string    `xorm:"varchar(36) not null default('c0768960-eb5f-4a60-8327-4171fd4b8a46')" json:"nyariotUUID"` // ニャリオットUUID
+	LastGohanTime time.Time `xorm:"DATETIME not null" json:"lastGohanTime"`                                                  // 最後にご飯を食べた時間
 }
 
 // テーブル名
@@ -38,17 +38,26 @@ func CreateHungryStatus(record HungryStatus) (int64, error) {
 }
 
 func ChangeNyariot(userUuid string, nyariotUuid string) (int64, error) {
-		// 更新する構造体のインスタンスを作成
-		changNyariot := HungryStatus{NyariotUuid: nyariotUuid}
+	// 更新する構造体のインスタンスを作成
+	changNyariot := HungryStatus{NyariotUuid: nyariotUuid}
 
 	// ニャリオットを更新する
 	affected, err := db.Where("user_uuid = ?", userUuid).Cols("nyariot_uuid").Update(&changNyariot)
 	return affected, err
 }
 
-// ニャリオットの取得＋空腹度の更新
-func GetMainNyairot(userUuid string, satityDegrees int) (HungryStatus, error) {
-	var hungryStatuses HungryStatus
-	_, err := db.Where("user_uuid = ?", userUuid).Get(&hungryStatuses)
-	return hungryStatuses, err
+// ニャリオットの取得
+func GetMainNyairot(userUuid string) (HungryStatus, error) {
+	var mianNyariot HungryStatus
+	_, err := db.Where("user_uuid = ?", userUuid).Get(&mianNyariot)
+	return mianNyariot, err
+}
+
+func UpdateHungryStatus(userUuid string, satityDegrees int) (int64, error) {
+	// 更新する構造体のインスタンスを作成
+	changSatityDegrees := HungryStatus{SatityDegrees: satityDegrees}
+
+	// ニャリオットを更新する
+	affected, err := db.Where("user_uuid = ?", userUuid).Cols("satity_degrees").Update(&changSatityDegrees)
+	return affected, err
 }

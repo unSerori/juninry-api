@@ -11,10 +11,10 @@
 @get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @hardware_uuid = df2b1f4c-b49a-4068-80c5-3120dceb14c8
-@nyariot_uuid = c0768960-eb5f-4a60-8327-4171fd4b8a46
+@nyariot_uuid = ae30f602-9967-4851-b1e1-2ab10b1470bb
 @item_uuid = 563c5110-3441-4cb0-9764-f32c4385e975
-
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDY0MTY2NjEsImlkIjoiMDdkNjc5NTUtMDE0Yy00NjRjLThhNmMtY2FkODc4MmNmZjgwIiwianRpIjoiYWNlMDBhM2ItZDA0Ni00ZWJiLTg0ODYtM2QzYzU2ZTJjZDE4In0.f4rAPODucLqBTHUtwb7w_YvZNbLyHkME3Mxt8CPj4sE
+@count = 11
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDY0ODIxNjMsImlkIjoiNWM2MmI4MDEtNDRhNy00N2ExLThiNWEtNWQzY2ZiYjI2MTllIiwianRpIjoiOWM2MjMzMjgtZjdlYi00ZTY5LTk0NTctMTVmY2QwMzFjYzc1In0.3gnUZZz_xORbSw7R2KWzmov99Y38fNBs65KdA2tp8TA
 
 ### テスト
 GET {{base_url}}/check/echo HTTP/1.1
@@ -277,8 +277,24 @@ Authorization: {{jwt}}
 GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/main HTTP/1.1
 Authorization: {{jwt}}
 
-### ニャリオット更新取得
-GET {{base_url}}{{api_v}}/v1/auth/users/ouchies/rewards/nyariots/chang/{{nyariot_uuid}} HTTP/1.1
+### メインニャリオット変更
+PUT {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/change/{{nyariot_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット空腹度取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/hungry HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット空腹度更新(ご飯あげる)
+PUT {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/meal/{{item_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### スタンプでガチャ取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/stamp_gacha HTTP/1.1
+Authorization: {{jwt}}
+
+### ポイントでガチャ取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/points_gacha/{{count}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### 教材登録

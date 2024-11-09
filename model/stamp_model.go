@@ -77,14 +77,23 @@ func AddStamp(userUuid string, quantity int) (int64, error) {
 	return affected, err
 }
 
-//　最終ログイン時間の更新
+// 　最終ログイン時間の更新
 func UpdateLastLoginTime(userUuid string, todayDate time.Time) (int64, error) {
-		// 更新する構造体のインスタンスを作成
-		stamp := Stamp{LastLoginTime: todayDate}
+	// 更新する構造体のインスタンスを作成
+	stamp := Stamp{LastLoginTime: todayDate}
 
 	// 時間を更新する
 	affected, err := db.Where("user_uuid = ?", userUuid).Cols("last_login_time").Update(&stamp)
 	return affected, err
 }
 
+func ReduceStampQuantity(userUuid string) (int64, error) {
 
+	affected, err := db.Where("user_uuid = ?", userUuid).
+		Incr("quantity", -7).
+		Update(&Stamp{})
+	if err != nil {
+		return 0, err
+	}
+	return affected, err
+}
