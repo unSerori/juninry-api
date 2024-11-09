@@ -173,6 +173,9 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 							// 宝箱一覧取得
 							boxes.GET("/", controller.GetBoxRewardsHandler)
+
+							// 宝箱のロック状態変更
+							boxes.PUT("/lock/:hardware_uuid", controller.ToggleBoxLockHandler)
 						}
 					}
 

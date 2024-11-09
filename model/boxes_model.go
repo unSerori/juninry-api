@@ -91,4 +91,11 @@ func UpdateBoxDepositPoint(hardwareUUID string, depositPoint int) error {
 	return nil
 }
 
-//
+// ボックスのステータスを更新
+func UpdateBoxStatus(hardwareUUID string, boxStatus int) error {
+	_, err := db.Where("hardware_uuid = ?", hardwareUUID).Cols("box_status").Update(&Box{BoxStatus: boxStatus})
+	if err != nil {
+		return err
+	}
+	return nil
+}

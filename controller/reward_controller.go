@@ -488,10 +488,79 @@ func DepositPointHandler(c *gin.Context) {
 	// レスポンス
 	resStatusCode := http.StatusOK
 	c.JSON(resStatusCode, gin.H{
-		"srvResMsg":  http.StatusText(resStatusCode),
+		"srvResMsg": http.StatusText(resStatusCode),
 		"srvResData": gin.H{
 			"depositPoint": result,
 		},
 	})
+}
+func ToggleBoxLockHandler(c *gin.Context) {
+	// ユーザーを特定する
+	id, _ := c.Get("id")
 
+	idAdjusted := id.(string) // アサーション
+
+	// ハードウェアUUIDを取得
+	hardUuid := c.Param("hardware_uuid")
+	if hardUuid == "" {
+		resStatusCode := http.StatusBadRequest
+		c.JSON(resStatusCode, gin.H{
+			"srvResMsg":  http.StatusText(resStatusCode),
+			"srvResData": gin.H{},
+		})
+		return
+	}
+
+	// サービス層にリクエスト
+	result, err := rewardService.ChangeBoxLockStatus(idAdjusted, hardUuid)
+	if err != nil {
+		// エラーログ
+		logging.ErrorLog("Failed to get class list.", err)
+		var customErr *custom.CustomErr
+		if errors.As(err, &customErr) { // カスタムエラーの場合
+			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
+			case custom.ErrTypePermissionDenied: // 権限がありません
+				resStatusCode := http.StatusForbidden
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			case custom.ErrTypeNoResourceExist: // 宝箱見つからね
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			default:
+				resStatusCode := http.StatusInternalServerError
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+			}
+			// カスタムエラー以外の処理エラー
+			// エラーログ
+		} else {
+			logging.ErrorLog("Internal Server Error.", err)
+			// レスポンス
+			resStatusCode := http.StatusInternalServerError
+			c.JSON(resStatusCode, gin.H{
+				"srvResMsg":  http.StatusText(resStatusCode),
+				"srvResData": gin.H{},
+			})
+			return
+		}
+	}
+
+	// レスポンス
+	resStatusCode := http.StatusOK
+	c.JSON(resStatusCode, gin.H{
+		"srvResMsg": http.StatusText(resStatusCode),
+		"srvResData": gin.H{
+			"boxStatus": result,
+		},
+	})
 }
