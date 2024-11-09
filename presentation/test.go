@@ -3,11 +3,9 @@
 package presentation
 
 import (
-	"fmt"
 	"juninry-api/common/logging"
 	"net/http"
 	"time"
-	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,25 +53,28 @@ func ConfirmationReq(c *gin.Context) {
 }
 
 // test
-func Test(c *gin.Context) {
-	passes := []string{
-		"aaaaaaaaaaa",
-		"aaaaaaaaaaaa",
-		"aaaaaaaaaaaaa",
-		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+func Try(c *gin.Context) {
+	// // 文字の長さ
+	// passes := []string{
+	// 	"aaaaaaaaaaa",
+	// 	"aaaaaaaaaaaa",
+	// 	"aaaaaaaaaaaaa",
+	// 	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	// 	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	// 	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 
-		"あああああああああああああああああああああああ",
-		"ああああああああああああああああああああああああ",
-		"あああああああああああああああああああああああああ",
-	}
+	// 	"あああああああああああああああああああああああ",
+	// 	"ああああああああああああああああああああああああ",
+	// 	"あああああああああああああああああああああああああ",
+	// }
 
-	for _, pass := range passes {
-		fmt.Print(pass, ": ", len(pass), "\n")
-		fmt.Print(pass, ": ", utf8.RuneCountInString(pass), "\n")
-		fmt.Println()
-	}
+	// for _, pass := range passes {
+	// 	fmt.Print(pass, ": ", len(pass), "\n")
+	// 	fmt.Print(pass, ": ", utf8.RuneCountInString(pass), "\n")
+	// 	fmt.Println()
+	// }
+
+	// // メール
 	// emails := []string{
 	// 	"hoge@gmail.com",
 	// 	"piyo.ta@gmail.com",

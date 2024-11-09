@@ -1,0 +1,4 @@
+TODO: orm関連の初期化をここに凝集
+- init.go
+- migration.go
+- sample.go

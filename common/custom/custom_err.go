@@ -20,24 +20,28 @@ type ErrType int
 
 // エラーの種類を定義
 const ( // ========================ここに新しい独自のエラーを追加していく
-	ErrTypeCustom                   ErrType = iota
-	ErrTypeHashingPassFailed                // ハッシュ化失敗
-	ErrTypeGenTokenFailed                   // トークン作成失敗
-	ErrTypeNoResourceExist                  // リソースが存在しない
-	ErrTypePassMismatch                     // パスワードが一致しない
-	ErrTypePermissionDenied                 // 権限がない
-	ErrTypeMaxAttemptsReached               // 最大試行回数に達した
-	ErrTypeInvalidFileFormat                // ファイル形式が無効
-	ErrTypeFileSizeTooLarge                 // ファイルサイズがでか杉ます;~;
-	ErrTypeAlreadyExists                    // すでに存在するので登録する必要がない&できない
-	ErrTypeLackOfRequiredParameters         // 必要なパラメータ不足
-	ErrTypeUnexpectedSetPoints              // 想定していない設定値
-	ErrTypeUnforeseenCircumstances          // 予期せぬ条件
-	ErrTypeResourceUnavailable              // 実行に必要なリソース不足
-
+	ErrTypeCustom ErrType = iota
+	// ロジック内で発生させる独自エラー
+	ErrTypeHashingPassFailed   // ハッシュ化失敗
+	ErrTypeGenTokenFailed      // トークン作成失敗
+	ErrTypeNoResourceExist     // リソースが存在しない
+	ErrTypePassMismatch        // パスワードが一致しない
+	ErrTypeMaxAttemptsReached  // 最大試行回数に達した
+	ErrTypeInvalidFileFormat   // ファイル形式が無効
+	ErrTypeFileSizeTooLarge    // ファイルサイズがでか杉ます;~;
+	ErrTypeAlreadyExists       // すでに存在するので登録する必要がない&できない
+	ErrTypeResourceUnavailable // 実行に必要なリソース不足
+	// ロジック内でエラーを返したい分岐で発生させる独自エラー
+	ErrTypePermissionDenied         // 権限がない
+	ErrTypeLackOfRequiredParameters // 必要なパラメータ不足
+	ErrTypeUnexpectedSetPoints      // 想定していない設定値
+	ErrTypeUnforeseenCircumstances  // 予期せぬ条件
+	// ドメイン内でのエラー
+	ErrTypeIllegalValue // 不正な値を検出
+	// ORMエラー infrastructureでswitchを使って発生
 	ErrTypeOtherErrorsInTheORM       // ORMエラーでキャッチしきれなかったエラー
 	ErrTypeUniqueConstraintViolation // 一意性制約違反
-
+	// ORM操作の第一引数に対するエラーハンドルで発生
 	ErrTypeZeroEffectCUD // CUD処理の第一返り血(:affected)が0だったときの独自エラー
 	ErrTypeNoFoundR      // R処理の第一返り血(:isFound)がfalse時の独自エラー
 )

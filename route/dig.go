@@ -5,7 +5,8 @@ import (
 	"juninry-api/application"
 	"juninry-api/common/logging"
 	"juninry-api/domain"
-	"juninry-api/infrastructure"
+	infrastructure_old "juninry-api/infrastructure"
+	infrastructure "juninry-api/infrastructure/orm"
 	"juninry-api/model"
 	"juninry-api/presentation"
 
@@ -14,14 +15,34 @@ import (
 	"xorm.io/xorm"
 )
 
-// エンティティを追加したら、各層のファクトリー関数をprovidersスライスに追加し、ハンドラーの構造体をHandlersに追加
+// ドメイン層のエンティティを追加したら、
+// - 各層のファクトリー関数をprovidersスライスに追加し、
+// - ハンドラーの構造体をHandlersに追加
 
-// 依存設定を一括で行うための構造体  // エンティティを追加したら
+// 依存関係のファクトリー関数を登録するためにここに記述しておく
+// 依存関係を登録したいファクトリー関数を追加していく
+func providers() []interface{} {
+	return []interface{}{
+		// dddを試した教材登録エンドポイント TODO: ロジック関連の認識が変わったためこの辺違う
+		domain.NewTeachingMaterialLogic,
+		infrastructure_old.NewTeachingMaterialPersistence,
+		application.NewTeachingMaterialService,
+		presentation.NewTeachingMaterialHandler,
+		// Boxドメイン // TODO: Hogeドメイン or Hogeエンドポイント
+		infrastructure.NewBoxOrmRepoImpl,
+		application.NewHardService,
+		presentation.NewHardHandler,
+	}
+}
+
+// 依存設定を一括で行うための構造体（:これをrouter設定側で使えば依存関係をながなが書かなくていい 例: presentation.NewTeachingMaterialHandler(application.NewTeachingMaterialService(domain.NewTeachingMaterialLogic(), infrastructure.NewTeachingMaterialFileOperatePersistence())).RegisterTMHandler -> handlers.TeachingMaterialHandler.RegisterTMHandler）
+// ファクトリー関数で繋がった依存関係の一番上の層を追加していく
 type Handlers struct {
 	dig.In // 継承
 
-	// ハンドラーの構造体 // これをrouter設定側で使えば依存関係をながなが書かなくていい  //　例: v2.POST("/auth/users/t_materials/register", middleware.MidAuthToken(), handlers.TeachingMaterialHandler.RegisterTMHandler) // presentation.NewTeachingMaterialHandler(application.NewTeachingMaterialService(domain.NewTeachingMaterialLogic(), infrastructure.NewTeachingMaterialFileOperatePersistence())).RegisterTMHandler
-	TeachingMaterialHandler *presentation.TeachingMaterialHandler
+	// ハンドラーの構造体
+	TeachingMaterialHandler *presentation.TeachingMaterialHandler // 教材登録
+	HardHandler             *presentation.HardHandler             // ハードデバイスの初期設定するエンドポイント
 }
 
 // 依存関係を作成
@@ -42,14 +63,7 @@ func BuildContainer() *dig.Container {
 	)
 
 	// 登録する依存関係を書く
-	providers := []interface{}{
-		// 教材登録
-		// model.InitDB,
-		domain.NewTeachingMaterialLogic,
-		infrastructure.NewTeachingMaterialPersistence,
-		application.NewTeachingMaterialService,
-		presentation.NewTeachingMaterialHandler,
-	}
+	providers := providers()
 
 	// スライスから各項目の依存関係を登録し、エラーハンドリング
 	for _, provider := range providers {
