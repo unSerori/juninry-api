@@ -81,6 +81,7 @@ __debug_bin*
 
 # asset direcotry
 /asset/*/*
+view/views/assets/images/*
 
 # upload directory
 /upload/homework/*

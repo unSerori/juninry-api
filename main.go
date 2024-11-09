@@ -10,7 +10,7 @@ import (
 
 // main method
 func main() {
-	// 初期化処理git
+	// 初期化処理
 	initInstances, err := Init() // add "initInstances, " when changing to ddd
 	if err != nil {
 		return

@@ -20,6 +20,9 @@ var (
 
 	//go:embed views/scripts/*.js
 	scriptsFS embed.FS
+
+	//go:embed views/assets/images/**/*
+	imagesFS embed.FS
 )
 
 // ファイルを設定
@@ -48,10 +51,16 @@ func LoadingStaticFile(engine *gin.Engine) error {
 		logging.ErrorLog("Failed to create sub file.", err)
 		panic(err)
 	}
+	adjustedImagesFS, err := fs.Sub(imagesFS, "views/assets/images")
+	if err != nil {
+		logging.ErrorLog("Failed to create sub file.", err)
+		panic(err)
+	}
 
 	// 静的ファイルを指定したURLで公開提供する(クライアントがアクセスするURL, サーバ上のリソース)
 	engine.StaticFS("/styles", http.FS(adjustedStylesFS))
 	engine.StaticFS("/scripts", http.FS(adjustedScriptsFS))
+	engine.StaticFS("/images", http.FS(adjustedImagesFS))
 
 	logging.SuccessLog("Routing completed, start the server.")
 	return nil
