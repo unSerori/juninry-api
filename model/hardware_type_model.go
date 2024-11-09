@@ -11,8 +11,6 @@ func (HardwareType) TableName() string {
 	return "hardware_types"
 }
 
-
-
 // テストデータ
 func CreateHardwareTypeTestData() {
 	hardwareType1 := &HardwareType{

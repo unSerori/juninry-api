@@ -1,8 +1,8 @@
 package model
 
 import (
+	"juninry-api/common/custom"
 	"juninry-api/domain"
-	"juninry-api/utility/custom"
 )
 
 // 教材テーブル

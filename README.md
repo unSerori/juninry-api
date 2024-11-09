@@ -254,7 +254,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ユーザー情報を取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/auth/users/user`
+- **URL:** `/v1/auth/users/user`
 - **メソッド:** GET
 - **説明:** jwtから取得したidからユーザーを検索して情報を返す
 - **リクエスト:**
@@ -649,7 +649,8 @@ TODO: DDDに統合していく予定
             "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
             "userUUID": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
             "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
-        }},
+           }
+        },
       }
     ```
 
@@ -1089,7 +1090,182 @@ TODO: DDDに統合していく予定
       {
         "srvResMsg":  "Created.",
         "srvResData": {
-          "teachingMaterialUuid": "95af0199-3692-40af-b68f-a76e46cfad95"
+          "teachingMaterialUUID": "95af0199-3692-40af-b68f-a76e46cfad95"
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の初期設定するエンドポイント</summary>
+
+- **URL:** `/v1/hardwares/initialize`
+- **メソッド:** POST
+- **説明:** 宝箱の端末を登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+      ```json
+      {
+        "hardwareTypeId": "",
+        "ouchiUUID": "",
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created",
+        "srvResData": {
+          "hardwareUUID": "ad82143b-a53e-436a-9f27-cfa04db541a5",
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の状態を同期するエンドポイント</summary>
+
+- **URL:** `/v1/auth/hardwares/boxes/sync`
+- **メソッド:** PUT
+- **説明:** ロングポーリングで宝箱の状態確認し、変更があったら更新する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+- **リクエスト:**
+  - ボディ:
+
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "deposit": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+                    "hardUUID": ,
+          "hardName": ,
+          "iconId": ,
+          "deposit": ,
+          "status": ,
+          "rewardPoint": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の情報一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** 宝箱の中身を取得する
+- **説明:** GET
+- **リクエスト:**
+  - ヘッダー:
+  - ボディ:
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "hardUUID": ,
+          "hardName": ,
+          "deposit": ,
+          "status": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントを貯金するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** ポイントを箱に貯める
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+      {
+        "addPint": ,
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>箱の中身を更新するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes/{hard_uuid}`
+- **メソッド:** 箱の中身を更新する
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
         },
       }
       ```
@@ -1099,7 +1275,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプ獲得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps/acquisiton`
+- **URL:** `/v1/auth/login_bonus`
 - **メソッド:** PUT
 - **説明:** スタンプを獲得する
 - **リクエスト:**
@@ -1109,6 +1285,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1123,7 +1300,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプの数を返還するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/stamps`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps`
 - **メソッド:** GET
 - **説明:** 現在のスタンプの数を返す
 - **リクエスト:**
@@ -1133,6 +1310,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1147,7 +1325,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ポイントでガチャを回すエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/points/gacha`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/points/gacha`
 - **メソッド:** GET
 - **説明:** ポイントでガチャを回す
 - **リクエスト:**
@@ -1155,6 +1333,7 @@ TODO: DDDに統合していく予定
     - `Authorization`: (string) 認証トークン
     - `Content-Type`: application/json
   - ボディ:
+
     ```json
     {
       "times": ,
@@ -1164,6 +1343,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1182,7 +1362,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>スタンプでガチャを回すエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyairot/stamps/gacha`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyairots/stamps/gacha`
 - **メソッド:** GET
 - **説明:** スタンプでガチャを回す
 - **リクエスト:**
@@ -1192,7 +1372,9 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
+
       {
         "srvResMsg":  "OK",
         "srvResData": {
@@ -1220,16 +1402,19 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
         "srvResData": {
-          "itemUUID": ,
+                    "itemUUID": ,
           "itemName": ,
           "itemImg": ,
-          "rarity": ,
+          "itemNumber": ,
           "detail": ,
           "satityDegrees": ,
+          "rarity": ,
+          "hasItem": ,
         },
       }
       ```
@@ -1245,10 +1430,10 @@ TODO: DDDに統合していく予定
 - **リクエスト:**
   - ヘッダー:
     - `Authorization`: (string) 認証トークン
-
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1268,7 +1453,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>所持アイテム詳細取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/itmes/{item_uuid}`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/itmes/{item_uuid}`
 - **メソッド:** GET
 - **説明:** パスパラメーターで指定したアイテムの詳細情報を取得する
 - **リクエスト:**
@@ -1278,6 +1463,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1307,6 +1493,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1326,7 +1513,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ごはんエンドポイント</summary>
 
-- **URL:** `/v1/auth/users/ouchies/rewards/nyariot/meal`
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/meal`
 - **メソッド:** PUT
 - **説明:** ニャリオットの満腹度を増加させる
 - **リクエスト:**
@@ -1334,6 +1521,7 @@ TODO: DDDに統合していく予定
     - `Authorization`: (string) 認証トークン
     - `Content-Type`: application/json
   - ボディ:
+
     ```json
     {
       "itemUUID": ,
@@ -1343,6 +1531,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "OK",
@@ -1366,6 +1555,7 @@ TODO: DDDに統合していく予定
     - `Authorization`: (string) 認証トークン
     - `Content-Type`: application/json
   - ボディ:
+
     ```json
     {
       "nyariotUUID": ,
@@ -1375,6 +1565,7 @@ TODO: DDDに統合していく予定
 - **レスポンス:**
   - ステータスコード: 200 OK
     - ボディ:
+
       ```json
       {
         "srvResMsg":  "changed",
@@ -1385,7 +1576,6 @@ TODO: DDDに統合していく予定
       ```
 
 </details>
-
 
 ### API仕様書てんぷれ
 

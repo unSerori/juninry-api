@@ -1,23 +1,21 @@
 package logging
 
 import (
+	"fmt"
 	"log"
-	"os"
 	"time"
 )
 
-// ログ初期設定側後にリソースを開放するために実態を返す
-func LogFile() *os.File {
-	return logFile // ログファイルを返す
-}
-
 // 成功時のログをログファイルに残す
+// successName: 先頭大文字コロンあり
 func SuccessLog(successName string) {
 	log.Printf("Success LOG: %s\n", successName)
 	log.Printf("Time: %v\n\n", time.Now()) // 時刻
 }
 
 // エラー時のログをログファイルに残す
+// errName: 先頭大文字コロンあり
+// err: err or 先頭小文字コロンなし
 func ErrorLog(errName string, err error) {
 	log.Printf("ERROR LOG: %s\n", errName)
 	log.Printf("Time: %v\n", time.Now()) // 時刻
@@ -29,6 +27,8 @@ func ErrorLog(errName string, err error) {
 }
 
 // 情報の記録
+// title: 先頭大文字コロンあり
+// info: 空文字 or 先頭大文字コロンあり
 func InfoLog(title string, info string) {
 	log.Printf("INFO LOG: %s\n", title)
 	log.Printf("Time: %v\n", time.Now()) // 時刻
@@ -39,6 +39,8 @@ func InfoLog(title string, info string) {
 }
 
 // 警告
+// title: 先頭大文字コロンあり
+// warning: 先頭大文字コロンあり
 func WarningLog(title string, warning string) {
 	log.Printf("WARNING LOG: %s\n", title)
 	log.Printf("Time: %v\n", time.Now()) // 時刻
@@ -48,6 +50,16 @@ func WarningLog(title string, warning string) {
 }
 
 // 単純なprintf
-func SimpleLog(str string) {
-	log.Print(str)
+// args: 結合される
+func SimpleLog(args ...interface{}) {
+	// 結合後の変数
+	var message string
+
+	// forで引数を接続
+	for _, arg := range args {
+		message += fmt.Sprintf("%v", arg)
+	}
+
+	// ログに書き込み
+	log.Print(message)
 }
