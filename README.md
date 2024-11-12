@@ -1145,7 +1145,7 @@ TODO: DDDに統合していく予定
 
       ```json
       {
-        "hardUUID": ,
+        "hardwareUUID": ,
         "hardName": ,
         "iconId": ,
         "deposit": ,
