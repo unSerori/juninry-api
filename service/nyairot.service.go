@@ -303,302 +303,160 @@ func (s *NyariotSarvice) GetPointGacha(userUuid string, count string) ([]ResultG
 		return []ResultGacha{}, custom.NewErr(custom.ErrTypePermissionDenied)
 	}
 
-	fmt.Println("乱数実験")
-	seed := time.Now().UnixNano()
-	r := rand.New(rand.NewSource(seed))
-	fmt.Println(r.Int31n(100) + 1)
+	var countInt int
+	// countに渡されている回数が1か11か調べる(渡されているのは文字なのでintに変換)
+	if count == "1" || count == "11" {
+		countInt, err = strconv.Atoi(count)
+		if err != nil {
+			return []ResultGacha{}, err
+		}
+	} else {
+		return []ResultGacha{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+	}
 
-	// 乱数生成、保持する
-	rundomNumber := rand.New(rand.NewSource(seed)).Int31n(100) + 1
-
-	// 配列宣言
-	var resultGachas = []ResultGacha{}
-
-	// おうちポイントがあるかを確認
+	// おうちポイント取得してくる
 	user, err := model.GetUser(userUuid)
 	if err != nil {
 		return []ResultGacha{}, err
 	}
 
-	fmt.Println("ooooooooooooooooo", user.OuchiPoint)
+	fmt.Println(user)
 
-	// 数字に変換
-	countInt, err := strconv.Atoi(count)
+	// おうちポイントが20pt以下ならえらー
+	if user.OuchiPoint < 20 {
+		return nil, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+	}
 
-	// 回数チェック(1 or 11 それ以外はエラー)
-	if countInt == 1 {
+	// 10連分のポイントなかったらえらー
+	if countInt == 11 && user.OuchiPoint < 200 {
+		return nil, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
+	}
 
-		// 1回20P
-		if user.OuchiPoint >= 20 {
-			// 乱数が5以下だったらニャリオットを取得
-			if rundomNumber <= 5 {
+	// 配列宣言
+	var resultGachas = []ResultGacha{}
 
-				// ランダムに取得してくる
-				gacha, err := model.GetGachaNyariot()
-				if err != nil {
-					return []ResultGacha{}, err
-				}
+	// count分繰り返す
+	for i := 0; i < countInt; i++ {
 
-				// 確認
-				fmt.Println(gacha)
-				// ニャリオットの詳細取得
-				nyariot, err := model.GetNyariot(gacha.NyariotUuid)
-				if err != nil {
-					fmt.Printf("err: %v\n", err)
-					return []ResultGacha{}, err
-				}
+		// 乱数生成、保持する
+		seed := time.Now().UnixNano()
+		rundomNumber := rand.New(rand.NewSource(seed)).Int31n(100) + 1
+		// 確認用Print
+		fmt.Println("乱数結果", rundomNumber)
 
-				// 持ってるか確認
-				convexNumber, has, err := model.GetUserNyariotInbentory(userUuid, nyariot.NyariotUuid)
-				if err != nil {
-					return []ResultGacha{}, err
-				}
+		// 乱数が5以下ならニャリオットを取得
+		if rundomNumber <= 5 {
+			fmt.Println("ニャリオット取得")
 
-				fmt.Println("使ってないよエラー消すため3", convexNumber)
-
-				resultGacha := ResultGacha{
-					ItemUuid:   nyariot.NyariotUuid,
-					ItemName:   nyariot.NyariotName,
-					ImagePath:  nyariot.NyariotImagePath,
-					ItemNumber: nyariot.Nyarindex,
-					Detail:     nyariot.Detail,
-					Talk:       nyariot.Talk,
-					Rarity:     4,
-					HasItem:    has,
-				}
-
-				// 持ってたらupdateはじめてはinsert
-				if has {
-					// 出たアイテムのupdate
-					_, err = model.UpdateNyariotConvexNumber(userUuid, nyariot.NyariotUuid)
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-				} else {
-
-					fmt.Println("くりあいえと")
-					_, err := model.CreateNyariotInventory(model.NyariotInventory{
-						UserUuid:     userUuid,
-						NyariotUuid:  nyariot.NyariotUuid,
-						ConvexNumber: 1,
-					})
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-				}
-
-				resultGachas = append(resultGachas, resultGacha)
-
-			} else { // それ以外はアイテム
-
-				// ランダムに取得してくる
-				gacha, err := model.GetGachaItem()
-				if err != nil {
-					return []ResultGacha{}, err
-				}
-
-				// アイテムの詳細取得
-				item, err := model.GetItem(gacha.ItemUuid)
-				if err != nil {
-					fmt.Printf("err: %v\n", err)
-					return []ResultGacha{}, err
-				}
-
-				// 持ってるか確認
-				quantity, has, err := model.GetUserItemBox(userUuid, item.ItemUuid)
-				if err != nil {
-					return []ResultGacha{}, err
-				}
-
-				fmt.Println("使ってないよエラー消すため4", quantity)
-
-				resultGacha := ResultGacha{
-					ItemUuid:   item.ItemUuid,
-					ItemName:   item.ItemName,
-					ImagePath:  item.ImagePath,
-					ItemNumber: item.ItemNumber,
-					Detail:     item.Detail,
-					Talk:       item.Talk,
-					Rarity:     item.Rarity,
-					HasItem:    has,
-				}
-
-				// 持ってたらupdateはじめてはinsert
-				if has {
-					// 出たアイテムのupdate
-					_, err = model.UpdateItemQuantity(userUuid, item.ItemUuid)
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-				} else {
-
-					// インサート
-					fmt.Println("くりあいえと")
-					_, err := model.CreateItemBox(model.ItemBox{
-						UserUuid: userUuid,
-						ItemUuid: gacha.ItemUuid,
-						Quantity: 1,
-					})
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-
-				}
-
-				resultGachas = append(resultGachas, resultGacha)
-
+			// ランダムに取得してくる
+			gacha, err := model.GetGachaNyariot()
+			if err != nil {
+				return []ResultGacha{}, err
 			}
-		} else {
-			return []ResultGacha{}, custom.NewErr(custom.ErrTypeResourceUnavailable)
-		}
 
-		// 1連分のポイントを減らす
-		_, err := model.PointUseGacha(userUuid, 20)
-		if err != nil {
-			return []ResultGacha{}, err
-		}
+			// nyariotの詳細取得
+			nyariot, err := model.GetNyariot(gacha.NyariotUuid)
+			if err != nil {
+				return []ResultGacha{}, err
+			}
 
-	} else if countInt == 11 {
-		for i := 0; i < 11; i++ {
-			rundomNumber := rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100) + 1
-			// 11回200P
-			if user.OuchiPoint >= 200 {
-				// 乱数が5以下だったらニャリオットを取得
-				if rundomNumber <= 5 {
+			// 持ってるか確認
+			convexNumber, has, err := model.GetUserNyariotInbentory(userUuid, nyariot.NyariotUuid)
+			if err != nil {
+				return []ResultGacha{}, err
+			}
 
-					// ランダムに取得してくる
-					gacha, err := model.GetGachaNyariot()
-					if err != nil {
-						return []ResultGacha{}, err
-					}
+			fmt.Println("convexNumber使ってないよエラー消すため", convexNumber)
 
-					// 確認
-					fmt.Println(gacha)
+			resultGacha := ResultGacha{
+				ItemUuid:   nyariot.NyariotUuid,
+				ItemName:   nyariot.NyariotName,
+				ImagePath:  nyariot.NyariotImagePath,
+				ItemNumber: nyariot.Nyarindex,
+				Detail:     nyariot.Detail,
+				Talk:       nyariot.Talk,
+				Rarity:     4,
+				HasItem:    has,
+			}
 
-					// ニャリオットの詳細取得
-					nyariot, err := model.GetNyariot(gacha.NyariotUuid)
-					if err != nil {
-						fmt.Printf("err: %v\n", err)
-						return []ResultGacha{}, err
-					}
-
-					// 持ってるか確認
-					quantity, has, err := model.GetUserItemBox(userUuid, nyariot.NyariotUuid)
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-
-					fmt.Println("使ってないよエラー消すため5", quantity)
-
-					resultGacha := ResultGacha{
-						ItemUuid:   nyariot.NyariotUuid,
-						ItemName:   nyariot.NyariotName,
-						ImagePath:  nyariot.NyariotImagePath,
-						ItemNumber: nyariot.Nyarindex,
-						Detail:     nyariot.Detail,
-						Talk:       nyariot.Talk,
-						Rarity:     4,
-						HasItem:    has,
-					}
-
-					// 持ってたらupdateはじめてはinsert
-					if has {
-						// 出たアイテムのupdate
-						_, err = model.UpdateItemQuantity(userUuid, nyariot.NyariotUuid)
-						if err != nil {
-							return []ResultGacha{}, err
-						}
-					} else {
-						//インサート
-						_, err := model.CreateNyariotInventory(model.NyariotInventory{
-							UserUuid: userUuid,
-							NyariotUuid: nyariot.NyariotUuid,
-							ConvexNumber: 1,
-						})
-						if err != nil {
-							return []ResultGacha{}, err
-						}
-
-					}
-
-					resultGachas = append(resultGachas, resultGacha)
-
-				} else { // それ以外はアイテム
-
-					// ランダムに取得してくる
-					gacha, err := model.GetGachaItem()
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-
-					// アイテムの詳細取得
-					item, err := model.GetItem(gacha.ItemUuid)
-					if err != nil {
-						fmt.Printf("err: %v\n", err)
-						return []ResultGacha{}, err
-					}
-
-					// 持ってるか確認
-					quantity, has, err := model.GetUserItemBox(userUuid, item.ItemUuid)
-					if err != nil {
-						return []ResultGacha{}, err
-					}
-
-					fmt.Printf("gacha.ItemUuid: %v\n", gacha.ItemUuid)
-					fmt.Println("使ってないよエラー消すため6", quantity)
-					fmt.Printf("userUuid: %v\n", userUuid)
-					fmt.Printf("item.ItemUuid: %v\n", item.ItemUuid)
-
-					resultGacha := ResultGacha{
-						ItemUuid:   item.ItemUuid,
-						ItemName:   item.ItemName,
-						ImagePath:  item.ImagePath,
-						ItemNumber: item.ItemNumber,
-						Detail:     item.Detail,
-						Talk:       item.Talk,
-						Rarity:     item.Rarity,
-						HasItem:    has,
-					}
-
-					// 持ってたらupdateはじめてはinsert
-					if has {
-						// 出たアイテムのupdate
-						_, err = model.UpdateItemQuantity(userUuid, item.ItemUuid)
-						if err != nil {
-							return []ResultGacha{}, err
-						}
-					} else {
-
-						// インサート
-						fmt.Println("くりあいえと")
-
-						_, err := model.CreateItemBox(model.ItemBox{
-							UserUuid: userUuid,
-							ItemUuid: gacha.ItemUuid,
-							Quantity: 1,
-						})
-						if err != nil {
-							return []ResultGacha{}, err
-						}
-
-					}
-
-					resultGachas = append(resultGachas, resultGacha)
-
+			// 持ってたらupdateはじめてはinsert
+			if has {
+				// 出たアイテムのupdate
+				_, err = model.UpdateNyariotConvexNumber(userUuid, nyariot.NyariotUuid)
+				if err != nil {
+					return []ResultGacha{}, err
 				}
 			} else {
-				return []ResultGacha{}, custom.NewErr(custom.ErrTypeResourceUnavailable)
+				//インサート
+				_, err := model.CreateNyariotInventory(model.NyariotInventory{
+					UserUuid:     userUuid,
+					NyariotUuid:  nyariot.NyariotUuid,
+					ConvexNumber: 1,
+				})
+				if err != nil {
+					return []ResultGacha{}, err
+				}
 			}
+
+			resultGachas = append(resultGachas, resultGacha)
+		} else { // それ以外はアイテム
+			fmt.Println("アイテム取得")
+
+			// ランダムに取得してくる
+			gacha, err := model.GetGachaItem()
+			if err != nil {
+				return []ResultGacha{}, err
+			}
+
+			// アイテムの詳細を取ってくる
+			item, err := model.GetItem(gacha.ItemUuid)
+			if err != nil {
+				// fmt.Printf("err: %v\n", err)
+				return []ResultGacha{}, err
+			}
+
+			// 所持確認
+			quantity, has, err := model.GetUserItemBox(userUuid, item.ItemUuid)
+			if err != nil {
+				return []ResultGacha{}, err
+			}
+
+			fmt.Println("quantity使ってないよエラー消すため", quantity)
+
+			resultGacha := ResultGacha{
+				ItemUuid:   item.ItemUuid,
+				ItemName:   item.ItemName,
+				ImagePath:  item.ImagePath,
+				ItemNumber: item.ItemNumber,
+				Detail:     item.Detail,
+				Talk:       item.Talk,
+				Rarity:     item.Rarity,
+				HasItem:    has,
+			}
+
+			// 持ってたらupdateはじめてはinsert
+			if has {
+				// 出たアイテムのupdate
+				_, err = model.UpdateItemQuantity(userUuid, item.ItemUuid)
+				if err != nil {
+					return []ResultGacha{}, err
+				}
+			} else {
+				//インサート
+				_, err := model.CreateItemBox(model.ItemBox{
+					UserUuid: userUuid,
+					ItemUuid: item.ItemUuid,
+					Quantity: 1,
+				})
+				if err != nil {
+					return []ResultGacha{}, err
+				}
+			}
+
+			resultGachas = append(resultGachas, resultGacha)
+
 		}
 
-		// 11連分のポイントを減らす
-		_, err := model.PointUseGacha(userUuid, 200)
-		if err != nil {
-			return []ResultGacha{}, err
-		}
-
-	} else {
-		return []ResultGacha{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
 
 	return resultGachas, nil
