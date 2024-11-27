@@ -254,7 +254,7 @@ TODO: DDDに統合していく予定
 <details>
   <summary>ユーザー情報を取得するエンドポイント</summary>
 
-- **URL:** `/v1/auth/auth/users/user`
+- **URL:** `/v1/auth/users/user`
 - **メソッド:** GET
 - **説明:** jwtから取得したidからユーザーを検索して情報を返す
 - **リクエスト:**
@@ -394,7 +394,7 @@ TODO: DDDに統合していく予定
                   "subjectName": "国語",
                   "teachingMaterialImageUUID": "a575f18c-d639-4b6d-ad57-a9d7a7f84575",
                   "className": "3-2 ふたば学級",
-                  "submitFlag": 1  // 提出フラグ 1 提出 0 未提出
+                  "submitStatus": 1  // 提出フラグ 1 提出 0 未提出
                 },,,
               ]
             },,,
@@ -439,7 +439,7 @@ TODO: DDDに統合していく予定
           "subjectId": 1,
           "startPage": 2,
           "pageCount": 8,
-          "isSubmitted": true,  // or false
+          "submitStatus": true,  // or false
           "images": ["bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg, gggggggg-176f-4dea-bec0-21464f192869.jpg, rrrrrrrr-bb84-4565-9666-d53dfcb59dd3.jpg"]
         },
       }
@@ -497,6 +497,45 @@ TODO: DDDに統合していく予定
 </details>
 
 <details>
+  <summary>生徒たちの宿題の進捗一覧を取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/homeworks/progress/{homework_uuid}`
+- **メソッド:** GET
+- **説明:** 教師が自分のクラスの宿題に対する生徒たちの進捗状況を一覧で取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      // homework_uuid: a3579e71-3be5-4b4d-a0df-1f05859a7104
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "progress": [
+            {
+              "userUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224", // ID
+              "userName": "test pupil", // 名前
+              "classNumber": 1, // 出席番号
+              "submitStatus": 1 // 提出状況 1 提出 0 未提出
+            },
+            {
+              "userUUID": "cd09ac2f-4278-4fb0-a8bc-df7c2d9ef1fc", // ID
+              "userName": "test pupil2go", // 名前
+              "classNumber": , // 出席番号
+              "submitStatus": 0 // 提出状況 1 提出 0 未提出
+            },,,
+          ]
+        },
+      }
+      ```
+
+</details>
+
+<details>
   <summary>おてがみ情報一覧を取得するエンドポイント</summary>
 
 - **URL:** `/v1/auth/users/notice/notices`
@@ -522,7 +561,12 @@ TODO: DDDに統合していく予定
               "userName": "test teacher",
               "classUUID": "09eba495-fe09-4f54-a856-9bea9536b661",
               "className": "3-2 ふたば学級",
-              "readStatus": 0 // 未読: 0, 既読: 1, 対象外: null
+              "readStatus": 0 ,// 未読: 0, 既読: 1, 対象外: null
+              "pupilInfo": [
+                {
+                  "pupilUUID": "3cac1684-c1e0-47ae-92fd-6d7959759224",
+                  "pupilName": "test pupil"
+                }]
             },,,
           ]
         },
@@ -600,12 +644,13 @@ TODO: DDDに統合していく予定
       {
         "srvResData": {
           "notices": {
-            "NoticeTitle": "【持ち物】習字道具必要です",
-            "NoticeDate": "2024-06-11T03:23:39Z",
-            "NoticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
-            "UserUuid": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
-            "ClassUui": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
-        }},
+            "noticeTitle": "【持ち物】習字道具必要です",
+            "noticeDate": "2024-06-11T03:23:39Z",
+            "noticeExplanatory": "国語授業で習字を行いますので持たせていただくようお願いします",
+            "userUUID": "9efeb117-1a34-4012-b57c-7f1a4033adb9",
+            "classUUID": "817f600e-3109-47d7-ad8c-18b9d7dbdf8b",
+           }
+        },
       }
     ```
 
@@ -1045,7 +1090,487 @@ TODO: DDDに統合していく予定
       {
         "srvResMsg":  "Created.",
         "srvResData": {
-          "teachingMaterialUuid": "95af0199-3692-40af-b68f-a76e46cfad95"
+          "teachingMaterialUUID": "95af0199-3692-40af-b68f-a76e46cfad95"
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の初期設定するエンドポイント</summary>
+
+- **URL:** `/v1/hardwares/initialize`
+- **メソッド:** POST
+- **説明:** 宝箱の端末を登録する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+      ```json
+      {
+        "hardwareTypeId": "",
+        "ouchiUUID": "",
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 201 Created
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "Created",
+        "srvResData": {
+          "hardwareUUID": "ad82143b-a53e-436a-9f27-cfa04db541a5",
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の状態を同期するエンドポイント</summary>
+
+- **URL:** `/v1/auth/hardwares/boxes/sync`
+- **メソッド:** PUT
+- **説明:** ロングポーリングで宝箱の状態確認し、変更があったら更新する
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+- **リクエスト:**
+  - ボディ:
+
+      ```json
+      {
+        "hardwareUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "deposit": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+                    "hardUUID": ,
+          "hardName": ,
+          "iconId": ,
+          "deposit": ,
+          "status": ,
+          "rewardPoint": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>宝箱の情報一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** 宝箱の中身を取得する
+- **説明:** GET
+- **リクエスト:**
+  - ヘッダー:
+  - ボディ:
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "hardUUID": ,
+          "hardName": ,
+          "deposit": ,
+          "status": ,
+          "rewardUUID": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントを貯金するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes`
+- **メソッド:** ポイントを箱に貯める
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+      {
+        "addPint": ,
+      }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>箱の中身を更新するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewaord/boxes/{hard_uuid}`
+- **メソッド:** 箱の中身を更新する
+- **説明:** PUT
+- **リクエスト:**
+  - ヘッダー:
+    - `Content-Type`: application/json
+  - ボディ:
+
+      ```json
+      {
+        "hardUUID": ,
+        "hardName": ,
+        "iconId": ,
+        "status": ,
+        "rewardPoint": ,
+        "rewardUUID": ,
+      }
+      ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプ獲得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/login_bonus`
+- **メソッド:** PUT
+- **説明:** スタンプを獲得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+         "stampCount": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプの数を返還するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/stamps`
+- **メソッド:** GET
+- **説明:** 現在のスタンプの数を返す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+         "stampCount": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ポイントでガチャを回すエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/points/gacha`
+- **メソッド:** GET
+- **説明:** ポイントでガチャを回す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "times": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>スタンプでガチャを回すエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyairots/stamps/gacha`
+- **メソッド:** GET
+- **説明:** スタンプでガチャを回す
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持アイテム一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/items`
+- **メソッド:** GET
+- **説明:** 所持しているアイテム一覧を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+                    "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "itemNumber": ,
+          "detail": ,
+          "satityDegrees": ,
+          "rarity": ,
+          "hasItem": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持ニャリオット一覧取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots`
+- **メソッド:** GET
+- **説明:** 所持しているニャリオット一覧を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+          "talk": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持アイテム詳細取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/itmes/{item_uuid}`
+- **メソッド:** GET
+- **説明:** パスパラメーターで指定したアイテムの詳細情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+          "satityDegrees": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>所持ニャリオット詳細取得するエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}`
+- **メソッド:** GET
+- **説明:** パスパラメーターで指定したニャリオットの詳細情報を取得する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "itemUUID": ,
+          "itemName": ,
+          "itemImg": ,
+          "rarity": ,
+          "detail": ,
+          "talk": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>ごはんエンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/meal`
+- **メソッド:** PUT
+- **説明:** ニャリオットの満腹度を増加させる
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "itemUUID": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "OK",
+        "srvResData": {
+          "satityDegrees": ,
+          "talk": ,
+        },
+      }
+      ```
+
+</details>
+
+<details>
+  <summary>メインニャリオットの変更エンドポイント</summary>
+
+- **URL:** `/v1/auth/users/ouchies/rewards/nyariots/chang`
+- **メソッド:** PUT
+- **説明:** 所持しているニャリオットの中から表示するニャリオットを変更する
+- **リクエスト:**
+  - ヘッダー:
+    - `Authorization`: (string) 認証トークン
+    - `Content-Type`: application/json
+  - ボディ:
+
+    ```json
+    {
+      "nyariotUUID": ,
+    }
+    ```
+
+- **レスポンス:**
+  - ステータスコード: 200 OK
+    - ボディ:
+
+      ```json
+      {
+        "srvResMsg":  "changed",
+        "srvResData": {
+          "nyariotUUID": ,
         },
       }
       ```

@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,19 +17,9 @@ var helpService = service.HelpService{} // サービスの実体を作る。
 // おてつだいを取得
 func GetHelpsHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
+
 	// おてつだいを取得
 	helps, err := helpService.GetHelps(idAdjusted)
 	if err != nil {
@@ -39,7 +29,15 @@ func GetHelpsHandler(c *gin.Context) {
 		if errors.As(err, &customErr) { // カスタムエラーの場合
 			switch customErr.Type { // アサーション後のエラータイプで判定 400番台など
 			case custom.ErrTypeNoResourceExist: // // お家に子供いないよエラー
-
+				// エラーログ
+				logging.ErrorLog("Bad Request.", err)
+				// レスポンス
+				resStatusCode := http.StatusNotFound
+				c.JSON(resStatusCode, gin.H{ // お家に子供いないよエラー
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
 			}
 		} else { // カスタムエラー以外の処理エラー
 			// エラーログ
@@ -67,18 +65,7 @@ func GetHelpsHandler(c *gin.Context) {
 // おてつだい追加
 func CreateHelpHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド
@@ -125,18 +112,7 @@ func CreateHelpHandler(c *gin.Context) {
 // おてつだいを消化
 func HelpSubmittionHandler(c *gin.Context) {
 	// ユーザーを特定する
-	id, exists := c.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		c.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := c.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	// 構造体に値をバインド

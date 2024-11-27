@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"juninry-api/application"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/domain"
-	"juninry-api/utility/custom"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

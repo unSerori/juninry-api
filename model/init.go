@@ -32,6 +32,16 @@ func MigrationTable() error {
 			new(Reward),
 			new(HelpSubmittion),
 			new(RewardExchanging),
+			new(Nyariot),
+			new(Item),
+			new(ItemBox),
+			new(NyariotInventory),
+			new(Stamp),
+			new(GachaItem),
+			new(HungryStatus),
+			new(HardwareType),
+			new(Hardware),
+			new(Box),
 		)
 		if err != nil {
 			logging.ErrorLog("Failed to sync database.", err)
@@ -109,7 +119,36 @@ func initFK() error {
 	if err != nil {
 		return err
 	}
-
+	// Hardware
+	err = InitHardwareFK()
+	if err != nil {
+		return err
+	}
+	// Boxes
+	err = InitBoxesFK()
+	if err != nil {
+		return err
+	}
+	// ItemBox
+	err = InitItemBoxFK()
+	if err != nil {
+		return err
+	}
+	// NyariotInventory
+	err = InitNyariotInventoryFK()
+	if err != nil {
+		return err
+	}
+	// Stamp
+	err = InitStampFK()
+	if err != nil {
+		return err
+	}
+	// HungryStatus
+	err = InitHungryStatusFK()
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -123,7 +162,6 @@ func RegisterSample() {
 	CreateSubjectTestData()
 	CreateTeachingMaterialTestData()
 	CreateHelpTestData()
-	CreateRewardTestData()
 	// テスト用データ作成
 	CreateUserTestData()
 	CreateClassMembershipsTestData()
@@ -131,6 +169,15 @@ func RegisterSample() {
 	CreateNoticeReadStatusTestData()
 	CreateHomeworkTestData()
 	CreateHomeworkSubmissionTestData()
+	CreateStampTestData()
+	CreateItemTestData()
+	CreateNyariotTestData()
+	CreateGachaItemTestData()
+	CreateHardwareTypeTestData()
+	CreateHardwareTestData()
+	CreateBoxesTestData()
+	CreateRewardTestData()
+
 }
 
 // SQL接続とテーブル作成

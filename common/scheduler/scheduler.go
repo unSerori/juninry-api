@@ -1,8 +1,8 @@
 package scheduler
 
 import (
+	"juninry-api/common/batch"
 	"juninry-api/common/logging"
-	"juninry-api/utility/batch"
 
 	"github.com/robfig/cron/v3"
 )

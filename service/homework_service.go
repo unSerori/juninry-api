@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/utility"
-	"juninry-api/utility/custom"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -36,7 +36,7 @@ type HwSubmissionInfo struct {
 	SubjectId            int    `json:"subjectId"`
 	StartPage            int    `json:"startPage"`
 	PageCount            int    `json:"pageCount"`
-	IsSubmitted          bool   `json:"isSubmitted"`
+	SubmitStatus         int    `json:"submitStatus"`
 	Images               string `json:"images"`
 }
 
@@ -119,7 +119,7 @@ type HomeworkData struct {
 	SubjectName               string `json:"subjectName"`               // 教科名
 	TeachingMaterialImageUuid string `json:"teachingMaterialImageUUID"` // 画像ID どういう扱いになるのかな
 	ClassName                 string `json:"className"`                 // クラス名
-	SubmitFlag                int    `json:"submitFlag"`                // 提出フラグ 1 提出 0 未提出
+	SubmitStatus              int    `json:"submitStatus"`              // 提出フラグ 1 提出 0 未提出
 }
 
 // 締め切りごとに課題データをまとめた構造体
@@ -171,7 +171,7 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.HomeworkLimit] = append(transformedDataMap[userHomework.HomeworkLimit], homeworkData)
 	}
@@ -184,6 +184,15 @@ func (s *HomeworkService) FindHomework(userUuid string) ([]TransformedData, erro
 			HomeworkData:  homeworkData,
 		}
 		transformedDataList = append(transformedDataList, transformedData)
+	}
+
+	// ソートアルゴリズムを忘れてしまったので、クソアルゴリズムです
+	for i := 0; i < len(transformedDataList)-1; i++ {
+		for j := 0; j < len(transformedDataList)-i-1; j++ {
+			if transformedDataList[j].HomeworkLimit.After(transformedDataList[j+1].HomeworkLimit) {
+				transformedDataList[j], transformedDataList[j+1] = transformedDataList[j+1], transformedDataList[j]
+			}
+		}
 	}
 
 	//できたら返す
@@ -237,7 +246,7 @@ func (s *HomeworkService) FindClassHomework(userUuid string) ([]ClassHomeworkSum
 			SubjectName:               userHomework.SubjectName,
 			TeachingMaterialImageUuid: userHomework.TeachingMaterialImageUuid,
 			ClassName:                 userHomework.ClassName,
-			SubmitFlag:                userHomework.SubmitFlag,
+			SubmitStatus:              userHomework.SubmitStatus,
 		}
 		transformedDataMap[userHomework.ClassName] = append(transformedDataMap[userHomework.ClassName], homeworkData)
 	}
@@ -439,7 +448,7 @@ func (s *HomeworkService) RegisterHWService(bHW BindRegisterHW, userId string) (
 	return bHW.HomeworkUuid, nil
 }
 
-// 宿題の詳細情報と、生徒は自分の提出状況の(:クエパラを無視)、教師はクエパラIDでクラス内の特定生徒の、保護者はクエパラIDで家庭内特定児童の、提出状況を取得。
+// 宿題の詳細情報と、生徒は自分の提出状況の(:クエパラを無視)、教師はクエパラIDでクラス内の特定生徒の、保護者はクエパラIDで家庭内特定児童の、提出状況を取得
 func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId string) (HwSubmissionInfo, error) {
 	// userIdByJwtからuser_typeを取得し、
 	userTypeId, err := model.GetUserTypeId(userId)
@@ -455,10 +464,10 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 	}
 	// 3パターンそれぞれの生徒IDを取得。取得生徒本人以外の権限者はクエパラで生徒を指定するのでクエパラが空だとエラー、生徒がクラスメイトでなかったり、家庭内の生徒でないならエラー
 	var tgtJuniorId string
+	logging.SimpleLog(fmt.Sprintf("value of userTypeId: %v\n", userTypeId))
 	switch userTypeId {
 	case 1: // 教師
 		// クエパラが空だとエラー
-		fmt.Printf("userTypeId: %v\n", userTypeId)
 		if err := checkExistQueryParam(juniorId); err != nil {
 			return HwSubmissionInfo{}, err
 		}
@@ -467,7 +476,6 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 		// バリデーションを潜り抜けたので指定したuserIdを使う
 		tgtJuniorId = juniorId
 	case 3: // 保護者
-		fmt.Printf("userTypeId: %v\n", userTypeId)
 		// クエパラが空だとエラー
 		if err := checkExistQueryParam(juniorId); err != nil {
 			return HwSubmissionInfo{}, err
@@ -511,24 +519,35 @@ func (s *HomeworkService) GetHWInfoService(hwId string, userId string, juniorId 
 		return HwSubmissionInfo{}, err
 	}
 
-	// 提出状況(:フラグと画像名スライス)を取得
-	hwS, err := model.GetHwSubmission(hwId, tgtJuniorId)
-	if err != nil {
-		return HwSubmissionInfo{}, err
-	}
-
 	// 課題詳細と提出状況を合体
 	var hwSubmissionInfo HwSubmissionInfo
 	utility.ConvertStructCopyMatchingFields(&hw, &hwSubmissionInfo) // hwが持つフィールドで一致するものをコピー
-	hwSubmissionInfo.IsSubmitted = true                             // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
-	hwSubmissionInfo.Images = hwS.ImageNameListString               // 画像一覧
-	// さらに教材名
+	// さらに教材名と教科idをセット // HACK: isFoundの確認は不要？
 	hwSubmissionInfo.TeachingMaterialName, err = model.GetTmName(tmId) // 教材名
 	if err != nil {
 		return HwSubmissionInfo{}, err
 	}
+	hwSubmissionInfo.SubjectId, err = model.GetSubjectId(tmId) // 教科id
+	if err != nil {
+		return HwSubmissionInfo{}, err
+	}
 
-	utility.CheckStruct(hwSubmissionInfo)
+	// 提出状況(:フラグと画像名スライス)を取得
+	hwS, err := model.GetHwSubmission(hwId, tgtJuniorId)
+	if err != nil { // エラーハンドル
+		if err.Error() == custom.NewErr(custom.ErrTypeNoFoundR).Error() { // 見つからなかったときを明示的に
+			fmt.Println("未提出")
+
+			hwSubmissionInfo.SubmitStatus = 0 // 未提出
+		} else {
+			return HwSubmissionInfo{}, err // それ以外の処理エラー
+		}
+	} else { // 取得時のエラーなしなので提出済み
+		hwSubmissionInfo.SubmitStatus = 1                 // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
+		hwSubmissionInfo.Images = hwS.ImageNameListString // 画像一覧
+	}
+
+	utility.CheckStruct(hwSubmissionInfo) // check
 
 	return hwSubmissionInfo, nil
 }
@@ -563,18 +582,113 @@ func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId strin
 	fmt.Printf("hwId: %v\n", hwId)
 	fmt.Printf("path: %v\n", path)
 
-	// TODO: その課題へのアクセス権の確認
+	// hwIdから宿題のクラスを取得しておく
+	tmId, err := model.GetTmId(hwId) // 教材id
+	if err != nil {
+		return "", err
+	}
+	classId, err := model.GetClassId(tmId) // クラス
+	if err != nil {
+		return "", err
+	}
 
-	// 教師は自分の所属しているクラスかどうか
+	// 自分の提出した宿題の画像リストに存在するか確認する関数
+	checkImageExistsForHW := func(userId string, hwId string, path string) (bool, error) {
+		// 該当宿題を提出しているか
+		hwS, err := model.GetHwSubmission(hwId, userId)
+		if err != nil { // エラーハンドル
+			if err == custom.NewErr(custom.ErrTypeNoFoundR) { // 見つからなかったときを明示的に
+				return false, err
+			}
+			return false, err // それ以外の処理エラー
+		}
 
-	// 児童は自分の所属しているクラスかどうか
-	// 保護者はおうちに所属している児童が所属しているかどうか
-	// +
-	// 児童本人または児童の保護者のみ
+		// 提出状況の行の画像列を取り出し、
+		logging.InfoLog("hwS.ImageNameListString: ", hwS.ImageNameListString)
+		imageNameListSlice := strings.Split(hwS.ImageNameListString, ", ")
+		// 該当画像が存在するか線形探索で確認
+		for _, s := range imageNameListSlice {
+			if s == path {
+				// 見つかったら早期リターン
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	// その課題へのアクセス権の確認のためにuserTypeを取得し、
+	userTypeId, err := model.GetUserTypeId(userId)
+	if err != nil {
+		return "", err
+	}
+	logging.SimpleLog(fmt.Sprintf("value of userTypeId: %v\n", userTypeId))
+	switch userTypeId { // それぞれのバリデーションを行い、児童本人または児童の保護者のみ通す
+	case 1: // 教師
+		// 自分の所属しているクラスかどうか
+		isMember, err := model.CheckUserClassMembership(classId, userId)
+		if err != nil {
+			return "", err
+		}
+		if !isMember {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 2: // 児童: 自分の所属しているクラスかどうかかつ、自分の提出した宿題の画像リストに存在するか
+		// 自分の所属しているクラスかどうか
+		isMember, err := model.CheckUserClassMembership(classId, userId)
+		if err != nil {
+			return "", err
+		}
+		if !isMember {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+		// 自分の提出した宿題の画像リストに存在するか
+		isExist, err := checkImageExistsForHW(userId, hwId, path)
+		if err != nil {
+			return "", err
+		}
+		if !isExist {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	case 3: // 保護者: おうちに所属している児童が所属しているクラスかどうかかつ、児童が提出した宿題の画像リストに存在するか
+		// おうちに所属する児童一覧を取得し、
+		ouchiId, err := model.GetOuchiUuidById(userId) // 保護者が所属するおうちIDを取得
+		if err != nil {
+			return "", err
+		}
+		juniors, err := model.GetJuniorsByOuchiUuid(ouchiId)
+		if err != nil {
+			return "", err
+		}
+		// それぞれの児童に対して、
+		isFoundImage := false
+		for _, junior := range juniors {
+			isMember, err := model.CheckUserClassMembership(classId, junior.UserUuid) // 該当クラスに属してるか判定、
+			if err != nil {
+				return "", err
+			}
+			if !isMember {
+				return "", custom.NewErr(custom.ErrTypePermissionDenied)
+			}
+			// 提出した宿題の画像リストに存在するか
+			isExist, err := checkImageExistsForHW(junior.UserUuid, hwId, path)
+			if err != nil && err.Error() != custom.NewErr(custom.ErrTypeNoFoundR).Error() { // エラーハンドル、ただし、かつ見つからない旨の独自エラーを除く // エラーの内容と、新しいインスタンスの内容で比較: err.Error() != custom.NewErr(custom.ErrTypeNoFoundR).Error()  // もしErrTypeで比較したいならアサーションする必要がある
+				return "", err
+			}
+			logging.InfoLog("isExist", fmt.Sprint(isExist))
+			if isExist { // 見つかった場合
+				isFoundImage = true
+				break
+			}
+		}
+		if !isFoundImage {
+			return "", custom.NewErr(custom.ErrTypePermissionDenied)
+		}
+	default:
+		return "", custom.NewErr(custom.ErrTypeUnexpectedSetPoints)
+	}
 
 	// パスの生成
 	filePath := "./upload/homework/" + path
-
 	// 画像があるか確認
 	if _, err := os.Stat(filePath); err != nil {
 		logging.ErrorLog("Missing files", err)
@@ -582,4 +696,101 @@ func (s *HomeworkService) FetchSubmittedHwImageService(userId string, hwId strin
 	}
 
 	return filePath, nil
+}
+
+// 生徒たちの提出状況を確認するための、生徒の情報構造体
+type StudentSubmissionInfo struct {
+	UserUuid     string `json:"userUUID"`     // ID
+	UserName     string `json:"userName"`     // 名前
+	ClassNumber  int    `json:"classNumber"`  // 出席番号
+	SubmitStatus int    `json:"submitStatus"` // 提出状況 1 提出 0 未提出
+}
+
+// 宿題が配布されたクラスの生徒たちの進捗状況を取得
+func (s *HomeworkService) GetStudentsHomeworkProgressService(userId string, hwId string) ([]StudentSubmissionInfo, error) {
+	fmt.Printf("userId: %v\n", userId)
+	fmt.Printf("hwId: %v\n", hwId)
+
+	// hwIdから宿題のクラスを取得しておく
+	tmId, err := model.GetTmId(hwId) // 教材id
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	classId, err := model.GetClassId(tmId) // クラス
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+
+	// userIdとclassIdから、このユーザーがこのクラスの教師であることを確認
+	isMember, err := model.CheckUserClassMembership(classId, userId) // クラスに属しているか
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	if !isMember {
+		return []StudentSubmissionInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	isTeacher, err := model.IsTeacher(userId) // 教師タイプか確認
+	if err != nil {                           // エラーハンドル
+		return []StudentSubmissionInfo{}, err
+	}
+	if !isTeacher { // 非管理者ユーザーの場合
+		logging.ErrorLog("Do not have the necessary permissions", nil)
+		return []StudentSubmissionInfo{}, custom.NewErr(custom.ErrTypePermissionDenied)
+	}
+	// check
+	fmt.Printf("isMember: %v\n", isMember)
+	fmt.Printf("isTeacher: %v\n", isTeacher)
+
+	// クラスの生徒一覧を取得
+	classMemberships, err := model.FindJuniorsByClassMemberships(classId)
+	if err != nil {
+		return []StudentSubmissionInfo{}, err
+	}
+	// check
+	for _, classMembership := range classMemberships {
+		utility.CheckStruct(classMembership)
+	}
+	for i, classMembership := range classMemberships {
+		if classMembership.StudentNumber != nil {
+			fmt.Printf("classMemberships[%d].StudentNumber: %v\n", i, *classMembership.StudentNumber)
+		} else {
+			fmt.Printf("classMemberships[%d].StudentNumber: %v\n", i, "<nil>")
+		}
+	}
+
+	// それぞれの生徒の提出状況を取得し値を設定
+	var studentSubmissionInfoSlice []StudentSubmissionInfo
+	for _, classMembership := range classMemberships {
+		// それぞれの生徒の提出状況構造体
+		var studentSubmissionInfo StudentSubmissionInfo
+
+		// 取得済みの生徒情報一覧のjuniorIdとclassNumberを追加
+		utility.ConvertStructCopyMatchingFields(&classMembership, &studentSubmissionInfo)
+		// 名前、
+		studentSubmissionInfo.UserName, err = model.GetNameById(classMembership.UserUuid)
+		if err != nil {
+			return []StudentSubmissionInfo{}, err
+		}
+		// 提出状況も追加
+		_, err := model.GetHwSubmission(hwId, classMembership.UserUuid)
+		if err != nil { // エラーハンドル
+			if err.Error() == custom.NewErr(custom.ErrTypeNoFoundR).Error() { // 見つからなかったときを明示的に
+				// 未提出
+				studentSubmissionInfo.SubmitStatus = 0
+			} else {
+				return []StudentSubmissionInfo{}, err // それ以外の処理エラー
+			}
+		} else { // 取得時のエラーなしなので提出済み
+			studentSubmissionInfo.SubmitStatus = 1 // model.GetHwSubmission(hwId, tgtJuniorId)でエラーがない=>提出はしている
+		}
+
+		// スライスに追加
+		studentSubmissionInfoSlice = append(studentSubmissionInfoSlice, studentSubmissionInfo)
+	}
+	// check
+	for _, studentSubmissionInfo := range studentSubmissionInfoSlice {
+		utility.CheckStruct(studentSubmissionInfo)
+	}
+
+	return studentSubmissionInfoSlice, err
 }

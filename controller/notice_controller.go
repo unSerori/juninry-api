@@ -3,10 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
 	"juninry-api/service"
-	"juninry-api/utility/custom"
 	"net/http"
 	"strconv"
 
@@ -115,18 +115,7 @@ func RegisterNoticeHandler(ctx *gin.Context) {
 func GetNoticeDetailHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。 // XXX: このコードの必要性について疑問があります！
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 	fmt.Println(idAdjusted)   //　アサーションの確認
 
@@ -215,20 +204,25 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 		classUuids = append(classUuids, idsStr...)
 	}
 
+	var pupilUuids []string
+	// クエリパラメータに入力されているクラスIDを保存していく(複数)
+	if idsStr := ctx.QueryArray("pupilUUID[]"); len(idsStr) > 0 {
+		pupilUuids = append(pupilUuids, idsStr...)
+	}
 
 	var readStatus *int
 
 	// readStatus = ctx.Query("readStatus")
 	// Queryメソッドからの文字列を取得
-    readStatusStr := ctx.Query("readStatus")
+	readStatusStr := ctx.Query("readStatus")
 
-	if readStatusStr != "" {	// 値がから文字でない→送られてきているならば
+	if readStatusStr != "" { // 値がから文字でない→送られてきているならば
 		readStatusInt, _ := strconv.Atoi(readStatusStr)
 		readStatus = &readStatusInt
 	}
 
 	// userUuidからお知らせ一覧を持って来る(厳密にはserviceにuserUuidを渡す)
-	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, readStatus)
+	notices, err := noticeService.FindAllNotices(idAdjusted, classUuids, pupilUuids, readStatus)
 	// 取得できなかった時のエラーを判断
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
@@ -303,20 +297,8 @@ func GetAllNoticesHandler(ctx *gin.Context) {
 // お知らせ既読処理
 func NoticeReadHandler(ctx *gin.Context) {
 	// ユーザーを特定する
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
-
 
 	// ここエラー出てたのでエラーが出ないようにする処置をしていたんですが、
 	// mergeで受け入れたらまたエラーが出てしまって、ううううううううううう　もうなにもわからない　たすけて；〜〜；
@@ -326,7 +308,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 	// 構造体にマッピング
 	bRead := model.NoticeReadStatus{
 		NoticeUuid: noticeUuid,
-		OuchiUuid:   idAdjusted,
+		OuchiUuid:  idAdjusted,
 	}
 
 	// 登録処理と失敗レスポンス
@@ -393,18 +375,7 @@ func NoticeReadHandler(ctx *gin.Context) {
 func GetNoticestatusHandler(ctx *gin.Context) {
 
 	// ユーザーを特定する(ctxに保存されているidを取ってくる)
-	id, exists := ctx.Get("id")
-	if !exists { // idがcに保存されていない。
-		// エラーログ
-		logging.ErrorLog("The id is not stored.", nil)
-		// レスポンス
-		resStatusCode := http.StatusInternalServerError
-		ctx.JSON(resStatusCode, gin.H{
-			"srvResMsg":  http.StatusText(resStatusCode),
-			"srvResData": gin.H{},
-		})
-		return
-	}
+	id, _ := ctx.Get("id")
 	idAdjusted := id.(string) // アサーション
 
 	//notice_uuidの取得

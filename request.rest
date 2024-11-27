@@ -2,16 +2,22 @@
 @api_v = /v1
 @boundary = ----MyBoundary
 @notice_uuid = 51e6807b-9528-4a4b-bbe2-d59e9118a70d
-@class_uuid = 09eba495-fe09-4f54-a856-9bea9536b661
+@class_uuid = 817f600e-3109-47d7-ad8c-18b9d7dbdf8b
 @class_invite_code = 8871
 @ouchi_uuid = 1fb56681-482f-4711-86f6-3decfc64e53e
+@pupil_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
 @ouchi_invite_code = 339841
 @readStatus = 1
 @get_hw_homework_uuid = a3579e71-3be5-4b4d-a0df-1f05859a7104
 @get_hw_user_uuid = 3cac1684-c1e0-47ae-92fd-6d7959759224
-@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwMzk3Njc1MjQsImlkIjoiM2NhYzE2ODQtYzFlMC00N2FlLTkyZmQtNmQ3OTU5NzU5MjI0IiwianRpIjoiNWQ0N2RiMDEtYTUzNC00NzcyLTg0OWEtMGUyN2RlODBmYWNiIn0.azR98zoU4YBQ29YJ_1zZPq4NAvQqGHBQT8OwAsxeMJU
+@hardware_uuid = df2b1f4c-b49a-4068-80c5-3120dceb14c8
+@nyariot_uuid = ae30f602-9967-4851-b1e1-2ab10b1470bb
+@item_uuid = 563c5110-3441-4cb0-9764-f32c4385e975
+@count = 11
+@jwt = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNDY0ODIxNjMsImlkIjoiNWM2MmI4MDEtNDRhNy00N2ExLThiNWEtNWQzY2ZiYjI2MTllIiwianRpIjoiOWM2MjMzMjgtZjdlYi00ZTY5LTk0NTctMTVmY2QwMzFjYzc1In0.3gnUZZz_xORbSw7R2KWzmov99Y38fNBs65KdA2tp8TA
+
 ### テスト
-GET {{base_url}}{{api_v}}/test/cfmreq HTTP/1.1
+GET {{base_url}}/check/echo HTTP/1.1
 
 ### ユーザー新規登録
 POST {{base_url}}{{api_v}}/users/register HTTP/1.1
@@ -19,8 +25,8 @@ Content-Type: :application/json
 
 {
     "userName": "hogeta hogenaka",
-    "userTypeId": 1,
-    "mailAddress": "hogeta@gmail.com",
+    "userTypeId": 2,
+    "mailAddress": "hogeta1@gmail.com",
     "password": "C@h"
 }
 
@@ -29,8 +35,8 @@ POST {{base_url}}{{api_v}}/users/login HTTP/1.1
 Content-Type: application/json
 
 {
-    "mailAddress": "hogeta@gmail.com",
-    "password": "C@h"
+    "mailAddress": "test-parent@gmail.com",
+    "password": "C@tp"
 }
 
 ### 教師ログインくん
@@ -102,6 +108,10 @@ Authorization: {{jwt}}
 GET {{base_url}}{{api_v}}/auth/users/homeworks/a3579e71-3be5-4b4d-a0df-1f05859a7104/images/bbbbbbbb-a6ad-4059-809c-6df866e7c5e6.jpg HTTP/1.1
 Authorization: {{jwt}}
 
+### 提出済みの画像を取得エラーテスト
+GET {{base_url}}{{api_v}}/auth/users/homeworks/a3579e71-3be5-4b4d-a0df-1f05859a7104/images/bbbbbbba-a6ad-4059-809c-6df866e7c5e6.jpg HTTP/1.1
+Authorization: {{jwt}}
+
 ### 宿題提出
 POST {{base_url}}{{api_v}}/auth/users/homeworks/submit HTTP/1.1
 Authorization: {{jwt}}
@@ -139,6 +149,10 @@ Content-Type: image/jpeg
 < ./asset/images/Crab_Nebula.jpg
 --{{boundary}}--
 
+### 生徒たちの宿題の進捗一覧を取得する
+GET {{base_url}}{{api_v}}/auth/users/homeworks/progress/a3579e71-3be5-4b4d-a0df-1f05859a7104 HTTP/1.1
+Authorization: {{jwt}}
+
 ### お知らせ投稿
 POST {{base_url}}{{api_v}}/auth/users/notices/register HTTP/1.1
 Authorization: {{jwt}}
@@ -157,6 +171,14 @@ Authorization: {{jwt}}
 
 ### お知らせ一覧の取得(クラス絞り込み)
 GET {{base_url}}{{api_v}}/auth/users/notices/notices?classUUID[]={{class_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせ一覧の取得(子供絞り込み)
+GET {{base_url}}{{api_v}}/auth/users/notices/notices?pupilUUID[]={{pupil_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### お知らせ一覧の取得(両方)
+GET {{base_url}}{{api_v}}/auth/users/notices/notices?classUUID[]={{class_uuid}}&pupilUUID[]={{pupil_uuid}} HTTP/1.1
 Authorization: {{jwt}}
 
 ### お知らせの詳細取得
@@ -227,6 +249,54 @@ Authorization: {{jwt}}
 GET {{base_url}}{{api_v}}/auth/users/ouchies/info HTTP/1.1
 Authorization: {{jwt}}
 
+### ニャリオット一覧取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/nyariots HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット詳細取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/{{nyariot_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### 所持アイテム一覧取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/items HTTP/1.1
+Authorization: {{jwt}}
+
+### 所持アイテム詳細取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/items/{{item_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### スタンプ獲得
+GET {{base_url}}{{api_v}}/auth/login_stamps HTTP/1.1
+Authorization: {{jwt}}
+
+### 現在のスタンプ数取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/stamps HTTP/1.1
+Authorization: {{jwt}}
+
+### メインニャリオット取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/main HTTP/1.1
+Authorization: {{jwt}}
+
+### メインニャリオット変更
+PUT {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/change/{{nyariot_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット空腹度取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/hungry HTTP/1.1
+Authorization: {{jwt}}
+
+### ニャリオット空腹度更新(ご飯あげる)
+PUT {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/meal/{{item_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+
+### スタンプでガチャ取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/stamp_gacha HTTP/1.1
+Authorization: {{jwt}}
+
+### ポイントでガチャ取得
+GET {{base_url}}{{api_v}}/auth/users/ouchies/rewards/nyariots/points_gacha/{{count}} HTTP/1.1
+Authorization: {{jwt}}
+
 ### 教材登録
 POST {{base_url}}/v2/auth/users/t_materials/register HTTP/1.1
 Authorization: {{jwt}}
@@ -249,8 +319,26 @@ Content-Disposition: form-data; name="image"; filename="repeat_2.png"
 Content-Type: image/png
 
 < ./asset/images/repeat_2.png
---{{boundary}}
+--{{boundary}}--
 
 ### v2 test
 POST {{base_url}}/v2/auth/users/t_materials/register HTTP/1.1
 Authorization: {{jwt}}
+
+### 宝箱の初期設定するエンドポイント
+POST {{base_url}}{{api_v}}/hardwares/initialize HTTP/1.1
+Content-Type: application/json
+
+{
+  "hardwareTypeId": 1,
+  "ouchiUUID": "4af89a59-e419-4d92-a244-1fb8e3b1c4ab"
+}
+
+### 箱のポイントを貯める
+PUT {{base_url}}/v1/auth/users/ouchies/rewards/boxes/points/{{hardware_uuid}} HTTP/1.1
+Authorization: {{jwt}}
+Content-Type: application/json
+
+{
+  "addPoint": 5
+}

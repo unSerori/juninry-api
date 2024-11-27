@@ -1,10 +1,11 @@
 package route
 
 import (
-	"juninry-api/common/logging"
+	"juninry-api/common/config"
 	"juninry-api/controller"
 	"juninry-api/middleware"
-	"juninry-api/utility/config"
+	"juninry-api/presentation"
+	"juninry-api/view"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,17 +16,27 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	engine.Use(middleware.LoggingMid())
 
 	// endpoints
+
 	// root page
 	engine.GET("/", controller.ShowRootPage) // /
-	// json test
-	engine.GET("/test/json", controller.TestJson) // /test
+
+	// checkグループ
+	check := engine.Group("/check")
+	{
+		// confirmation and response json test
+		check.GET("/echo", presentation.ConfirmationReq) // /check/echo
+
+		// sandbox
+		check.GET("/sandbox", presentation.Try) // /check/sandbox
+	}
 
 	// endpoints group
+
 	// ver1グループ
 	v1 := engine.Group("/v1")
 	{
-		// リクエストを鯖側で確かめるテスト用エンドポイント
-		v1.GET("/test/cfmreq", controller.CfmReq) // /v1/test/cfmreq
+		// 宝箱の初期設定するエンドポイント　TODO: JWTを返す
+		v1.POST("/hardwares/initialize", handlers.HardHandler.InitHardHandler) // /v1/hardwares/initialize
 
 		// usersグループ
 		users := v1.Group("/users")
@@ -43,11 +54,14 @@ func routing(engine *gin.Engine, handlers Handlers) {
 			// 認証グループで、認証ができるかを確認するテスト用エンドポイント
 			auth.GET("/test/cfmreq", controller.CfmReq) // /v1/auth/test/cfmreq
 
+			// // ログボTODO: 仮にミドルウェアにしてもこっちに直すべき？
+			auth.GET("/login_stamps", controller.LoginStampHandler) // /v1/auth/login_stamps
+
 			// usersグループ
 			users := auth.Group("/users")
 			{
 				// ユーザー自身のプロフィールを取得
-				users.GET("/user", controller.GetUserHandler) // /v1/auth/auth/users/user
+				users.GET("/user", controller.GetUserHandler) // /v1/auth/users/user
 
 				// homeworksグループ
 				homeworks := users.Group("/homeworks")
@@ -73,15 +87,18 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					// 宿題の提出
 					homeworks.POST("/submit", middleware.LimitReqBodySize(config.LoadReqBodyMaxSize(10485760)), controller.SubmitHomeworkHandler) // /v1/auth/users/homeworks/submit // リクエスト制限のデフォ値は10MB
 
-					// 教材データを取得
+					// 教材データを取得 TODO: /auth/users/t_materials/registerみたいに、users/下に宿題グループではなくt_materialsグループを作って欲しい 例: /auth/users/t_materials/:class_uuid
 					homeworks.GET("/tmaterials/:classUuid", controller.GetMaterialDataHandler) // /v1/auth/users/homeworks/t-materials
+
+					// 教師が特定の宿題に対するその宿題が配られたクラスの生徒の進捗一覧を取得
+					homeworks.GET("/progress/:homework_uuid", controller.GetStudentsHomeworkProgressHandler) // /v1/auth/users/homeworks/progress/:homework_uuid
 				}
 
 				// noticeグループ
 				notices := users.Group("/notices")
 				{
 					// 自分の所属するクラスのおしらせ一覧をとる
-					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices/notices
+					notices.GET("/notices", controller.GetAllNoticesHandler) // /v1/auth/users/notices
 
 					// おしらせ詳細をとる // コントローラで取り出すときは noticeUuid := c.Param("notice_uuid")
 					notices.GET("/:notice_uuid", controller.GetNoticeDetailHandler) // /v1/auth/users/notices/{notice_uuid}
@@ -129,7 +146,7 @@ func routing(engine *gin.Engine, handlers Handlers) {
 					ouchies.POST("/join/:invite_code", controller.JoinOuchiHandler) // /v1/auth/users/ouchies/join/{invite_code}
 
 					// おうち情報取得
-					ouchies.GET("/info", controller.GetOuchiHandler)	// /v1/auth/users/ouchies/info
+					ouchies.GET("/info", controller.GetOuchiHandler) // /v1/auth/users/ouchies/info
 
 					helps := ouchies.Group("/helps")
 					{
@@ -161,10 +178,59 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 						// 交換されたご褒美を消化
 						rewards.PUT("/digestion/:rewardExchangeId", controller.RewardDigestionHandler) // /v1/auth/users/ouchies/refresh/{ouchi_uuid}
+
+						// 宝箱関連のグループ
+						boxes := rewards.Group("/boxes")
+						{
+							// 宝箱にポイントを貯める
+							boxes.PUT("/points/:hardware_uuid", controller.DepositPointHandler)
+
+							// 宝箱一覧取得
+							boxes.GET("/", controller.GetBoxRewardsHandler)
+
+							// 宝箱のロック状態変更
+							boxes.PUT("/lock/:hardware_uuid", controller.ToggleBoxLockHandler)
+						}
+
+						// ニャリオットグループ
+						nyariot := rewards.Group("/nyariots")
+						{
+							// 所持ニャリオット一覧を取得
+							nyariot.GET("/nyariots", controller.GetUserNyariotInventoryHandler) // /v1/auth/users/ouchies/rewards/nyariots/nyariots
+
+							// ニャリオット詳細を取得
+							nyariot.GET("/:nyariot_uuid", controller.GetNyariotDetail) // /v1/auth/users/ouchies/rewards/nyariots/{nyariot_uuid}
+
+							// 所持アイテム一覧を取得
+							nyariot.GET("/items", controller.GetUserItemBoxHandler) // /v1/auth/users/ouchies/rewards/nyariots/items
+
+							// アイテム詳細を取得
+							nyariot.GET("/items/:item_uuid", controller.GetItemDetail) // /v1/auth/users/ouchies/rewards/nyariots/items/{item_uuid}
+
+							// 現在のスタンプを取得
+							nyariot.GET("/stamps", controller.GetStampsHandler) // /v1/auth/users/ouchies/rewards/nyariots/stamps
+
+							// ポイントでガチャを取得
+							nyariot.GET("/points_gacha/:count", controller.GetGachaByPointHandler) // /v1/auth/users/ouchies/rewards/nyariots/points_gacha
+
+							// スタンプでガチャを取得
+							nyariot.GET("/stamp_gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamp_gacha
+
+							// 空腹度の更新（ごはん）
+							nyariot.PUT("/meal/:item_uuid", controller.UpdateHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/meal
+
+							// 空腹度の取得
+							nyariot.GET("/hungry", controller.GetHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/hungry
+
+							// メインニャリオットの取得
+							nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
+
+							// // メインニャリオット更新
+							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang
+
+						}
 					}
-
 				}
-
 			}
 		}
 	}
@@ -177,29 +243,22 @@ func routing(engine *gin.Engine, handlers Handlers) {
 	}
 }
 
-// ファイルを設定
-func loadingStaticFile(engine *gin.Engine) {
-	// テンプレートと静的ファイルを読み込む
-	engine.LoadHTMLGlob("view/views/*.html")
-	engine.Static("/styles", "./view/views/styles") // クライアントがアクセスするURL, サーバ上のパス
-	engine.Static("/scripts", "./view/views/scripts")
-	logging.SuccessLog("Routing completed, start the server.")
-
-}
-
 // エンジンを作成して返す
 func SetupRouter(handlers Handlers) (*gin.Engine, error) {
 	// エンジンを作成
 	engine := gin.Default()
+
+	// 静的ファイル設定
+	err := view.LoadingStaticFile(engine)
+	if err != nil {
+		return nil, err
+	}
 
 	// マルチパートフォームのメモリ使用制限を設定
 	engine.MaxMultipartMemory = 8 << 20 // 20bit左シフトで8MiB
 
 	// ルーティング
 	routing(engine, handlers)
-
-	// 静的ファイル設定
-	loadingStaticFile(engine)
 
 	// router設定されたengineを返す。
 	return engine, nil

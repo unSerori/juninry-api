@@ -1,13 +1,13 @@
 // サービスから呼び出される具体的な処理関数
 
-package infrastructure
+package infrastructure_old
 
 import (
 	"errors"
 	"io"
+	"juninry-api/common/custom"
 	"juninry-api/domain"
 	"juninry-api/model"
-	"juninry-api/utility/custom"
 	"mime/multipart"
 	"os"
 

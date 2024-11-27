@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"juninry-api/common/custom"
 	"juninry-api/common/logging"
 	"juninry-api/model"
-	"juninry-api/utility/custom"
 	"math/big"
 	"time"
 
@@ -184,10 +184,10 @@ func (s *ClassService) PermissionCheckedClassCreation(userUuid string, bClass mo
 // 児童の構造体
 type JuniorData struct {
 	// ここに出席番号を追加
-	UserUUID string `json:"userUUID"`
-	UserName string `json:"userName"`
-	GenderId int    `json:"genderId"`
-	StudentNumber *int `json:"studentNumber"`
+	UserUUID      string `json:"userUUID"`
+	UserName      string `json:"userName"`
+	GenderId      int    `json:"genderId"`
+	StudentNumber *int   `json:"studentNumber"`
 }
 
 // クラスごとに児童のデータをまとめた構造体
@@ -268,16 +268,16 @@ func (s *ClassService) GetClassMates(useruuid string) ([]TransFormData, error) {
 		for _, classmate := range classmates {
 			// ユーザーIDの一致する人の出席番号を拾ってくる
 			var studentNumber *int
-			for _, membership := range memberships{
-					if membership.UserUuid == classmate.UserUuid {
-						studentNumber = membership.StudentNumber
-						break
-					}
+			for _, membership := range memberships {
+				if membership.UserUuid == classmate.UserUuid {
+					studentNumber = membership.StudentNumber
+					break
+				}
 			}
 			juniorData := JuniorData{
-				UserUUID: classmate.UserUuid,
-				UserName: classmate.UserName,
-				GenderId: classmate.GenderId,
+				UserUUID:      classmate.UserUuid,
+				UserName:      classmate.UserName,
+				GenderId:      classmate.GenderId,
 				StudentNumber: studentNumber,
 			}
 			transformedDataMap[class.ClassName] = append(transformedDataMap[class.ClassName], juniorData)
@@ -350,8 +350,8 @@ func (s *ClassService) PermissionCheckedJoinClass(userUuid string, inviteCode st
 
 	// クラスに参加させる
 	classMembership := model.ClassMembership{
-		UserUuid:  userUuid,
-		ClassUuid: targetClass.ClassUuid,
+		UserUuid:      userUuid,
+		ClassUuid:     targetClass.ClassUuid,
 		StudentNumber: studentNumber,
 	}
 

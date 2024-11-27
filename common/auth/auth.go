@@ -128,3 +128,7 @@ func ParseToken(tokenString string) (ParseTokenAnalysis, Errs) {
 	// 正常に終われば解析されたトークンとidを渡す。
 	return analysis, errs
 }
+
+// TODO: user auth
+
+// TODO: device auth
