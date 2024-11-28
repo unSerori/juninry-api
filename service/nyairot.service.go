@@ -150,21 +150,21 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 
 	// 7個ないとだめ
 	if stamp.Quantity != 7 {
-		return ResultGacha{}, custom.NewErr(custom.ErrTypeResourceUnavailable)
+		return ResultGacha{}, custom.NewErr(custom.ErrTypeUnforeseenCircumstances)
 	}
 
-	fmt.Println("乱数実験")
-	seed := time.Now().UnixNano()
-	r := rand.New(rand.NewSource(seed))
-	fmt.Println(r.Int31n(100) + 1)
-
-	// 乱数生成、保持する
-	rundomNumber := rand.New(rand.NewSource(seed)).Int31n(100) + 1
-
+	// 宣言
 	var resultGacha = ResultGacha{}
 
-	// 乱数が5以下だったらニャリオットを取得
+	// 乱数生成、保持する
+	seed := time.Now().UnixNano()
+	rundomNumber := rand.New(rand.NewSource(seed)).Int31n(100) + 1
+	// 確認用Print
+	fmt.Println("乱数結果", rundomNumber)
+
+	// 乱数が5以下ならニャリオットを取得
 	if rundomNumber <= 5 {
+		fmt.Println("ニャリオット取得")
 
 		// ランダムに取得してくる
 		gacha, err := model.GetGachaNyariot()
@@ -172,13 +172,9 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 			return ResultGacha{}, err
 		}
 
-		// 確認
-		fmt.Println(gacha)
-
-		// ニャリオットの詳細取得
+		// nyariotの詳細取得
 		nyariot, err := model.GetNyariot(gacha.NyariotUuid)
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
 			return ResultGacha{}, err
 		}
 
@@ -188,7 +184,7 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 			return ResultGacha{}, err
 		}
 
-		fmt.Println("使ってないよエラー消すため1", convexNumber)
+		fmt.Println("convexNumber使ってないよエラー消すため", convexNumber)
 
 		resultGacha = ResultGacha{
 			ItemUuid:   nyariot.NyariotUuid,
@@ -209,8 +205,7 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 				return ResultGacha{}, err
 			}
 		} else {
-
-			fmt.Println("くりあいえと")
+			//インサート
 			_, err := model.CreateNyariotInventory(model.NyariotInventory{
 				UserUuid:     userUuid,
 				NyariotUuid:  nyariot.NyariotUuid,
@@ -219,10 +214,10 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 			if err != nil {
 				return ResultGacha{}, err
 			}
-
 		}
 
 	} else { // それ以外はアイテム
+		fmt.Println("アイテム取得")
 
 		// ランダムに取得してくる
 		gacha, err := model.GetGachaItem()
@@ -230,23 +225,20 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 			return ResultGacha{}, err
 		}
 
-		// 確認
-		fmt.Println(gacha)
-
-		// アイテムの詳細取得
+		// アイテムの詳細を取ってくる
 		item, err := model.GetItem(gacha.ItemUuid)
 		if err != nil {
-			fmt.Printf("err: %v\n", err)
+			// fmt.Printf("err: %v\n", err)
 			return ResultGacha{}, err
 		}
 
-		// 持ってるか確認
+		// 所持確認
 		quantity, has, err := model.GetUserItemBox(userUuid, item.ItemUuid)
 		if err != nil {
 			return ResultGacha{}, err
 		}
 
-		fmt.Println("使ってないよエラー消すため2", quantity)
+		fmt.Println("quantity使ってないよエラー消すため", quantity)
 
 		resultGacha = ResultGacha{
 			ItemUuid:   item.ItemUuid,
@@ -267,9 +259,7 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 				return ResultGacha{}, err
 			}
 		} else {
-
-			// インサート
-			fmt.Println("くりあいえと")
+			//インサート
 			_, err := model.CreateItemBox(model.ItemBox{
 				UserUuid: userUuid,
 				ItemUuid: item.ItemUuid,
@@ -278,9 +268,7 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 			if err != nil {
 				return ResultGacha{}, err
 			}
-
 		}
-
 	}
 
 	//スタンプ減らす
@@ -288,6 +276,7 @@ func (s *NyariotSarvice) GetStampGacha(userUuid string) (ResultGacha, error) {
 	if err != nil {
 		return ResultGacha{}, err
 	}
+
 	return resultGacha, nil
 }
 
@@ -650,6 +639,7 @@ func (s *NyariotSarvice) GetUserNyariots(userUuid string) ([]NyariotCatalog, err
 	return nyairotCatalog, nil
 }
 
+// ニャリオット詳細取得
 func (s *NyariotSarvice) GetNyariotDetail(userUuid string, nyariotUuid string) (NyariotCatalog, error) {
 	// ユーザーが生徒かな生徒じゃなかったらエラー
 	isJunior, err := model.IsJunior(userUuid)
@@ -694,6 +684,7 @@ func (s *NyariotSarvice) GetNyariotDetail(userUuid string, nyariotUuid string) (
 	return catalog, nil
 }
 
+// メインニャリオット変更
 func (s *NyariotSarvice) ChangeNariot(userUuid string, nyariotUuid string) error {
 	// ユーザーが生徒かな生徒じゃなかったらエラー
 	isJunior, err := model.IsJunior(userUuid)
@@ -727,6 +718,7 @@ func (s *NyariotSarvice) ChangeNariot(userUuid string, nyariotUuid string) error
 	return nil
 }
 
+// メインに設定されているニャリオットの取得
 func (s *NyariotSarvice) GetMainNyariot(userUuid string) (NyariotCatalog, error) {
 	// ユーザーが生徒かな生徒じゃなかったらエラー
 	isJunior, err := model.IsJunior(userUuid)
@@ -776,12 +768,14 @@ func (s *NyariotSarvice) GetMainNyariot(userUuid string) (NyariotCatalog, error)
 
 }
 
+// 空腹状況を保持するテーブル
 type HungryStatus struct {
 	NyariotUuid   string `json:"nyariotUUID"`   // ニャリオットUUID
 	UserUuid      string `json:"userUUID"`      // ニャリオットUUID
 	SatityDegrees int    `json:"satityDegrees"` // 現在の空腹度
 }
 
+// 空腹状態の取得
 func (s *NyariotSarvice) GetHungryStatus(userUuid string) (HungryStatus, error) {
 	// ユーザーが生徒かな生徒じゃなかったらエラー
 	isJunior, err := model.IsJunior(userUuid)
@@ -806,8 +800,21 @@ func (s *NyariotSarvice) GetHungryStatus(userUuid string) (HungryStatus, error) 
 
 	fmt.Println(timeDifference)
 
-	// // 空腹度の更新をする
-	// // hungrtStatus, err := model.UpdateHungryStatus()
+	// 空腹度を保持
+	satityDegrees := nyariot.SatityDegrees - timeDifference
+
+	// 空腹度はマイナスにしないのでマイナスの場合０で登録する
+	if satityDegrees < 0 {
+		satityDegrees = 0
+	}
+
+	// 空腹度の更新をする
+	_, err = model.UpdateHungryStatus(userUuid, satityDegrees)
+	if err!= nil {
+		return HungryStatus{}, err
+	}
+
+	
 
 	nyariotStatus := HungryStatus{
 		NyariotUuid:   nyariot.NyariotUuid,
@@ -818,6 +825,7 @@ func (s *NyariotSarvice) GetHungryStatus(userUuid string) (HungryStatus, error) 
 	return nyariotStatus, nil
 }
 
+// ご飯あげる
 func (s *NyariotSarvice) UpdateHungryStatus(userUuid string, itemUuid string) (HungryStatus, error) {
 	// ユーザーが生徒かな生徒じゃなかったらエラー
 	isJunior, err := model.IsJunior(userUuid)
@@ -871,6 +879,8 @@ func (s *NyariotSarvice) UpdateHungryStatus(userUuid string, itemUuid string) (H
 	if err != nil {
 		return HungryStatus{}, err
 	}
+
+	fmt.Println("空腹度更新入ったよ")
 
 	// 所持数減らす
 	_, err = model.ReduceItemQuantity(userUuid, itemUuid, quantity-1)

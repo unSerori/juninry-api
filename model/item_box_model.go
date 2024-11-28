@@ -54,7 +54,7 @@ func ReduceItemQuantity(userUuid string, itemUuid string, quantity int) (int64, 
 	itemQuantity := ItemBox{Quantity: quantity}
 
 	// ニャリオットを更新する
-	affected, err := db.Where("user_uuid = ?", userUuid).Cols("quantity").Update(&itemQuantity)
+	affected, err := db.Where("user_uuid = ? AND item_uuid = ?", userUuid, itemUuid).Cols("quantity").Update(&itemQuantity)
 	return affected, err
 }
 

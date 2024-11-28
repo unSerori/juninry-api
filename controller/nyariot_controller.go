@@ -156,6 +156,17 @@ func GetGachaByStampHandler(c *gin.Context) {
 					"srvResData": gin.H{},
 				})
 				return
+			case custom.ErrTypeUnforeseenCircumstances:	// ガチャ回すのに必要なスタンプないよ
+				//エラーログ
+				logging.ErrorLog("unforeseen circumstances", err)
+				// レスポンス
+				resStatusCode := http.StatusBadRequest
+				c.JSON(resStatusCode, gin.H{
+					"srvResMsg":  http.StatusText(resStatusCode),
+					"srvResData": gin.H{},
+				})
+				return
+
 
 			default: // カスタムエラーの仕分けにぬけがある可能性がある
 				// エラーログ
@@ -657,7 +668,7 @@ func UpdateHungryStatusHandler(c *gin.Context) {
 	// アイテムUUIDを取得
 	itemUuid := c.Param("item_uuid")
 
-	nyariot, err := nyariotSarvice.UpdateHungryStatus(idAdjusted, itemUuid)
+	hungryStatus, err := nyariotSarvice.UpdateHungryStatus(idAdjusted, itemUuid)
 	if err != nil {
 		// 処理で発生したエラーのうちカスタムエラーのみ
 		var serviceErr *custom.CustomErr
@@ -708,7 +719,7 @@ func UpdateHungryStatusHandler(c *gin.Context) {
 	// レスポンス(StatusOK　成功200番)
 	c.JSON(http.StatusOK, gin.H{
 		"srvResMsg":  "Successful nyariot SatityDegrees get.",
-		"srvResData": nyariot,
+		"srvResData": hungryStatus ,
 	})
 
 }
