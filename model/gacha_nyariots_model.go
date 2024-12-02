@@ -14,7 +14,7 @@ func (GachaNyariot) TableName() string {
 // アイテムデータ
 func CreateGachaNyariotTestData() {
 
-	items := []*GachaNyariot{
+	nyariots := []*GachaNyariot{
 		{
 			GachaNumber: 1,
 			NyariotUuid:     "c0768960-eb5f-4a60-8327-4171fd4b8a46",
@@ -58,14 +58,14 @@ func CreateGachaNyariotTestData() {
 	}
 
 	// データベースに一括インサート
-	for _, item := range items {
-		db.Insert(item)
+	for _, nyariot := range nyariots {
+		db.Insert(nyariot)
 	}
 }
 
 func GetGachaNyariot() (GachaNyariot, error) {
 	var gachaNyariot GachaNyariot
-	_, err := db.Where("gacha_number BETWEEN ? AND ?", 1, 10).OrderBy("RAND()").Limit(1).Get(&gachaNyariot)
+	_, err := db.OrderBy("RAND()").Limit(1).Get(&gachaNyariot)
 	if err!= nil {
 		return gachaNyariot, err
 	}
