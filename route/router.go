@@ -28,6 +28,8 @@ func routing(engine *gin.Engine, handlers Handlers) {
 
 		// sandbox
 		check.GET("/sandbox", presentation.Try) // /check/sandbox
+
+		// TODO: "/auth"ミドルウェア通過できるかどうかのチェックエンドポイント
 	}
 
 	// endpoints group
@@ -214,16 +216,16 @@ func routing(engine *gin.Engine, handlers Handlers) {
 							nyariot.GET("/points_gacha/:count", controller.GetGachaByPointHandler) // /v1/auth/users/ouchies/rewards/nyariots/points_gacha
 
 							// スタンプでガチャを取得
-							nyariot.GET("/stamp_gacha", controller.GetGachaByStampHandler)	// /v1/auth/users/ouchies/rewards/nyairots/stamp_gacha
+							nyariot.GET("/stamp_gacha", controller.GetGachaByStampHandler) // /v1/auth/users/ouchies/rewards/nyairots/stamp_gacha
 
 							// 空腹度の更新（ごはん）
-							nyariot.PUT("/meal/:item_uuid", controller.UpdateHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/meal
+							nyariot.PUT("/meal/:item_uuid", controller.UpdateHungryStatusHandler) // /v1/auth/users/ouchies/rewards/nyariots/meal
 
 							// 空腹度の取得
-							nyariot.GET("/hungry", controller.GetHungryStatusHandler)	// /v1/auth/users/ouchies/rewards/nyariots/hungry
+							nyariot.GET("/hungry", controller.GetHungryStatusHandler) // /v1/auth/users/ouchies/rewards/nyariots/hungry
 
 							// メインニャリオットの取得
-							nyariot.GET("/main", controller.GetMainNyariotHandler)	// /v1/auth/users/ouchies/rewards/nyariots/main
+							nyariot.GET("/main", controller.GetMainNyariotHandler) // /v1/auth/users/ouchies/rewards/nyariots/main
 
 							// // メインニャリオット更新
 							nyariot.PUT("/change/:nyariot_uuid", controller.ChangeMainNariot) // /v1/auth/users/ouchies/rewards/nyariots/chang

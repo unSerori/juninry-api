@@ -50,8 +50,8 @@ func BuildContainer() *dig.Container {
 	// コンテナを作成
 	container := dig.New()
 
-	// DBの初期化をコンテナに渡し、依存関係を登録
-	container.Provide(
+	// インフラ層が依存する最終的な依存先を解決するためのコンポーネントをdigに登録
+	container.Provide( // DBの初期化をコンテナに渡し、依存関係を登録
 		func() *xorm.Engine {
 			db, err := model.InitDB() // router設定されたengineを無名関数でラップしたものを受け取り、ルーティングを登録
 			if err != nil {
