@@ -331,7 +331,7 @@ Content-Type: application/json
 
 {
   "hardwareTypeId": 1,
-  "ouchiUUID": "4af89a59-e419-4d92-a244-1fb8e3b1c4ab"
+  "ouchiUUID": "2e17a448-985b-421d-9b9f-62e5a4f28c49"
 }
 
 ### 箱のポイントを貯める

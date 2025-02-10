@@ -1,5 +1,12 @@
 package model
 
+import (
+	"errors"
+	"juninry-api/common/custom"
+
+	"github.com/go-sql-driver/mysql"
+)
+
 // ハードウェアテーブル
 
 type Hardware struct {
@@ -34,4 +41,25 @@ func CreateHardwareTestData() {
 		HardwareTypeId: 1,
 	}
 	db.Insert(hardware2)
+}
+
+// 新規登録
+func CreateHardware(record Hardware) error {
+	_, err := db.Insert(record)
+	if err != nil {
+		// XormのORMエラーを仕分ける
+		var mysqlErr *mysql.MySQLError // DBエラーを判定するためのDBインスタンス
+		if errors.As(err, &mysqlErr) { // errをmysqlErrにアサーション出来たらtrue
+			switch err.(*mysql.MySQLError).Number {
+			case 1062: // 一意性制約違反
+				return custom.NewErr(custom.ErrTypeUniqueConstraintViolation)
+			default: // ORMエラーの仕分けにぬけがある可能性がある
+				return custom.NewErr(custom.ErrTypeOtherErrorsInTheORM)
+			}
+		}
+		// 通常の処理エラー
+		return err
+	}
+
+	return nil
 }

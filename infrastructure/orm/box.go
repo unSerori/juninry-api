@@ -43,6 +43,11 @@ func (i *BoxOrmRepoImpl) CheckOuchiUuid(ouchiUuid string) error {
 
 // ボックスの新規登録
 func (i *BoxOrmRepoImpl) AddBox(record model.Box) error {
+	_, err := i.db.Insert(record)
+	if err != nil {
+		logging.ErrorLog("AddBox.", err)
+		return err
+	}
 
 	return nil
 }
