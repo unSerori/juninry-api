@@ -8,6 +8,8 @@ import (
 	ri "juninry-api/domain/aggregates/box/ri"
 	"juninry-api/dto/requests"
 	"juninry-api/model"
+
+	"github.com/google/uuid"
 )
 
 // サービスの構造体
@@ -24,6 +26,17 @@ func NewHardService(r ri.OrmRepoI) *HardService {
 
 // 宝箱の初期設定サービス
 func (s *HardService) InitHardService(req requests.InitHard) (string, error) {
+	// ハードウェアとして登録
+	hardwareId, err := uuid.NewRandom() // 新しいuuidの生成
+	if err != nil {
+		return "", err
+	}
+	newHardware := model.Hardware{
+		HardwareUuid:   hardwareId.String(),
+		HardwareTypeId: req.HardwareTypeId,
+	}
+	model.CreateHardware(newHardware)
+
 	// 種類によって処理を分岐
 	switch req.HardwareTypeId {
 	case 1: // 宝箱
@@ -37,9 +50,9 @@ func (s *HardService) InitHardService(req requests.InitHard) (string, error) {
 			return "", err
 		}
 
-		// DBに登録
+		// 箱としても登録
 		err = s.r.AddBox(model.Box{
-			HardwareUuid: newBox.Id.Value(),
+			HardwareUuid: hardwareId.String(),
 			DepositPoint: newBox.DepositPoint,
 			BoxStatus:    newBox.Status.AsInt(),
 			OuchiUuid:    newBox.OuchiUuid.Value(),
