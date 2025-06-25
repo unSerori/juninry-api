@@ -55,9 +55,12 @@ func GetMainNyairot(userUuid string) (HungryStatus, error) {
 
 func UpdateHungryStatus(userUuid string, satityDegrees int) (int64, error) {
 	// 更新する構造体のインスタンスを作成
-	changSatityDegrees := HungryStatus{SatityDegrees: satityDegrees}
+	changSatityDegrees := HungryStatus{
+		SatityDegrees: satityDegrees,
+		LastGohanTime: time.Now(),
+	}
 
 	// ニャリオットを更新する
-	affected, err := db.Where("user_uuid = ?", userUuid).Cols("satity_degrees").Update(&changSatityDegrees)
+	affected, err := db.Where("user_uuid = ?", userUuid).Cols("satity_degrees", "last_gohan_time").Update(&changSatityDegrees)
 	return affected, err
 }

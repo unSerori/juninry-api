@@ -38,6 +38,7 @@ func MigrationTable() error {
 			new(NyariotInventory),
 			new(Stamp),
 			new(GachaItem),
+			new(GachaNyariot),
 			new(HungryStatus),
 			new(HardwareType),
 			new(Hardware),
@@ -173,11 +174,11 @@ func RegisterSample() {
 	CreateItemTestData()
 	CreateNyariotTestData()
 	CreateGachaItemTestData()
+	CreateGachaNyariotTestData()
 	CreateHardwareTypeTestData()
 	CreateHardwareTestData()
 	CreateBoxesTestData()
 	CreateRewardTestData()
-
 }
 
 // SQL接続とテーブル作成
